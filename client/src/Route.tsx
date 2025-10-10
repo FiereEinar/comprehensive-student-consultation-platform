@@ -1,0 +1,54 @@
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import App from './App';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import AdminConsultations from './pages/consultations/AdminConsultations';
+import AdminDashboard from './pages/dashboards/AdminDashboard';
+import StudentDashboard from './pages/dashboards/StudentDashboard';
+import StudentConsultations from './pages/consultations/StudentConsultations';
+import InstructorDashbaord from './pages/dashboards/InstructorDashboard';
+
+export default function Route() {
+	const route = createBrowserRouter([
+		{
+			path: '/',
+			element: <App />,
+			children: [
+				{
+					path: '/admin/dashboard',
+					element: <AdminDashboard />,
+				},
+				{
+					path: '/admin/consultation',
+					element: <AdminConsultations />,
+				},
+				{
+					path: '/student/dashboard',
+					element: <StudentDashboard />,
+				},
+				{
+					path: '/student/consultation',
+					element: <StudentConsultations />,
+				},
+				{
+					path: '/instructor/dashboard',
+					element: <InstructorDashbaord />,
+				},
+				{
+					path: '/instructor/consultation',
+					element: <AdminConsultations />,
+				},
+			],
+		},
+		{
+			path: '/login',
+			element: <Login />,
+		},
+		{
+			path: '/login',
+			element: <Signup />,
+		},
+	]);
+
+	return <RouterProvider router={route} />;
+}
