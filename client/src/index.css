@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 @import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&: is(.dark *));
 
@@ -14,6 +15,12 @@
 	--color-card-foreground: var(--card-foreground);
 	--color-popover: var(--popover);
 	--color-popover-foreground: var(--popover-foreground);
+
+	--color-custom-primary: var(--custom-primary);
+	--color-custom-primary-foreground: var(--custom-primary-foreground);
+	--color-custom-secondary: var(--custom-secondary);
+	--color-custom-secondary-foreground: var(--custom-secondary-foreground);
+
 	--color-primary: var(--primary);
 	--color-primary-foreground: var(--primary-foreground);
 	--color-secondary: var(--secondary);
@@ -51,8 +58,12 @@
 	--popover-foreground: oklch(0.145 0 0);
 	--primary: oklch(0.205 0 0);
 	--primary-foreground: oklch(0.985 0 0);
-	/* --custom-primary: oklch(62.228% 0.17998 317.724);
-	--custom-primary-foreground: oklch(0.985 0 0); */
+
+	--custom-primary: oklch(62.228% 0.17998 317.724);
+	--custom-primary-foreground: oklch(0.985 0 0);
+	--custom-secondary: oklch(96.876% 0.01081 338.791);
+	--custom-secondary-foreground: oklch(0.205 0 0);
+
 	--secondary: oklch(0.97 0 0);
 	--secondary-foreground: oklch(0.205 0 0);
 	--muted: oklch(0.97 0 0);
