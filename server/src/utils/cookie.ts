@@ -1,6 +1,9 @@
 import { CookieOptions, Response } from 'express';
-import { NODE_ENV } from '../constants/env';
-import { accessTokenCookieName, refreshTokenCookieName } from '../constants';
+import {
+	ACCESS_TOKEN_COOKIE_NAME,
+	NODE_ENV,
+	REFRESH_TOKEN_COOKIE_NAME,
+} from '../constants/env';
 import { HALF_DAY, THIRTY_DAYS } from './date';
 
 export const REFRESH_PATH = '/auth/refresh';
@@ -34,5 +37,5 @@ export const setAuthCookie = ({
 	refreshToken,
 }: SetCookieParams) =>
 	res
-		.cookie(accessTokenCookieName, accessToken, getAccessTokenOptions())
-		.cookie(refreshTokenCookieName, refreshToken, getRefreshTokenOptions());
+		.cookie(ACCESS_TOKEN_COOKIE_NAME, accessToken, getAccessTokenOptions())
+		.cookie(REFRESH_TOKEN_COOKIE_NAME, refreshToken, getRefreshTokenOptions());

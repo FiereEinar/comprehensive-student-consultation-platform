@@ -1,7 +1,8 @@
+import cookieParser from 'cookie-parser';
 import express from 'express';
 import dotenv from 'dotenv';
+import helmet from 'helmet';
 import cors from 'cors';
-import cookieParser from 'cookie-parser';
 dotenv.config();
 
 import connectToMongoDB from './database/mongodb';
@@ -10,10 +11,10 @@ import { errorHandler } from './middlewares/error';
 import { healthcheck } from './middlewares/healthcheck';
 import { corsOptions } from './utils/cors';
 import { PORT } from './constants/env';
-
 import { auth } from './middlewares/auth';
 // import { limiter } from './utils/rate-limiter';
-import helmet from 'helmet';
+
+import authRoutes from './routes/auth.route';
 
 const app = express();
 app.use(cors(corsOptions));
@@ -24,7 +25,9 @@ app.use(helmet());
 app.get('/', healthcheck);
 
 // Routes
+app.use('/api/v1/auth', authRoutes);
 app.use(auth);
+app.get('/protected', (req, res) => res.json({ message: 'Protected route' }));
 
 // Error handlers
 app.use(notFoundHandler);
