@@ -1,7 +1,8 @@
-import { Clock, LayoutDashboard } from 'lucide-react';
+import { Clock, LayoutDashboard, Settings } from 'lucide-react';
 import type { JSX } from 'react';
 import SidebarLink from './SidebarLink';
 import SidebarHeader from './SidebarHeader';
+import LogoutButton from './buttons/LogoutButton';
 
 export type SidebarNavLink = {
 	name: string;
@@ -44,12 +45,26 @@ const sidebarLinks: SidebarNavLink[] = [
 
 export default function Sidebar() {
 	return (
-		<aside className='bg-[#B25DCC] text-white w-[250px] p-5 space-y-5'>
-			<SidebarHeader />
-			<div className='flex flex-col gap-1'>
-				{sidebarLinks.map((link) => (
-					<SidebarLink key={link.name} link={link} />
-				))}
+		<aside className='bg-gradient-to-b from-[#B25DCC] to-[#774FC0] text-white w-[250px] p-5 flex flex-col justify-between min-h-screen'>
+			<div className='space-y-5'>
+				<SidebarHeader />
+
+				<div className='flex flex-col gap-1'>
+					{sidebarLinks.map((link) => (
+						<SidebarLink key={link.name} link={link} />
+					))}
+				</div>
+			</div>
+
+			<div className='w-full flex flex-col gap-1'>
+				<SidebarLink
+					link={{
+						name: 'Settings',
+						href: '/settings',
+						icon: <Settings />,
+					}}
+				/>
+				<LogoutButton />
 			</div>
 		</aside>
 	);

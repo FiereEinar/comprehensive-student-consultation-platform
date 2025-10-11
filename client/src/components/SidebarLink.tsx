@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import type { SidebarNavLink } from './Sidebar';
 
 type SidebarLinkProps = {
@@ -7,15 +7,19 @@ type SidebarLinkProps = {
 
 export default function SidebarLink({ link }: SidebarLinkProps) {
 	return (
-		<Link
+		<NavLink
 			to={link.href}
 			key={link.name}
-			className='transition-all w-full p-2 hover:bg-black/20 rounded-md'
+			className={({ isActive }) =>
+				`transition-all w-full p-2 hover:bg-black/20 rounded-md ${
+					isActive ? 'bg-black/20' : ''
+				}`
+			}
 		>
 			<div className='flex gap-2'>
 				{link.icon}
 				<p>{link.name}</p>
 			</div>
-		</Link>
+		</NavLink>
 	);
 }

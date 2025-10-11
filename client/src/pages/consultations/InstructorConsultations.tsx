@@ -1,7 +1,9 @@
+import Header from '@/components/ui/header';
+
 export default function InstructorConsultations() {
 	return (
 		<div>
-			<h1>Instructor Consultations</h1>
+			<Header>Instructor Consultations</Header>
 		</div>
 	);
 }

@@ -1,7 +1,9 @@
+import Header from '@/components/ui/header';
+
 export default function AdminConsultations() {
 	return (
 		<div>
-			<h1>Admin Consultations</h1>
+			<Header>Admin Consultations</Header>
 		</div>
 	);
 }

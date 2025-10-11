@@ -1,9 +1,9 @@
 import Header from '@/components/ui/header';
 
-export default function AdminDashboard() {
+export default function Settings() {
 	return (
 		<div>
-			<Header>Admin Dashboard</Header>
+			<Header>Settings</Header>
 		</div>
 	);
 }

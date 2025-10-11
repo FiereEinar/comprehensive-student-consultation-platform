@@ -1,7 +1,9 @@
+import Header from '@/components/ui/header';
+
 export default function InstructorDashbaord() {
 	return (
 		<div>
-			<h1>Instructor Dashbaord</h1>
+			<Header>Instructor Dashbaord</Header>
 		</div>
 	);
 }
