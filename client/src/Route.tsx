@@ -8,6 +8,7 @@ import StudentDashboard from './pages/dashboards/StudentDashboard';
 import StudentConsultations from './pages/consultations/StudentConsultations';
 import InstructorDashbaord from './pages/dashboards/InstructorDashboard';
 import Settings from './pages/Settings';
+import InstructorConsultations from './pages/consultations/InstructorConsultations';
 
 export default function Route() {
 	const route = createBrowserRouter([
@@ -37,7 +38,7 @@ export default function Route() {
 				},
 				{
 					path: '/instructor/consultation',
-					element: <AdminConsultations />,
+					element: <InstructorConsultations />,
 				},
 				{
 					path: '/settings',

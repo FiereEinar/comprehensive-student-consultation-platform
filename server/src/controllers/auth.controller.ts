@@ -33,7 +33,7 @@ import {
 	REFRESH_PATH,
 	setAuthCookie,
 } from '../utils/cookie';
-import CustomResponse from '../models/utils/response';
+import CustomResponse from '../utils/response';
 import { AppErrorCodes } from '../constants';
 import { verifyRecaptcha } from '../utils/recaptcha';
 
@@ -80,7 +80,6 @@ export const signupHandler = asyncHandler(async (req, res) => {
 
 	// check for duplicate email
 	const existingUser = await UserModel.findOne({ email: body.email });
-
 	appAssert(!existingUser, CONFLICT, 'Email already used');
 
 	// Check if passwords match

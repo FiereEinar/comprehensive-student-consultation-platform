@@ -4,8 +4,8 @@ const MIN_PASSWORD_LEN = 6;
 
 export const createUserSchema = z
 	.object({
-		firstname: z.string().min(1, 'Firstname is required'),
-		lastname: z.string().min(1, 'Lastname is required'),
+		name: z.string().min(1, 'Full name is required'),
+		institutionalID: z.string().min(1, 'Institutional ID is required'),
 		email: z.email('Invalid email'),
 		password: z
 			.string()
@@ -26,8 +26,7 @@ export const createUserSchema = z
 	});
 
 export const updateUserSchema = z.object({
-	firstname: z.string().min(1, 'Firstname is required'),
-	lastname: z.string().min(1, 'Lastname is required'),
+	name: z.string().min(1, 'Full name is required'),
 	email: z.string('Invalid email'),
 });
 
@@ -41,5 +40,5 @@ export const loginSchema = z.object({
 		),
 });
 
-export type CreateUserInput = z.infer<typeof createUserSchema>;
-export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+export type CreateUserInputs = z.infer<typeof createUserSchema>;
+export type UpdateUserInputs = z.infer<typeof updateUserSchema>;

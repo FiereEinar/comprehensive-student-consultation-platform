@@ -2,20 +2,39 @@ import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
 
+export type UserTypes = 'admin' | 'student' | 'instructor';
+
 export interface IUser extends mongoose.Document {
-	firstname: string;
-	lastname: string;
+	name: string;
+	institutionalID: string;
 	email: string;
 	password: string;
+	role: UserTypes;
 	omitPassword: () => Omit<IUser, 'password'>;
 }
 
-const UserSchema = new Schema<IUser>({
-	firstname: { type: String, minlength: 1, maxlength: 50, required: true },
-	lastname: { type: String, minlength: 1, maxlength: 50, required: true },
-	email: { type: String, required: false },
-	password: { type: String, required: true },
-});
+const UserSchema = new Schema<IUser>(
+	{
+		name: { type: String, minlength: 1, maxlength: 50, required: true },
+		email: { type: String, required: false },
+		password: { type: String, required: true },
+		institutionalID: {
+			type: String,
+			minlength: 1,
+			maxlength: 50,
+			required: true,
+		},
+		role: {
+			type: String,
+			enum: ['admin', 'student', 'instructor'],
+			default: 'student',
+			required: true,
+		},
+	},
+	{
+		timestamps: true,
+	}
+);
 
 UserSchema.methods.omitPassword = function () {
 	const user = this.toObject();
