@@ -75,6 +75,8 @@ cd student-consultation-platform
 
 ### 2️⃣ Setup and Run the Server
 
+open the project directory in terminal
+
 ```bash
 cd server
 npm install
@@ -106,16 +108,18 @@ This will start the backend on your configured `PORT` (default: 5000).
 
 ### 3️⃣ Setup and Run the Client
 
+open the project directory in another terminal
+
 ```bash
 cd ../client
 npm install
 ```
 
-#### Create a `.env` file in the `client/` directory:
+<!-- #### Create a `.env` file in the `client/` directory:
 
 ```env
 VITE_API_URL=http://localhost:5000
-```
+``` -->
 
 #### Run in development mode:
 
