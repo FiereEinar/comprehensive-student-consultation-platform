@@ -15,6 +15,7 @@ import { auth } from './middlewares/auth';
 // import { limiter } from './utils/rate-limiter';
 
 import authRoutes from './routes/auth.route';
+import consultationRoutes from './routes/consultation.routes';
 import instructorRoutes from './routes/instructor.route';
 
 const app = express();
@@ -27,7 +28,8 @@ app.get('/', healthcheck);
 
 // Routes
 app.use('/api/v1/auth', authRoutes);
-app.use(auth);
+// app.use(auth);
+app.use('/api/v1/consultation', consultationRoutes);
 app.use('/api/v1/instructor', instructorRoutes);
 
 // Error handlers

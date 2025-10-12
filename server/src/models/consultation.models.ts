@@ -14,7 +14,6 @@ export interface IConsultation {
 	instructor: IUser;
 	scheduledAt: Date;
 	status: ConsultationStatus;
-	location: string;
 	title: string;
 	description: string;
 }
