@@ -67,7 +67,7 @@ comprehensive-student-consultation-platform/
 ### 1️⃣ Clone the repository
 
 ```bash
-git clone https://github.com/<your-org-or-username>/student-consultation-platform.git
+git clone https://github.com/FiereEinar/comprehensive-student-consultation-platform.git
 cd student-consultation-platform
 ```
 

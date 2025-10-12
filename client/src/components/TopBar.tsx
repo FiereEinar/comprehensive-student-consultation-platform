@@ -6,7 +6,7 @@ export default function TopBar() {
 			<div className='flex items-center text-end gap-2'>
 				<div>
 					<p>Fern Aila Asinero</p>
-					<p className='text-xs'>My Love</p>
+					<p className='text-xs'>Student</p>
 				</div>
 				<div className='rounded-full p-1 border-black border-2'>
 					<UserRound />

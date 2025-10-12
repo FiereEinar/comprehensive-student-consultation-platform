@@ -82,6 +82,11 @@ export const signupHandler = asyncHandler(async (req, res) => {
 	const existingUser = await UserModel.findOne({ email: body.email });
 	appAssert(!existingUser, CONFLICT, 'Email already used');
 
+	const sameInstitutionalID = await UserModel.findOne({
+		institutionalID: body.institutionalID,
+	});
+	appAssert(!sameInstitutionalID, CONFLICT, 'Institutional ID already used');
+
 	// Check if passwords match
 	appAssert(
 		body.password === body.confirmPassword,

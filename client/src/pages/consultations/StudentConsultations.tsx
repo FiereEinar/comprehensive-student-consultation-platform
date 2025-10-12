@@ -10,7 +10,7 @@ export default function StudentConsultations() {
 				<ConsultationForm />
 			</div>
 			<div>
-				<Tabs defaultValue='account'>
+				<Tabs defaultValue='Upcoming'>
 					<TabsList className='self-end'>
 						<TabsTrigger
 							className='cursor-pointer data-[state=active]:text-custom-primary data-[state=active]:border-b-custom-primary border-2 data-[state=active]:bg-custom-secondary rounded-none data-[state=active]:shadow-none data-[state=active]:text-shadow-none'

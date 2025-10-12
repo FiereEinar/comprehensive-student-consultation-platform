@@ -15,6 +15,7 @@ import { auth } from './middlewares/auth';
 // import { limiter } from './utils/rate-limiter';
 
 import authRoutes from './routes/auth.route';
+import instructorRoutes from './routes/instructor.route';
 
 const app = express();
 app.use(cors(corsOptions));
@@ -27,7 +28,7 @@ app.get('/', healthcheck);
 // Routes
 app.use('/api/v1/auth', authRoutes);
 app.use(auth);
-app.get('/protected', (req, res) => res.json({ message: 'Protected route' }));
+app.use('/api/v1/instructor', instructorRoutes);
 
 // Error handlers
 app.use(notFoundHandler);
