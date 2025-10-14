@@ -21,9 +21,9 @@
 	--color-custom-secondary: var(--custom-secondary);
 	--color-custom-secondary-foreground: var(--custom-secondary-foreground);
 
-	--color-primary: var(--primary);
+	--color-primary: var(--custom-primary);
 	--color-primary-foreground: var(--primary-foreground);
-	--color-secondary: var(--secondary);
+	--color-secondary: var(--custom-secondary);
 	--color-secondary-foreground: var(--secondary-foreground);
 	--color-muted: var(--muted);
 	--color-muted-foreground: var(--muted-foreground);
