@@ -55,7 +55,9 @@ export default function Signup() {
 						Fill up the form below to create an account
 					</CardDescription>
 					<CardAction>
-						<Button variant='link'>Login</Button>
+						<Button variant='link' onClick={() => navigate('/login')}>
+							Login
+						</Button>
 					</CardAction>
 				</CardHeader>
 				<CardContent>
@@ -76,7 +78,6 @@ export default function Signup() {
 										id={field.name}
 										aria-invalid={fieldState.invalid}
 										placeholder='Enter your ID here'
-										autoComplete='off'
 									/>
 									{fieldState.invalid && (
 										<FieldError errors={[fieldState.error]} />
@@ -97,7 +98,6 @@ export default function Signup() {
 										id={field.name}
 										aria-invalid={fieldState.invalid}
 										placeholder='Juan Dela Cruz'
-										autoComplete='off'
 									/>
 									{fieldState.invalid && (
 										<FieldError errors={[fieldState.error]} />
@@ -119,7 +119,6 @@ export default function Signup() {
 										aria-invalid={fieldState.invalid}
 										type='email'
 										placeholder='juan@gmail.com'
-										autoComplete='off'
 									/>
 									{fieldState.invalid && (
 										<FieldError errors={[fieldState.error]} />
@@ -175,10 +174,10 @@ export default function Signup() {
 				</CardContent>
 				<CardFooter className='flex-col gap-2'>
 					<Button type='submit' form='signup-form' className='w-full'>
-						Login
+						Signup
 					</Button>
 					<Button variant='outline' className='w-full'>
-						Login with Google
+						Signup with Google
 					</Button>
 				</CardFooter>
 			</Card>

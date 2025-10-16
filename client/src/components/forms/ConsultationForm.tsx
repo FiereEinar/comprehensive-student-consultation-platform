@@ -99,7 +99,6 @@ export default function ConsultationForm() {
 									id={field.name}
 									aria-invalid={fieldState.invalid}
 									placeholder='Grade consultation'
-									autoComplete='off'
 								/>
 								{fieldState.invalid && (
 									<FieldError errors={[fieldState.error]} />
