@@ -1,4 +1,4 @@
-import { fetchInstructors } from '@/api/instructor';
+import { fetchAvailabilities, fetchInstructors } from '@/api/instructor';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -36,10 +36,12 @@ import {
 import { DatePicker } from '../DatePicker';
 import axiosInstance from '@/api/axios';
 import { toast } from 'sonner';
+import { useState } from 'react';
 
 export type ConsultationFormValues = z.infer<typeof createConsultationSchema>;
 
 export default function ConsultationForm() {
+	const [selectedInstructor, setSelectedInstructor] = useState<string>('');
 	const { control, handleSubmit } = useForm<ConsultationFormValues>({
 		resolver: zodResolver(createConsultationSchema),
 		defaultValues: {
@@ -53,6 +55,14 @@ export default function ConsultationForm() {
 	const { data: instructors } = useQuery({
 		queryKey: [QUERY_KEYS.INSTRUCTORS],
 		queryFn: fetchInstructors,
+	});
+
+	const {
+		data: selectedInstructorAvailabilities,
+		isLoading: loadingAvailability,
+	} = useQuery({
+		queryKey: [QUERY_KEYS.INSTRUCTORS_AVAILABILITIES, selectedInstructor],
+		queryFn: () => fetchAvailabilities(selectedInstructor),
 	});
 
 	const onSubmit = async (formData: ConsultationFormValues) => {
@@ -144,9 +154,11 @@ export default function ConsultationForm() {
 						control={control}
 						render={({ field, fieldState }) => (
 							<Select
-								onValueChange={field.onChange}
+								onValueChange={(value) => {
+									setSelectedInstructor(value);
+									field.onChange(value);
+								}}
 								value={field.value}
-								defaultValue={field.value}
 							>
 								<SelectTrigger
 									className='w-full cursor-pointer'
@@ -176,6 +188,31 @@ export default function ConsultationForm() {
 						)}
 					/>
 					{/* END */}
+
+					{loadingAvailability ? (
+						<p className='text-sm text-muted-foreground'>
+							Loading availability...
+						</p>
+					) : selectedInstructorAvailabilities &&
+					  selectedInstructorAvailabilities.length > 0 ? (
+						<div className='text-sm space-y-1 text-muted-foreground'>
+							<p className='font-medium'>Available Times:</p>
+							<ul className='list-disc pl-5'>
+								{selectedInstructorAvailabilities.map(
+									(slot: any, i: number) => (
+										<li key={i}>
+											{slot.day}: {slot.startTime} - {slot.endTime} (
+											{slot.slots} slots)
+										</li>
+									)
+								)}
+							</ul>
+						</div>
+					) : selectedInstructor ? (
+						<p className='text-sm text-red-500'>
+							No availability set for this instructor.
+						</p>
+					) : null}
 
 					{/* DATE */}
 					<Controller

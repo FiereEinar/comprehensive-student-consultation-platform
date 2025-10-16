@@ -7,7 +7,7 @@ export default function LogoutButton() {
 	return (
 		<button
 			onClick={() => navigate('/login')}
-			className='transition-all w-full p-2 hover:bg-black/20 rounded-md'
+			className='transition-all cursor-pointer w-full p-2 hover:bg-black/20 rounded-md'
 		>
 			<div className='flex gap-2'>
 				<Power />
