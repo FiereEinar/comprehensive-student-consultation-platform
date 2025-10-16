@@ -42,5 +42,10 @@ UserSchema.methods.omitPassword = function () {
 	return user;
 };
 
+UserSchema.pre('save', async function (next) {
+	this.name = this.name.toLowerCase();
+	next();
+});
+
 const UserModel = mongoose.model('User', UserSchema);
 export default UserModel;
