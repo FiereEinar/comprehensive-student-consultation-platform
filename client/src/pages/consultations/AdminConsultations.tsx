@@ -67,24 +67,22 @@ export default function AdminConsultations() {
     <div 
       style={{
         display: 'flex', 
-        minHeight: '100vh', 
-        width: '100vw',  // Keeping this as is, per your instruction not to increase width
+        // minHeight: '100vh'
       }}
     >
-      {/* First half: RadialBarChart and PieChart */}
       <div 
         style={{
           flex: 1,  // Equal split, no changes
           padding: '20px', 
-          overflow: 'auto', 
-          borderRight: '1px solid #ccc',
+          overflow: 'auto'
+
         }}
       >
         <Header>Admin Consultations</Header>
         <h2>First Half: Graphs Overview</h2>  {/* Renamed for clarity */}
         
         {/* RadialBarChart */}
-        <ResponsiveContainer width="100%" height={250}>
+        <ResponsiveContainer width="100%" height={350}>
           <RadialBarChart 
             innerRadius={20} 
             outerRadius={140} 
@@ -111,7 +109,7 @@ export default function AdminConsultations() {
         {/* PieChart */}
         <div style={{ marginTop: '20px' }}>  {/* Added margin for spacing */}
           <h3>Percentage of Total Generated Consultations</h3>
-          <ResponsiveContainer width="100%" height={150}>
+          <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <>
                 <Pie
@@ -122,7 +120,7 @@ export default function AdminConsultations() {
                   cy="50%"
                   outerRadius={80}
                   fill="#8884d8"
-                  label
+              
                 >
                   {pieChartData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -140,36 +138,27 @@ export default function AdminConsultations() {
       <div 
         style={{
           flex: 1,  // Equal split, no changes
-          padding: '20px', 
-          overflow: 'auto', 
+           
         }}
       >
-        <h2>Second Half: Reports and Form</h2>  {/* Renamed for clarity */}
+        <h2>Reports and Form</h2>  {/* Renamed for clarity */}
+        <div style={{ flex: 1, overflow: 'auto',}}>
+        <h2>Reports Overview</h2>
         
-        {/* BarChart */}
-        <div style={{ marginTop: '20px' }}>
-          <h3>Other Consultation Reports</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={barChartData}>
-              <>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="value">
-                  {barChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Bar>
-              </>
-            </BarChart>
-          </ResponsiveContainer>
+        {/* Static display of generated reports with additional content */}
+        <div>
+          <h3>Generated Reports</h3>
+          <p><strong>Percent of Total Generated Consultations:</strong> 45%</p>
+          <p><strong>Number of Consultations Cancelled:</strong> 15</p>
+          <p><strong>Number of Students Consulted This Year:</strong> 250</p>
+          <p><strong>How Many Marked as Done Consultations:</strong> 50</p>  {/* New report as requested */}
+          <p><strong>Number of Student-Teacher Consultations:</strong> 100</p>  {/* Additional related content */}
+          <p><strong>Total Consultation Transactions:</strong> 150</p>  {/* Additional related content */}
         </div>
         
-        {/* ConsultationFormAdmin */}
-        <div style={{ marginTop: '40px' }}>
-          <ConsultationFormAdmin />
-        </div>
+        {/* Include ConsultationFormAdmin component */}
+        <ConsultationFormAdmin />  {/* Renders the form with modal content as per your file */}
+      </div>
       </div>
     </div>
   );
