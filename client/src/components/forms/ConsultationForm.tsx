@@ -38,10 +38,12 @@ import axiosInstance from '@/api/axios';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import InstructorAvailabilities from '../InstructorAvailabilities';
+import { useUserStore } from '@/stores/user';
 
 export type ConsultationFormValues = z.infer<typeof createConsultationSchema>;
 
 export default function ConsultationForm() {
+	const { user } = useUserStore((state) => state);
 	const [selectedInstructor, setSelectedInstructor] = useState<string>('');
 	const { control, handleSubmit } = useForm<ConsultationFormValues>({
 		resolver: zodResolver(createConsultationSchema),
@@ -60,10 +62,9 @@ export default function ConsultationForm() {
 
 	const onSubmit = async (formData: ConsultationFormValues) => {
 		try {
-			// temp
 			const { data } = await axiosInstance.post('/consultation', {
 				...formData,
-				student: '68e9d2e0a4aee4c61f7d2de5',
+				student: user?._id,
 			});
 
 			toast.success(data.message);
