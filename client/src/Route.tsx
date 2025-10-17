@@ -1,4 +1,8 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import {
+	createBrowserRouter,
+	Navigate,
+	RouterProvider,
+} from 'react-router-dom';
 import App from './App';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -9,13 +13,22 @@ import StudentConsultations from './pages/consultations/StudentConsultations';
 import InstructorDashbaord from './pages/dashboards/InstructorDashboard';
 import Settings from './pages/Settings';
 import InstructorConsultations from './pages/consultations/InstructorConsultations';
+import ProtectedRoute from './components/ProtectedRoute';
 
 export default function Route() {
 	const route = createBrowserRouter([
 		{
 			path: '/',
-			element: <App />,
+			element: (
+				<ProtectedRoute>
+					<App />
+				</ProtectedRoute>
+			),
 			children: [
+				{
+					index: true,
+					element: <Navigate to='/student/consultation' />,
+				},
 				{
 					path: '/admin/dashboard',
 					element: <AdminDashboard />,

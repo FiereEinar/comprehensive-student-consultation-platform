@@ -12,32 +12,32 @@ export type SidebarNavLink = {
 
 const sidebarLinks: SidebarNavLink[] = [
 	{
-		name: '[A]Dashboard',
+		name: '[A] Dashboard',
 		href: '/admin/dashboard',
 		icon: <LayoutDashboard />,
 	},
 	{
-		name: '[A]Consultations',
+		name: '[A] Consultations',
 		href: '/admin/consultation',
 		icon: <Clock />,
 	},
 	{
-		name: '[S]Dashboard',
+		name: '[S] Dashboard',
 		href: '/student/dashboard',
 		icon: <LayoutDashboard />,
 	},
 	{
-		name: '[S]Consultations',
+		name: '[S] Consultations',
 		href: '/student/consultation',
 		icon: <Clock />,
 	},
 	{
-		name: '[I]Dashboard',
+		name: '[I] Dashboard',
 		href: '/instructor/dashboard',
 		icon: <LayoutDashboard />,
 	},
 	{
-		name: '[I]Consultations',
+		name: '[I] Consultations',
 		href: '/instructor/consultation',
 		icon: <Clock />,
 	},

@@ -36,10 +36,13 @@ import {
 import { DatePicker } from '../DatePicker';
 import axiosInstance from '@/api/axios';
 import { toast } from 'sonner';
+import { useState } from 'react';
+import InstructorAvailabilities from '../InstructorAvailabilities';
 
 export type ConsultationFormValues = z.infer<typeof createConsultationSchema>;
 
 export default function ConsultationForm() {
+	const [selectedInstructor, setSelectedInstructor] = useState<string>('');
 	const { control, handleSubmit } = useForm<ConsultationFormValues>({
 		resolver: zodResolver(createConsultationSchema),
 		defaultValues: {
@@ -99,7 +102,6 @@ export default function ConsultationForm() {
 									id={field.name}
 									aria-invalid={fieldState.invalid}
 									placeholder='Grade consultation'
-									autoComplete='off'
 								/>
 								{fieldState.invalid && (
 									<FieldError errors={[fieldState.error]} />
@@ -145,9 +147,11 @@ export default function ConsultationForm() {
 						control={control}
 						render={({ field, fieldState }) => (
 							<Select
-								onValueChange={field.onChange}
+								onValueChange={(value) => {
+									setSelectedInstructor(value);
+									field.onChange(value);
+								}}
 								value={field.value}
-								defaultValue={field.value}
 							>
 								<SelectTrigger
 									className='w-full cursor-pointer'
@@ -177,6 +181,12 @@ export default function ConsultationForm() {
 						)}
 					/>
 					{/* END */}
+
+					{selectedInstructor && selectedInstructor !== '' && (
+						<div className='text-xs text-muted-foreground px-2'>
+							<InstructorAvailabilities instructorID={selectedInstructor} />
+						</div>
+					)}
 
 					{/* DATE */}
 					<Controller

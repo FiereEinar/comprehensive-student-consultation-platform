@@ -1,5 +1,14 @@
 import z from 'zod';
-import { AVAILABLE_DAYS } from '../utils/date';
+
+export const AVAILABLE_DAYS = [
+	'Monday',
+	'Tuesday',
+	'Wednesday',
+	'Thursday',
+	'Friday',
+	'Saturday',
+	'Sunday',
+];
 
 export const createAvilabilitySchema = z
 	.object({

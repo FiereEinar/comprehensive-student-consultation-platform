@@ -115,11 +115,11 @@ cd ../client
 npm install
 ```
 
-<!-- #### Create a `.env` file in the `client/` directory:
+#### Create a `.env` file in the `client/` directory:
 
 ```env
 VITE_API_URL=http://localhost:5000
-``` -->
+```
 
 #### Run in development mode:
 

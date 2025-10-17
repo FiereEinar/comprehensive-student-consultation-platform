@@ -16,3 +16,13 @@ export const getStartAndEndofDay = (date: Date) => {
 };
 
 export type Days = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday';
+
+export const AVAILABLE_DAYS = [
+	'Monday',
+	'Tuesday',
+	'Wednesday',
+	'Thursday',
+	'Friday',
+	'Saturday',
+	'Sunday',
+];
