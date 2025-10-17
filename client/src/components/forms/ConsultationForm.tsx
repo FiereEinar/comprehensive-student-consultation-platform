@@ -1,4 +1,4 @@
-import { fetchAvailabilities, fetchInstructors } from '@/api/instructor';
+import { fetchInstructors } from '@/api/instructor';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -37,6 +37,7 @@ import { DatePicker } from '../DatePicker';
 import axiosInstance from '@/api/axios';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import InstructorAvailabilities from '../InstructorAvailabilities';
 
 export type ConsultationFormValues = z.infer<typeof createConsultationSchema>;
 
@@ -55,14 +56,6 @@ export default function ConsultationForm() {
 	const { data: instructors } = useQuery({
 		queryKey: [QUERY_KEYS.INSTRUCTORS],
 		queryFn: fetchInstructors,
-	});
-
-	const {
-		data: selectedInstructorAvailabilities,
-		isLoading: loadingAvailability,
-	} = useQuery({
-		queryKey: [QUERY_KEYS.INSTRUCTORS_AVAILABILITIES, selectedInstructor],
-		queryFn: () => fetchAvailabilities(selectedInstructor),
 	});
 
 	const onSubmit = async (formData: ConsultationFormValues) => {
@@ -189,30 +182,11 @@ export default function ConsultationForm() {
 					/>
 					{/* END */}
 
-					{loadingAvailability ? (
-						<p className='text-sm text-muted-foreground'>
-							Loading availability...
-						</p>
-					) : selectedInstructorAvailabilities &&
-					  selectedInstructorAvailabilities.length > 0 ? (
-						<div className='text-sm space-y-1 text-muted-foreground'>
-							<p className='font-medium'>Available Times:</p>
-							<ul className='list-disc pl-5'>
-								{selectedInstructorAvailabilities.map(
-									(slot: any, i: number) => (
-										<li key={i}>
-											{slot.day}: {slot.startTime} - {slot.endTime} (
-											{slot.slots} slots)
-										</li>
-									)
-								)}
-							</ul>
+					{selectedInstructor && selectedInstructor !== '' && (
+						<div className='text-xs text-muted-foreground px-2'>
+							<InstructorAvailabilities instructorID={selectedInstructor} />
 						</div>
-					) : selectedInstructor ? (
-						<p className='text-sm text-red-500'>
-							No availability set for this instructor.
-						</p>
-					) : null}
+					)}
 
 					{/* DATE */}
 					<Controller
