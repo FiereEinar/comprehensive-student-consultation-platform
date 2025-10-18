@@ -19,7 +19,7 @@ export const fetchAvailabilities = async (
 		if (!instructorID) return [];
 
 		const { data } = await axiosInstance.get(
-			`/availability/instructor/${instructorID}`
+			`/user/${instructorID}/availability`
 		);
 
 		return data.data;

@@ -47,7 +47,7 @@ export default function UpdateAvailability({ user }: UpdateAvailabilityProps) {
 			}
 
 			const { data } = await axiosInstance.put(
-				`/availability/instructor/${user._id}`,
+				`/user/${user._id}/availability`,
 				formData
 			);
 
