@@ -39,6 +39,7 @@ import { toast } from 'sonner';
 import { useState } from 'react';
 import InstructorAvailabilities from '../InstructorAvailabilities';
 import { useUserStore } from '@/stores/user';
+import _ from 'lodash';
 
 export type ConsultationFormValues = z.infer<typeof createConsultationSchema>;
 
@@ -170,7 +171,7 @@ export default function ConsultationForm() {
 													value={instructor._id}
 													className='cursor-pointer'
 												>
-													{instructor.name}
+													{_.startCase(instructor.name)}
 												</SelectItem>
 											))}
 									</SelectGroup>

@@ -13,7 +13,7 @@ function App() {
 
 			<div className='h-screen flex flex-col w-full'>
 				<TopBar />
-				<div className='flex flex-col p-5 overflow-y-scroll'>
+				<div className='flex flex-col p-8 overflow-y-auto'>
 					<Outlet />
 				</div>
 			</div>
