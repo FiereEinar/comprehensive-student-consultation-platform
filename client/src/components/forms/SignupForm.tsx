@@ -18,6 +18,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import axiosInstance from '@/api/axios';
 import { toast } from 'sonner';
 
+import googleIcon from '../../assets/images/google_icon.png'; // <-- static import!
+
 export type SignupFormValues = z.infer<typeof signupSchema>;
 
 export default function SignupForm() {
@@ -150,6 +152,7 @@ export default function SignupForm() {
           Signup
         </Button>
         <Button variant="outline" className="form-button-google w-full">
+          <img src={googleIcon} alt="Google" className="form-google-icon" />
           Signup with Google
         </Button>
         <div className="form-alt-action mt-2 text-center text-sm">
