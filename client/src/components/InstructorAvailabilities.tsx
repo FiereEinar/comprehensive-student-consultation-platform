@@ -1,38 +1,38 @@
 import { fetchAvailabilities } from '@/api/instructor';
 import { QUERY_KEYS } from '@/constants';
 import { formatTime } from '@/lib/utils';
-import type { User } from '@/types/user';
 import { useQuery } from '@tanstack/react-query';
 
 type InstructorAvailabilitiesProps = {
-	instructor: User;
+	instructorID: string;
 };
 
 export default function InstructorAvailabilities({
-	instructor,
+	instructorID,
 }: InstructorAvailabilitiesProps) {
 	const {
 		data: availabilities,
 		isLoading,
 		error,
 	} = useQuery({
-		queryKey: [QUERY_KEYS.INSTRUCTORS_AVAILABILITIES, instructor._id],
-		queryFn: () => fetchAvailabilities(instructor._id),
+		queryKey: [QUERY_KEYS.INSTRUCTORS_AVAILABILITIES, instructorID],
+		queryFn: () => fetchAvailabilities(instructorID),
 	});
 
 	return (
-		<div className='bg-white rounded-2xl border w-[400px] p-5 space-y-3'>
-			{isLoading && <p>Loading availabilities...</p>}
+		<div>
+			{/* <div className='bg-white rounded-2xl border w-[400px] p-5 space-y-3'> */}
+			{isLoading && <p>Loading availability...</p>}
 			{error && <p>Error loading availabilities</p>}
-			{availabilities?.map((availability) => (
-				<div key={availability._id} className='p-2'>
-					<p>{availability.day}</p>
-					<p>
-						{formatTime(availability.startTime)} -{' '}
-						{formatTime(availability.endTime)}
-					</p>
-				</div>
-			))}
+			<p>Available Times:</p>
+			<ul className='list-disc pl-5'>
+				{availabilities?.map((availability) => (
+					<li key={availability._id}>
+						{availability.day}: {formatTime(availability.startTime)} -{' '}
+						{formatTime(availability.endTime)} ({availability.slots} slots)
+					</li>
+				))}
+			</ul>
 		</div>
 	);
 }

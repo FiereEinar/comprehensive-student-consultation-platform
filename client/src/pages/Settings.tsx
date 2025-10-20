@@ -12,7 +12,9 @@ export default function Settings() {
 			{user?.role === 'instructor' && (
 				<div className='flex gap-5'>
 					<UpdateAvailability user={user} />
-					<InstructorAvailabilities instructor={user} />
+					<div className='bg-white rounded-2xl border w-[400px] p-5 space-y-3'>
+						<InstructorAvailabilities instructorID={user._id} />
+					</div>
 				</div>
 			)}
 		</section>

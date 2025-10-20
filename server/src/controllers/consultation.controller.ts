@@ -7,6 +7,7 @@ import appAssert from '../errors/app-assert';
 import { BAD_REQUEST } from '../constants/http';
 import AvailabilityModel from '../models/availability.model';
 import { getStartAndEndofDay } from '../utils/date';
+import { DEFAULT_LIMIT } from '../constants';
 
 /**
  * @route GET /api/v1/consultation - get all recent consultations
@@ -76,4 +77,30 @@ export const createConsultation = asynchandler(async (req, res) => {
 	res.json(
 		new CustomResponse(true, consultation, 'Consultation request created')
 	);
+});
+
+/**
+ * @route GET /api/v1/user/:userID/consultation
+ * query: status = 'pending' | 'accepted' | 'declined' | 'completed'
+ * limit: number
+ */
+export const getUserConsultations = asynchandler(async (req, res) => {
+	const { userID } = req.params;
+	const { status, limit } = req.query;
+
+	const filter: any = {
+		$or: [{ student: userID }, { instructor: userID }],
+	};
+
+	if (status) {
+		filter.status = status;
+	}
+
+	const consultations = await ConsultationModel.find(filter)
+		.populate('student')
+		.populate('instructor')
+		.limit(Number(limit) ?? DEFAULT_LIMIT)
+		.exec();
+
+	res.json(new CustomResponse(true, consultations, 'Consultations fetched'));
 });

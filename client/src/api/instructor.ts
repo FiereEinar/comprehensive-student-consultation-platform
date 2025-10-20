@@ -3,7 +3,7 @@ import axiosInstance from './axios';
 
 export const fetchInstructors = async (): Promise<User[]> => {
 	try {
-		const { data } = await axiosInstance.get('/instructor');
+		const { data } = await axiosInstance.get('/user?role=instructor');
 
 		return data.data;
 	} catch (error: any) {
@@ -19,7 +19,7 @@ export const fetchAvailabilities = async (
 		if (!instructorID) return [];
 
 		const { data } = await axiosInstance.get(
-			`/availability/instructor/${instructorID}`
+			`/user/${instructorID}/availability`
 		);
 
 		return data.data;

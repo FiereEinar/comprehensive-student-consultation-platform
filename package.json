@@ -1,0 +1,25 @@
+{
+	"name": "cscp",
+	"version": "1.0.0",
+	"description": "A full-stack **MERN + TypeScript** application designed to streamline and manage student consultation processes efficiently. This platform provides features for scheduling, managing, and tracking consultations between students and faculty members.",
+	"main": "index.js",
+	"scripts": {
+		"dev-all": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\" \"mongod --dbpath ./data/db\"",
+		"stop-all": "taskkill /F /IM node.exe /IM mongod.exe"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/FiereEinar/comprehensive-student-consultation-platform.git"
+	},
+	"keywords": [],
+	"author": "Nick Xylan Melloria",
+	"license": "ISC",
+	"type": "commonjs",
+	"bugs": {
+		"url": "https://github.com/FiereEinar/comprehensive-student-consultation-platform/issues"
+	},
+	"homepage": "https://github.com/FiereEinar/comprehensive-student-consultation-platform#readme",
+	"devDependencies": {
+		"concurrently": "^9.2.1"
+	}
+}

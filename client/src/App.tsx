@@ -11,9 +11,9 @@ function App() {
 		<main className='flex min-h-screen bg-[#FAF2F7]'>
 			<Sidebar />
 
-			<div className='min-h-screen flex flex-col w-full'>
+			<div className='h-screen flex flex-col w-full'>
 				<TopBar />
-				<div className='flex flex-col p-5'>
+				<div className='flex flex-col p-8 overflow-y-auto'>
 					<Outlet />
 				</div>
 			</div>

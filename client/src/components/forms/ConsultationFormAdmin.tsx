@@ -36,16 +36,10 @@ import {
 import { DatePicker } from '../DatePicker';
 import axiosInstance from '@/api/axios';
 import { toast } from 'sonner';
-import { useState } from 'react';
-import InstructorAvailabilities from '../InstructorAvailabilities';
-import { useUserStore } from '@/stores/user';
-import _ from 'lodash';
 
 export type ConsultationFormValues = z.infer<typeof createConsultationSchema>;
 
 export default function ConsultationForm() {
-	const { user } = useUserStore((state) => state);
-	const [selectedInstructor, setSelectedInstructor] = useState<string>('');
 	const { control, handleSubmit } = useForm<ConsultationFormValues>({
 		resolver: zodResolver(createConsultationSchema),
 		defaultValues: {
@@ -63,9 +57,10 @@ export default function ConsultationForm() {
 
 	const onSubmit = async (formData: ConsultationFormValues) => {
 		try {
+			// temp
 			const { data } = await axiosInstance.post('/consultation', {
 				...formData,
-				student: user?._id,
+				student: '68e9d2e0a4aee4c61f7d2de5',
 			});
 
 			toast.success(data.message);
@@ -79,7 +74,7 @@ export default function ConsultationForm() {
 		<Dialog>
 			<DialogTrigger asChild>
 				<Button variant='default' className='cursor-pointer'>
-					Add Consultation
+					Generate Reports
 				</Button>
 			</DialogTrigger>
 			<DialogContent className='sm:max-w-[425px]'>
@@ -104,6 +99,7 @@ export default function ConsultationForm() {
 									id={field.name}
 									aria-invalid={fieldState.invalid}
 									placeholder='Grade consultation'
+									autoComplete='off'
 								/>
 								{fieldState.invalid && (
 									<FieldError errors={[fieldState.error]} />
@@ -149,11 +145,9 @@ export default function ConsultationForm() {
 						control={control}
 						render={({ field, fieldState }) => (
 							<Select
-								onValueChange={(value) => {
-									setSelectedInstructor(value);
-									field.onChange(value);
-								}}
+								onValueChange={field.onChange}
 								value={field.value}
+								defaultValue={field.value}
 							>
 								<SelectTrigger
 									className='w-full cursor-pointer'
@@ -171,7 +165,7 @@ export default function ConsultationForm() {
 													value={instructor._id}
 													className='cursor-pointer'
 												>
-													{_.startCase(instructor.name)}
+													{instructor.name}
 												</SelectItem>
 											))}
 									</SelectGroup>
@@ -183,12 +177,6 @@ export default function ConsultationForm() {
 						)}
 					/>
 					{/* END */}
-
-					{selectedInstructor && selectedInstructor !== '' && (
-						<div className='text-xs text-muted-foreground px-2'>
-							<InstructorAvailabilities instructorID={selectedInstructor} />
-						</div>
-					)}
 
 					{/* DATE */}
 					<Controller
