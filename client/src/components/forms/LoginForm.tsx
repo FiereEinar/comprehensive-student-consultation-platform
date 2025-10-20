@@ -5,135 +5,155 @@ import { Controller, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import type z from 'zod';
+// UI components below
 import {
-	Card,
-	CardAction,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
 } from '../ui/card';
 import { Button } from '../ui/button';
 import { Field, FieldError, FieldLabel } from '../ui/field';
 import { Input } from '../ui/input';
 
+import googleIcon from '../../assets/images/google_icon.png'; // <-- static import!
+
 export type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
-	const navigate = useNavigate();
-	const { control, handleSubmit } = useForm<LoginFormValues>({
-		resolver: zodResolver(loginSchema),
-		defaultValues: {
-			email: '',
-			password: '',
-		},
-	});
+  const navigate = useNavigate();
+  const { control, handleSubmit } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      // institutionalID: '', // keep in comments for future
+    },
+  });
 
-	const onSubmit = async (formData: LoginFormValues) => {
-		try {
-			const { data } = await axiosInstance.post('/auth/login', formData);
+  const onSubmit = async (formData: LoginFormValues) => {
+    try {
+      const { data } = await axiosInstance.post('/auth/login', formData);
+      toast.success(data.message);
+      navigate('/');
+    } catch (error: any) {
+      console.error('Failed to login', error);
+      toast.error(error.message ?? 'Failed to login');
+    }
+  };
 
-			toast.success(data.message);
-			navigate('/');
-		} catch (error: any) {
-			console.error('Failed to login', error);
-			toast.error(error.message ?? 'Failed to login');
-		}
-	};
+  return (
+    <Card className="form-card w-full max-w-sm">
+      <CardHeader>
+        <CardTitle className="form-title">Login to your account</CardTitle>
+        <CardDescription className="form-description">
+          Fill up the form below to login
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form
+          id="login-form"
+          onSubmit={handleSubmit(onSubmit)}
+          className="form-fields space-y-4"
+        >
+          {/* keep when we change from email to institutional ID */}
+          {/* INSTITUTIONAL ID */}
+          {/* <Controller
+              name='institutionalID'
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Institutional ID</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    aria-invalid={fieldState.invalid}
+                    placeholder='Enter your ID here'
+                    autoComplete='off'
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            /> */}
 
-	return (
-		// {/* to remove styles of card, add this class to the card "border-none shadow-none bg-transparent" */ }
-		<Card className='w-full max-w-sm'>
-			<CardHeader>
-				<CardTitle>Login to your account</CardTitle>
-				<CardDescription>Fill up the form below to login</CardDescription>
-				<CardAction>
-					<Button variant='link' onClick={() => navigate('/signup')}>
-						Signup
-					</Button>
-				</CardAction>
-			</CardHeader>
-			<CardContent>
-				<form
-					id='login-form'
-					onSubmit={handleSubmit(onSubmit)}
-					className='space-y-4'
-				>
-					{/* keep when we change from email to institutional ID */}
-					{/* INSTITUTIONAL ID */}
-					{/* <Controller
-							name='institutionalID'
-							control={control}
-							render={({ field, fieldState }) => (
-								<Field data-invalid={fieldState.invalid}>
-									<FieldLabel htmlFor={field.name}>Institutional ID</FieldLabel>
-									<Input
-										{...field}
-										id={field.name}
-										aria-invalid={fieldState.invalid}
-										placeholder='Enter your ID here'
-										autoComplete='off'
-									/>
-									{fieldState.invalid && (
-										<FieldError errors={[fieldState.error]} />
-									)}
-								</Field>
-							)}
-						/> */}
+          {/* EMAIL */}
+          <Controller
+            name='email'
+            control={control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor={field.name}>Username</FieldLabel>
+                <Input
+                  {...field}
+                  id={field.name}
+                  aria-invalid={fieldState.invalid}
+                  type="email"
+                  placeholder="juan@gmail.com"
+                  autoComplete="username"
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
 
-					{/* EMAIL */}
-					<Controller
-						name='email'
-						control={control}
-						render={({ field, fieldState }) => (
-							<Field data-invalid={fieldState.invalid}>
-								<FieldLabel htmlFor={field.name}>Email</FieldLabel>
-								<Input
-									{...field}
-									id={field.name}
-									aria-invalid={fieldState.invalid}
-									type='email'
-									placeholder='juan@gmail.com'
-								/>
-								{fieldState.invalid && (
-									<FieldError errors={[fieldState.error]} />
-								)}
-							</Field>
-						)}
-					/>
+          {/* PASSWORD */}
+          <Controller
+            name='password'
+            control={control}
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+                <Input
+                  {...field}
+                  id={field.name}
+                  aria-invalid={fieldState.invalid}
+                  type="password"
+                  placeholder="********"
+                  autoComplete="current-password"
+                />
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
 
-					{/* PASSWORD */}
-					<Controller
-						name='password'
-						control={control}
-						render={({ field, fieldState }) => (
-							<Field data-invalid={fieldState.invalid}>
-								<FieldLabel htmlFor={field.name}>Password</FieldLabel>
-								<Input
-									{...field}
-									id={field.name}
-									aria-invalid={fieldState.invalid}
-									type='password'
-									placeholder='********'
-									autoComplete='off'
-								/>
-								{fieldState.invalid && (
-									<FieldError errors={[fieldState.error]} />
-								)}
-							</Field>
-						)}
-					/>
-				</form>
-			</CardContent>
-			<CardFooter className='flex-col gap-2'>
-				<Button type='submit' form='login-form' className='w-full'>
-					Login
-				</Button>
-				<Button variant='outline' className='w-full'>
-					Login with Google
-				</Button>
-			</CardFooter>
-		</Card>
-	);
+          {/* Extra options */}
+          <div className="form-extra flex items-center justify-between text-xs">
+            <label className="form-remember">
+              <input type="checkbox" className="form-checkbox mr-2" />
+              Remember me
+            </label>
+            <a href="/forgot" className="form-link text-purple-500 underline">Forgot password?</a>
+          </div>
+
+          <Button type="submit" form="login-form" className="form-button-primary w-full">
+            Login
+          </Button>
+        </form>
+      </CardContent>
+      <CardFooter className="flex-col gap-2">
+        <div className="form-alt-action mt-3 text-center text-sm">
+          Don't have an account?{' '}
+          <span
+            className="form-link text-purple-500 underline cursor-pointer"
+            onClick={() => navigate('/signup')}
+          >
+            Create account
+          </span>
+        </div>
+        <Button variant="outline" className="form-button-google w-full mt-2 flex items-center justify-center gap-2">
+          <img src={googleIcon} alt="Google" className="form-google-icon" />
+          Login with Google
+        </Button>
+      </CardFooter>
+    </Card>
+  );
 }
