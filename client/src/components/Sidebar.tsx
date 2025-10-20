@@ -41,6 +41,11 @@ const sidebarLinks: SidebarNavLink[] = [
 		href: '/instructor/consultation',
 		icon: <Clock />,
 	},
+	{
+		name: '[I] Consultations2',
+		href: '/instructor/consultation2',
+		icon: <Clock />,
+	},
 ];
 
 export default function Sidebar() {

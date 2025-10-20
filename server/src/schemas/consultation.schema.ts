@@ -7,3 +7,8 @@ export const createConsultationSchema = z.object({
 	student: z.string().min(1, 'Student is required'),
 	instructor: z.string().min(1, 'Instructor is required'),
 });
+
+export const consutationStatusSchema = z.enum(
+	['pending', 'accepted', 'declined', 'completed'],
+	'Status is required'
+);
