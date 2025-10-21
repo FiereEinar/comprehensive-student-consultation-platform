@@ -57,7 +57,7 @@ export default function ConsultationCard({
 						</ItemContent>
 					</div>
 					<div className='text-right h-fit text-sm flex flex-col items-end'>
-						<p className='bg-green-500 w-fit px-2 rounded-md'>
+						<p className='w-fit px-2 rounded-md'>
 							{startCase(consultation.status)}
 						</p>
 						<p>
