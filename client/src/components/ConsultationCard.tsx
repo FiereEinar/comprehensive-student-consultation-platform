@@ -47,7 +47,7 @@ export default function ConsultationCard({
 				<div className='flex items-center justify-between w-full'>
 					<div className='flex gap-3 items-center'>
 						<UserRound className='w-8 h-8' />
-						<ItemContent>
+						<ItemContent className='gap-0'>
 							<ItemTitle>{startCase(consultation.title)}</ItemTitle>
 							<ItemDescription>
 								{info === 'student'
@@ -56,9 +56,16 @@ export default function ConsultationCard({
 							</ItemDescription>
 						</ItemContent>
 					</div>
-					<div className='text-right h-fit text-sm'>
-						<p>{format(new Date(consultation.scheduledAt), 'hh:mm a')}</p>
-						<p>{format(new Date(consultation.scheduledAt), 'MM/dd/yyyy')}</p>
+					<div className='text-right h-fit text-sm flex flex-col items-end'>
+						<p className='bg-green-500 w-fit px-2 rounded-md'>
+							{startCase(consultation.status)}
+						</p>
+						<p>
+							{format(
+								new Date(consultation.scheduledAt),
+								'MMM dd, yyyy - hh:mm a'
+							)}
+						</p>
 					</div>
 				</div>
 

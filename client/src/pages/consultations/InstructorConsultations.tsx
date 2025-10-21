@@ -40,7 +40,7 @@ export default function InstructorConsultations() {
 					</TabsContent>
 				</Tabs>
 
-				<div className='border-2 p-3 bg-white rounded-2xl w-[30%]'>
+				<div className='border-2 p-5 bg-white rounded-2xl w-[30%]'>
 					<p>Consultation History</p>
 				</div>
 			</div>
