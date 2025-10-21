@@ -19,13 +19,21 @@ import { Field, FieldError, FieldLabel } from '../ui/field';
 import { Input } from '../ui/input';
 import GoogleLoginButton from '../buttons/GoogleLoginButton';
 import { useUserStore } from '@/stores/user';
+import { useState } from 'react';
+import Recaptcha from '../Recaptcha';
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
+	const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 	const { setUser } = useUserStore((state) => state);
 	const navigate = useNavigate();
-	const { control, handleSubmit } = useForm<LoginFormValues>({
+	const {
+		control,
+		handleSubmit,
+		setError,
+		formState: { errors },
+	} = useForm<LoginFormValues>({
 		resolver: zodResolver(loginSchema),
 		defaultValues: {
 			email: '',
@@ -35,6 +43,12 @@ export default function LoginForm() {
 
 	const onSubmit = async (formData: LoginFormValues) => {
 		try {
+			if (!recaptchaToken) {
+				// toast.error('Please complete the reCAPTCHA');
+				setError('root', { message: 'Please complete the reCAPTCHA' });
+				return;
+			}
+
 			const { data } = await axiosInstance.post('/auth/login', formData);
 
 			toast.success(data.message);
@@ -131,9 +145,11 @@ export default function LoginForm() {
 							</Field>
 						)}
 					/>
+					{errors.root && <FieldError errors={[errors.root]} />}
 				</form>
 			</CardContent>
 			<CardFooter className='flex-col gap-2'>
+				<Recaptcha onVerify={setRecaptchaToken} />
 				<Button type='submit' form='login-form' className='w-full'>
 					Login
 				</Button>

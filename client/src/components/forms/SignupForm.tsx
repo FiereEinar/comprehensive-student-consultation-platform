@@ -18,12 +18,20 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import axiosInstance from '@/api/axios';
 import { toast } from 'sonner';
 import GoogleLoginButton from '../buttons/GoogleLoginButton';
+import { useState } from 'react';
+import Recaptcha from '../Recaptcha';
 
 export type SignupFormValues = z.infer<typeof signupSchema>;
 
 export default function SignupForm() {
+	const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 	const navigate = useNavigate();
-	const { control, handleSubmit } = useForm<SignupFormValues>({
+	const {
+		control,
+		handleSubmit,
+		setError,
+		formState: { errors },
+	} = useForm<SignupFormValues>({
 		resolver: zodResolver(signupSchema),
 		defaultValues: {
 			name: '',
@@ -36,6 +44,12 @@ export default function SignupForm() {
 
 	const onSubmit = async (formData: SignupFormValues) => {
 		try {
+			if (!recaptchaToken) {
+				setError('root', { message: 'Please complete the reCAPTCHA' });
+				// toast.error('Please complete the reCAPTCHA');
+				return;
+			}
+
 			const { data } = await axiosInstance.post('/auth/signup', formData);
 
 			toast.success(data.message);
@@ -170,9 +184,11 @@ export default function SignupForm() {
 							</Field>
 						)}
 					/>
+					{errors.root && <FieldError errors={[errors.root]} />}
 				</form>
 			</CardContent>
 			<CardFooter className='flex-col gap-2'>
+				<Recaptcha onVerify={setRecaptchaToken} />
 				<Button type='submit' form='signup-form' className='w-full'>
 					Signup
 				</Button>
