@@ -14,6 +14,7 @@ import {
 	REFRESH_TOKEN_COOKIE_NAME,
 	BCRYPT_SALT,
 	JWT_REFRESH_SECRET_KEY,
+	GOOGLE_CLIENT_ID,
 } from '../constants/env';
 import SessionModel from '../models/session.model';
 import UserModel from '../models/user.model';
@@ -36,6 +37,7 @@ import {
 import CustomResponse from '../utils/response';
 import { AppErrorCodes } from '../constants';
 import { verifyRecaptcha } from '../utils/recaptcha';
+import { googleClient } from '../utils/google';
 
 /**
  * @route POST /api/v1/auth/login - Login
@@ -246,4 +248,55 @@ export const recaptchaVerify = asyncHandler(async (req, res) => {
 	appAssert(isRecaptchaValid, BAD_REQUEST, 'Invalid recaptcha token');
 
 	res.status(OK).json(new CustomResponse(true, null, 'Recaptcha verified'));
+});
+
+/**
+ * @route POST /api/v1/auth/google
+ */
+export const googleLoginHandler = asyncHandler(async (req, res) => {
+	const { token } = req.body;
+	appAssert(token, UNAUTHORIZED, 'No token found');
+
+	// Verify Google token
+	const ticket = await googleClient.verifyIdToken({
+		idToken: token,
+		audience: GOOGLE_CLIENT_ID,
+	});
+
+	const payload = ticket.getPayload();
+	appAssert(payload, UNAUTHORIZED, 'Invalid Google token');
+
+	const { email, name, sub: googleID } = payload;
+
+	// Check if user exists
+	let user = await UserModel.findOne({ email });
+	if (!user) {
+		const randomPassword = await bcrypt.hash(crypto.randomUUID(), 10);
+		user = await UserModel.create({
+			name,
+			email,
+			googleID,
+			institutionalID: '1234567890',
+			password: randomPassword,
+		});
+	}
+
+	// Create session
+	const { ip, userAgent } = getUserRequestInfo(req);
+	const userID = user._id as string;
+
+	const session = await SessionModel.create({
+		userID,
+		ip,
+		userAgent,
+		expiresAt: thirtyDaysFromNow(),
+	});
+
+	// Create JWT tokens
+	const sessionID = session._id as string;
+	const accessToken = signToken({ sessionID, userID });
+	const refreshToken = signToken({ sessionID }, refreshTokenSignOptions);
+	setAuthCookie({ res, accessToken, refreshToken });
+
+	res.json({ accessToken, user });
 });

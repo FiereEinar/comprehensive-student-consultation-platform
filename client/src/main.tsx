@@ -6,6 +6,7 @@ import Route from './Route.tsx';
 import { ThemeProvider } from './components/providers/ThemeProvider.tsx';
 import { Toaster } from './components/ui/sonner.tsx';
 import { SidebarProvider } from './components/ui/sidebar.tsx';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 export const queryClient = new QueryClient();
 const rootElement = document.getElementById('root') as HTMLElement;
@@ -15,13 +16,15 @@ let root = (rootElement as any)._reactRoot ?? createRoot(rootElement);
 
 root.render(
 	<StrictMode>
-		<ThemeProvider defaultTheme='light' storageKey='vite-ui-theme'>
-			<QueryClientProvider client={queryClient}>
-				<SidebarProvider>
-					<Route />
-					<Toaster />
-				</SidebarProvider>
-			</QueryClientProvider>
-		</ThemeProvider>
+		<GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+			<ThemeProvider defaultTheme='light' storageKey='vite-ui-theme'>
+				<QueryClientProvider client={queryClient}>
+					<SidebarProvider>
+						<Route />
+						<Toaster />
+					</SidebarProvider>
+				</QueryClientProvider>
+			</ThemeProvider>
+		</GoogleOAuthProvider>
 	</StrictMode>
 );

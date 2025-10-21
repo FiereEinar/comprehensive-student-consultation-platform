@@ -17,10 +17,13 @@ import {
 import { Button } from '../ui/button';
 import { Field, FieldError, FieldLabel } from '../ui/field';
 import { Input } from '../ui/input';
+import GoogleLoginButton from '../buttons/GoogleLoginButton';
+import { useUserStore } from '@/stores/user';
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
+	const { setUser } = useUserStore((state) => state);
 	const navigate = useNavigate();
 	const { control, handleSubmit } = useForm<LoginFormValues>({
 		resolver: zodResolver(loginSchema),
@@ -35,7 +38,11 @@ export default function LoginForm() {
 			const { data } = await axiosInstance.post('/auth/login', formData);
 
 			toast.success(data.message);
-			navigate('/');
+
+			setUser(data.data);
+			data.data.role === 'instructor'
+				? navigate('/instructor/consultation')
+				: navigate('/student/consultation');
 		} catch (error: any) {
 			console.error('Failed to login', error);
 			toast.error(error.message ?? 'Failed to login');
@@ -130,9 +137,10 @@ export default function LoginForm() {
 				<Button type='submit' form='login-form' className='w-full'>
 					Login
 				</Button>
-				<Button variant='outline' className='w-full'>
+				{/* <Button variant='outline' className='w-full'>
 					Login with Google
-				</Button>
+				</Button> */}
+				<GoogleLoginButton />
 			</CardFooter>
 		</Card>
 	);

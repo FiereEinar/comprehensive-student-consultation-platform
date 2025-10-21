@@ -9,6 +9,7 @@ export interface IUser extends mongoose.Document {
 	institutionalID: string;
 	email: string;
 	password: string;
+	googleID: string;
 	role: UserTypes;
 	omitPassword: () => Omit<IUser, 'password'>;
 }
@@ -18,6 +19,7 @@ const UserSchema = new Schema<IUser>(
 		name: { type: String, minlength: 1, maxlength: 50, required: true },
 		email: { type: String, required: false },
 		password: { type: String, required: true },
+		googleID: { type: String },
 		institutionalID: {
 			type: String,
 			minlength: 1,
