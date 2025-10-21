@@ -1,15 +1,17 @@
 import { Outlet, useNavigate } from 'react-router-dom';
-import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
 import { setNavigate } from './lib/navigate';
+import { AppSidebar } from './components/AppSidebar';
+import Sidebar from './components/Sidebar';
 
 function App() {
 	const navigate = useNavigate();
 	setNavigate(navigate);
 
 	return (
-		<main className='flex min-h-screen bg-[#FAF2F7]'>
+		<main className='flex w-full min-h-screen bg-[#FAF2F7]'>
 			<Sidebar />
+			{/* <AppSidebar /> */}
 
 			<div className='h-screen flex flex-col w-full'>
 				<TopBar />
