@@ -20,6 +20,7 @@ import { toast } from 'sonner';
 import GoogleLoginButton from '../buttons/GoogleLoginButton';
 import { useState } from 'react';
 import Recaptcha from '../Recaptcha';
+import googleIcon from '../../assets/images/google_icon.png';
 
 export type SignupFormValues = z.infer<typeof signupSchema>;
 
@@ -78,7 +79,7 @@ export default function SignupForm() {
 				<form
 					id='signup-form'
 					onSubmit={handleSubmit(onSubmit)}
-					className='space-y-4'
+					className='form-fields space-y-4'
 				>
 					{/* INSTITUTIONAL ID */}
 					<Controller
@@ -195,7 +196,20 @@ export default function SignupForm() {
 				{/* <Button variant='outline' className='w-full'>
 					Signup with Google
 				</Button> */}
+				<Button variant='outline' className='form-button-google w-full'>
+					<img src={googleIcon} alt='Google' className='form-google-icon' />
+					Signup with Google
+				</Button>
 				<GoogleLoginButton />
+				<div className='form-alt-action mt-2 text-center text-sm'>
+					Already have an account?{' '}
+					<span
+						className='form-link text-purple-500 underline cursor-pointer'
+						onClick={() => navigate('/login')}
+					>
+						Sign in
+					</span>
+				</div>
 			</CardFooter>
 		</Card>
 	);

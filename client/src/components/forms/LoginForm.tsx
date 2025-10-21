@@ -7,7 +7,6 @@ import { toast } from 'sonner';
 import type z from 'zod';
 import {
 	Card,
-	CardAction,
 	CardContent,
 	CardDescription,
 	CardFooter,
@@ -19,6 +18,7 @@ import { Field, FieldError, FieldLabel } from '../ui/field';
 import { Input } from '../ui/input';
 import GoogleLoginButton from '../buttons/GoogleLoginButton';
 import { useUserStore } from '@/stores/user';
+import googleIcon from '../../assets/images/google_icon.png';
 import { useState } from 'react';
 import Recaptcha from '../Recaptcha';
 
@@ -38,6 +38,7 @@ export default function LoginForm() {
 		defaultValues: {
 			email: '',
 			password: '',
+			// institutionalID: '', // keep in comments for future
 		},
 	});
 
@@ -64,44 +65,40 @@ export default function LoginForm() {
 	};
 
 	return (
-		// {/* to remove styles of card, add this class to the card "border-none shadow-none bg-transparent" */ }
-		<Card className='w-full max-w-sm'>
+		<Card className='form-card w-full max-w-sm'>
 			<CardHeader>
-				<CardTitle>Login to your account</CardTitle>
-				<CardDescription>Fill up the form below to login</CardDescription>
-				<CardAction>
-					<Button variant='link' onClick={() => navigate('/signup')}>
-						Signup
-					</Button>
-				</CardAction>
+				<CardTitle className='form-title'>Login to your account</CardTitle>
+				<CardDescription className='form-description'>
+					Fill up the form below to login
+				</CardDescription>
 			</CardHeader>
 			<CardContent>
 				<form
 					id='login-form'
 					onSubmit={handleSubmit(onSubmit)}
-					className='space-y-4'
+					className='form-fields space-y-4'
 				>
 					{/* keep when we change from email to institutional ID */}
 					{/* INSTITUTIONAL ID */}
 					{/* <Controller
-							name='institutionalID'
-							control={control}
-							render={({ field, fieldState }) => (
-								<Field data-invalid={fieldState.invalid}>
-									<FieldLabel htmlFor={field.name}>Institutional ID</FieldLabel>
-									<Input
-										{...field}
-										id={field.name}
-										aria-invalid={fieldState.invalid}
-										placeholder='Enter your ID here'
-										autoComplete='off'
-									/>
-									{fieldState.invalid && (
-										<FieldError errors={[fieldState.error]} />
-									)}
-								</Field>
-							)}
-						/> */}
+              name='institutionalID'
+              control={control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor={field.name}>Institutional ID</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    aria-invalid={fieldState.invalid}
+                    placeholder='Enter your ID here'
+                    autoComplete='off'
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            /> */}
 
 					{/* EMAIL */}
 					<Controller
@@ -109,13 +106,14 @@ export default function LoginForm() {
 						control={control}
 						render={({ field, fieldState }) => (
 							<Field data-invalid={fieldState.invalid}>
-								<FieldLabel htmlFor={field.name}>Email</FieldLabel>
+								<FieldLabel htmlFor={field.name}>Username</FieldLabel>
 								<Input
 									{...field}
 									id={field.name}
 									aria-invalid={fieldState.invalid}
 									type='email'
 									placeholder='juan@gmail.com'
+									autoComplete='username'
 								/>
 								{fieldState.invalid && (
 									<FieldError errors={[fieldState.error]} />
@@ -145,10 +143,39 @@ export default function LoginForm() {
 							</Field>
 						)}
 					/>
+
+					{/* Extra options */}
+					<div className='form-extra flex items-center justify-between text-xs'>
+						<label className='form-remember'>
+							<input type='checkbox' className='form-checkbox mr-2' />
+							Remember me
+						</label>
+						<a href='/forgot' className='form-link text-purple-500 underline'>
+							Forgot password?
+						</a>
+					</div>
+
+					<Button
+						type='submit'
+						form='login-form'
+						className='form-button-primary w-full'
+					>
+						Login
+					</Button>
+
 					{errors.root && <FieldError errors={[errors.root]} />}
 				</form>
 			</CardContent>
 			<CardFooter className='flex-col gap-2'>
+				<div className='form-alt-action mt-3 text-center text-sm'>
+					Don't have an account?{' '}
+					<span
+						className='form-link text-purple-500 underline cursor-pointer'
+						onClick={() => navigate('/signup')}
+					>
+						Create account
+					</span>
+				</div>
 				<Recaptcha onVerify={setRecaptchaToken} />
 				<Button type='submit' form='login-form' className='w-full'>
 					Login
@@ -156,6 +183,13 @@ export default function LoginForm() {
 				{/* <Button variant='outline' className='w-full'>
 					Login with Google
 				</Button> */}
+				<Button
+					variant='outline'
+					className='form-button-google w-full mt-2 flex items-center justify-center gap-2'
+				>
+					<img src={googleIcon} alt='Google' className='form-google-icon' />
+					Login with Google
+				</Button>
 				<GoogleLoginButton />
 			</CardFooter>
 		</Card>
