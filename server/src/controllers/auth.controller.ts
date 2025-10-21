@@ -276,7 +276,7 @@ export const googleLoginHandler = asyncHandler(async (req, res) => {
 			name,
 			email,
 			googleID,
-			institutionalID: '1234567890',
+			institutionalID: email?.split('@')[0],
 			password: randomPassword,
 		});
 	}
@@ -298,5 +298,5 @@ export const googleLoginHandler = asyncHandler(async (req, res) => {
 	const refreshToken = signToken({ sessionID }, refreshTokenSignOptions);
 	setAuthCookie({ res, accessToken, refreshToken });
 
-	res.json({ accessToken, user });
+	res.json({ accessToken, user, message: 'Login successful' });
 });

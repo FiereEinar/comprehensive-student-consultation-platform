@@ -1,6 +1,7 @@
 import axiosInstance from '@/api/axios';
 import { GoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 export default function GoogleLoginButton() {
 	const navigate = useNavigate();
@@ -10,18 +11,18 @@ export default function GoogleLoginButton() {
 			const { credential } = credentialResponse;
 
 			// Send the Google ID token to your backend
-			const res = await axiosInstance.post(
+			const { data } = await axiosInstance.post(
 				`${import.meta.env.VITE_API_URL}/auth/google`,
 				{
 					token: credential,
 				}
 			);
 
-			console.log('Logged in user:', res.data);
+			toast.success(data.message);
 			navigate('/');
 		} catch (error: any) {
 			console.error('Login failed', error);
-			console.error('Failed to login', error);
+			toast.error('Failed to login', error);
 		}
 	};
 
