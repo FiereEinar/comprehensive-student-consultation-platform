@@ -1,5 +1,5 @@
 import LoginForm from "@/components/forms/LoginForm";
-import loginGraphic from "../assets/images/login_image.jpg"; // or use the correct image filename
+import loginGraphic from "../assets/images/login_image.jpg";
 import "../assets/login.css";
 
 export default function Login() {

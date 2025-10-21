@@ -1,5 +1,5 @@
 import SignupForm from '@/components/forms/SignupForm';
-import signupGraphic from '../assets/images/signup_image.jpg'; // Import your signup illustration
+import signupGraphic from '../assets/images/signup_image.jpg';
 import "../assets/signup.css";
 
 export default function Signup() {

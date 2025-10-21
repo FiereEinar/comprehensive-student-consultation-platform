@@ -5,10 +5,8 @@ import { Controller, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import type z from 'zod';
-// UI components below
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -18,8 +16,7 @@ import {
 import { Button } from '../ui/button';
 import { Field, FieldError, FieldLabel } from '../ui/field';
 import { Input } from '../ui/input';
-
-import googleIcon from '../../assets/images/google_icon.png'; // <-- static import!
+import googleIcon from '../../assets/images/google_icon.png';
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 

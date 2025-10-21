@@ -2,7 +2,6 @@ import { Controller, useForm } from 'react-hook-form';
 import { Button } from '../ui/button';
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -17,8 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axiosInstance from '@/api/axios';
 import { toast } from 'sonner';
-
-import googleIcon from '../../assets/images/google_icon.png'; // <-- static import!
+import googleIcon from '../../assets/images/google_icon.png';
 
 export type SignupFormValues = z.infer<typeof signupSchema>;
 
