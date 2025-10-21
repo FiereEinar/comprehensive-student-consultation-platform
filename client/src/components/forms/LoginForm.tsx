@@ -16,11 +16,22 @@ import {
 import { Button } from '../ui/button';
 import { Field, FieldError, FieldLabel } from '../ui/field';
 import { Input } from '../ui/input';
+import GoogleLoginButton from '../buttons/GoogleLoginButton';
+import { useUserStore } from '@/stores/user';
 import googleIcon from '../../assets/images/google_icon.png';
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginForm() {
+	const { setUser } = useUserStore((state) => state);
+	const navigate = useNavigate();
+	const { control, handleSubmit } = useForm<LoginFormValues>({
+		resolver: zodResolver(loginSchema),
+		defaultValues: {
+			email: '',
+			password: '',
+		},
+	});
   const navigate = useNavigate();
   const { control, handleSubmit } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -31,6 +42,21 @@ export default function LoginForm() {
     },
   });
 
+	const onSubmit = async (formData: LoginFormValues) => {
+		try {
+			const { data } = await axiosInstance.post('/auth/login', formData);
+
+			toast.success(data.message);
+
+			setUser(data.data);
+			data.data.role === 'instructor'
+				? navigate('/instructor/consultation')
+				: navigate('/student/consultation');
+		} catch (error: any) {
+			console.error('Failed to login', error);
+			toast.error(error.message ?? 'Failed to login');
+		}
+	};
   const onSubmit = async (formData: LoginFormValues) => {
     try {
       const { data } = await axiosInstance.post('/auth/login', formData);
@@ -100,6 +126,40 @@ export default function LoginForm() {
             )}
           />
 
+					{/* PASSWORD */}
+					<Controller
+						name='password'
+						control={control}
+						render={({ field, fieldState }) => (
+							<Field data-invalid={fieldState.invalid}>
+								<FieldLabel htmlFor={field.name}>Password</FieldLabel>
+								<Input
+									{...field}
+									id={field.name}
+									aria-invalid={fieldState.invalid}
+									type='password'
+									placeholder='********'
+									autoComplete='off'
+								/>
+								{fieldState.invalid && (
+									<FieldError errors={[fieldState.error]} />
+								)}
+							</Field>
+						)}
+					/>
+				</form>
+			</CardContent>
+			<CardFooter className='flex-col gap-2'>
+				<Button type='submit' form='login-form' className='w-full'>
+					Login
+				</Button>
+				{/* <Button variant='outline' className='w-full'>
+					Login with Google
+				</Button> */}
+				<GoogleLoginButton />
+			</CardFooter>
+		</Card>
+	);
           {/* PASSWORD */}
           <Controller
             name='password'

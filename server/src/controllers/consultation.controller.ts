@@ -1,10 +1,15 @@
 import asynchandler from 'express-async-handler';
-import { createConsultationSchema } from '../schemas/consultation.schema';
-import ConsultationModel from '../models/consultation.models';
+import {
+	consutationStatusSchema,
+	createConsultationSchema,
+} from '../schemas/consultation.schema';
+import ConsultationModel, {
+	ConsultationStatus,
+} from '../models/consultation.models';
 import CustomResponse from '../utils/response';
 import UserModel from '../models/user.model';
 import appAssert from '../errors/app-assert';
-import { BAD_REQUEST } from '../constants/http';
+import { BAD_REQUEST, NOT_FOUND } from '../constants/http';
 import AvailabilityModel from '../models/availability.model';
 import { getStartAndEndofDay } from '../utils/date';
 import { DEFAULT_LIMIT } from '../constants';
@@ -103,4 +108,33 @@ export const getUserConsultations = asynchandler(async (req, res) => {
 		.exec();
 
 	res.json(new CustomResponse(true, consultations, 'Consultations fetched'));
+});
+
+/**
+ * @route PATCH /api/v1/consultation/:consultationID
+ */
+export const updateConsultationStatus = asynchandler(async (req, res) => {
+	const currentUser = req.user;
+	const { consultationID } = req.params;
+	const status = consutationStatusSchema.parse(req.body.status);
+
+	const consultation = await ConsultationModel.findById(consultationID);
+	appAssert(consultation, NOT_FOUND, 'Consultation not found');
+
+	appAssert(
+		currentUser.role === 'instructor',
+		BAD_REQUEST,
+		'Only instructors can update consultation status'
+	);
+
+	consultation.status = status;
+	await consultation.save();
+
+	res.json(
+		new CustomResponse(
+			true,
+			consultation,
+			`Consultation status updated ${status}`
+		)
+	);
 });

@@ -12,8 +12,9 @@ import StudentDashboard from './pages/dashboards/StudentDashboard';
 import StudentConsultations from './pages/consultations/StudentConsultations';
 import InstructorDashbaord from './pages/dashboards/InstructorDashboard';
 import Settings from './pages/Settings';
-import InstructorConsultations from './pages/consultations/InstructorConsultations';
 import ProtectedRoute from './components/ProtectedRoute';
+import InstructorConsultations2 from './pages/consultations/InstructorConsultations2';
+import InstructorConsultations from './pages/consultations/InstructorConsultations';
 
 export default function Route() {
 	const route = createBrowserRouter([
@@ -48,6 +49,10 @@ export default function Route() {
 				{
 					path: '/instructor/dashboard',
 					element: <InstructorDashbaord />,
+				},
+				{
+					path: '/instructor/consultation2',
+					element: <InstructorConsultations2 />,
 				},
 				{
 					path: '/instructor/consultation',

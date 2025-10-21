@@ -1,107 +1,73 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import ConsultationForm from "@/components/forms/ConsultationForm";
+import ConsultationTabs from "@/components/tabs/ConsultationTabs";
 import Header from "@/components/ui/header";
 import {
-  Item,
-  ItemContent,
-  ItemDescription,
-  ItemTitle,
-} from "@/components/ui/item";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Ban, UserRound } from "lucide-react";
+import { useUserStore } from "@/stores/user";
 
 export default function InstructorConsultations() {
+  const user = useUserStore((state) => state.user);
+
   return (
-    <section className="space-y-5">
-      <div>
-        <Tabs defaultValue="Upcoming" className="space-y-5">
-          <div className="flex justify-between">
-            <Header>Instructor Consultations</Header>
-            <TabsList className="self-end">
-              <TabsTrigger
-                className="cursor-pointer data-[state=active]:text-custom-primary data-[state=active]:border-b-custom-primary border-2 data-[state=active]:bg-custom-secondary rounded-none data-[state=active]:shadow-none data-[state=active]:text-shadow-none"
-                value="Upcoming"
-              >
-                Upcoming
-              </TabsTrigger>
-              <TabsTrigger
-                className="cursor-pointer data-[state=active]:text-custom-primary data-[state=active]:border-b-custom-primary border-2 data-[state=active]:bg-custom-secondary rounded-none data-[state=active]:shadow-none data-[state=active]:text-shadow-none"
-                value="Requests"
-              >
-                Requests
-              </TabsTrigger>
-            </TabsList>
-          </div>
-
-          <TabsContent
-            className="flex justify-start flex-col gap-3"
-            value="Upcoming"
-          >
-            <Card className="w-fit">
-              <CardContent className="flex items-center gap-20">
-                <div className="flex items-center gap-3">
-                  <UserRound className="w-8 h-8" />
-                  <ItemContent>
-                    <ItemTitle>Chapter 1 Revisions</ItemTitle>
-                    <ItemDescription>Nick Xylan Melloria</ItemDescription>
-                  </ItemContent>
-                </div>
-
-                <div className="text-right">
-                  <ItemTitle>17:00</ItemTitle>
-                  <ItemTitle>10/03/2025</ItemTitle>
-                </div>
-
-                <div className="flex gap-2">
-                  <Item variant="outline">T106</Item>
-                  <Item variant="outline">IT137</Item>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <Button
-                    size="icon-sm"
-                    className="rounded-full"
-                    aria-label="Invite"
-                  >
-                    <Ban />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="w-fit">
-              <CardContent className="flex items-center gap-20">
-                <div className="flex items-center gap-3">
-                  <UserRound className="w-8 h-8" />
-                  <ItemContent>
-                    <ItemTitle>Chapter 1 Revisions</ItemTitle>
-                    <ItemDescription>Nick Xylan Melloria</ItemDescription>
-                  </ItemContent>
-                </div>
-
-                <div className="text-right">
-                  <ItemTitle>17:00</ItemTitle>
-                  <ItemTitle>10/03/2025</ItemTitle>
-                </div>
-
-                <div className="flex gap-2">
-                  <Item variant="outline">T106</Item>
-                  <Item variant="outline">IT137</Item>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <Button
-                    size="icon-sm"
-                    className="rounded-full"
-                    aria-label="Invite"
-                  >
-                    <Ban />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+    <section className='space-y-5'>
+      <div className='flex w-full justify-between'>
+        <Header>Instructor Consultations</Header>
+        <ConsultationForm />
+      </div>
+      <div className='flex gap-3'>
+        <Tabs
+          defaultValue='Upcoming'
+          className='border-2 p-3 bg-white rounded-2xl w-[70%]'
+        >
+          <TabsList className='self-start bg-white'>
+            <TabsTrigger
+              className='cursor-pointer data-[state=active]:text-custom-primary data-[state=active]:border-b-custom-primary border-2 data-[state=active]:bg-white rounded-none data-[state=active]:shadow-none data-[state=active]:text-shadow-none'
+              value='Upcoming'
+            >
+              Upcoming
+            </TabsTrigger>
+            <TabsTrigger
+              className='cursor-pointer data-[state=active]:text-custom-primary data-[state=active]:border-b-custom-primary border-2 data-[state=active]:bg-white rounded-none data-[state=active]:shadow-none data-[state=active]:text-shadow-none'
+              value='Requests'
+            >
+              Requests
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value='Upcoming'>
+            <Select>
+              <SelectTrigger className='w-[180px] mb-3'>
+                <SelectValue placeholder='Status' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='accepted'>Accepted</SelectItem>
+                <SelectItem value='completed'>Completed</SelectItem>
+              </SelectContent>
+            </Select>
+            <ConsultationTabs userID={user?._id ?? ""} status='accepted' />
           </TabsContent>
-          <TabsContent value="Requests">Requests</TabsContent>
+          <TabsContent value='Requests'>
+            <Select>
+              <SelectTrigger className='w-[180px] mb-3'>
+                <SelectValue placeholder='Status' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='pending'>Pending</SelectItem>
+                <SelectItem value='declined'>Declined</SelectItem>
+              </SelectContent>
+            </Select>
+            <ConsultationTabs userID={user?._id ?? ""} status='pending' />
+          </TabsContent>
         </Tabs>
+
+        <div className='border-2 p-5 bg-white rounded-2xl w-[30%]'>
+          <p>Consultation History</p>
+        </div>
       </div>
     </section>
   );
