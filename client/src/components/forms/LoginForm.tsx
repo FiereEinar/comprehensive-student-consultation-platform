@@ -44,7 +44,6 @@ export default function LoginForm() {
 	const onSubmit = async (formData: LoginFormValues) => {
 		try {
 			if (!recaptchaToken) {
-				// toast.error('Please complete the reCAPTCHA');
 				setError('root', { message: 'Please complete the reCAPTCHA' });
 				return;
 			}
@@ -64,7 +63,7 @@ export default function LoginForm() {
 	};
 
 	return (
-		<Card className='form-card w-full max-w-sm'>
+		<Card className='form-card w-full shadow-none rounded-none border-l'>
 			<CardHeader>
 				<CardTitle className='form-title'>Login to your account</CardTitle>
 				<CardDescription className='form-description'>
@@ -178,19 +177,6 @@ export default function LoginForm() {
 						Create account
 					</span>
 				</div>
-				{/* <Button type='submit' form='login-form' className='w-full'>
-					Login
-				</Button> */}
-				{/* <Button variant='outline' className='w-full'>
-					Login with Google
-				</Button> */}
-				{/* <Button
-					variant='outline'
-					className='form-button-google w-full mt-2 flex items-center justify-center gap-2'
-				>
-					<img src={googleIcon} alt='Google' className='form-google-icon' />
-					Login with Google
-				</Button> */}
 			</CardFooter>
 		</Card>
 	);

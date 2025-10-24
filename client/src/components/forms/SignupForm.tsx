@@ -60,8 +60,7 @@ export default function SignupForm() {
 	};
 
 	return (
-		// {/* to remove styles of card, add this class to the card "border-none shadow-none bg-transparent" */}
-		<Card className='form-card w-full max-w-sm'>
+		<Card className='form-card w-full shadow-none rounded-none border-l'>
 			<CardHeader>
 				<CardTitle>Create an your account</CardTitle>
 				<CardDescription>
@@ -79,45 +78,47 @@ export default function SignupForm() {
 					onSubmit={handleSubmit(onSubmit)}
 					className=' space-y-4'
 				>
-					{/* INSTITUTIONAL ID */}
-					<Controller
-						name='institutionalID'
-						control={control}
-						render={({ field, fieldState }) => (
-							<Field data-invalid={fieldState.invalid}>
-								<FieldLabel htmlFor={field.name}>Institutional ID</FieldLabel>
-								<Input
-									{...field}
-									id={field.name}
-									aria-invalid={fieldState.invalid}
-									placeholder='Enter your ID here'
-								/>
-								{fieldState.invalid && (
-									<FieldError errors={[fieldState.error]} />
-								)}
-							</Field>
-						)}
-					/>
+					<div className='flex gap-2'>
+						{/* INSTITUTIONAL ID */}
+						<Controller
+							name='institutionalID'
+							control={control}
+							render={({ field, fieldState }) => (
+								<Field data-invalid={fieldState.invalid}>
+									<FieldLabel htmlFor={field.name}>Institutional ID</FieldLabel>
+									<Input
+										{...field}
+										id={field.name}
+										aria-invalid={fieldState.invalid}
+										placeholder='Enter your ID here'
+									/>
+									{fieldState.invalid && (
+										<FieldError errors={[fieldState.error]} />
+									)}
+								</Field>
+							)}
+						/>
 
-					{/* NAME */}
-					<Controller
-						name='name'
-						control={control}
-						render={({ field, fieldState }) => (
-							<Field data-invalid={fieldState.invalid}>
-								<FieldLabel htmlFor={field.name}>Name</FieldLabel>
-								<Input
-									{...field}
-									id={field.name}
-									aria-invalid={fieldState.invalid}
-									placeholder='Juan Dela Cruz'
-								/>
-								{fieldState.invalid && (
-									<FieldError errors={[fieldState.error]} />
-								)}
-							</Field>
-						)}
-					/>
+						{/* NAME */}
+						<Controller
+							name='name'
+							control={control}
+							render={({ field, fieldState }) => (
+								<Field data-invalid={fieldState.invalid}>
+									<FieldLabel htmlFor={field.name}>Name</FieldLabel>
+									<Input
+										{...field}
+										id={field.name}
+										aria-invalid={fieldState.invalid}
+										placeholder='Juan Dela Cruz'
+									/>
+									{fieldState.invalid && (
+										<FieldError errors={[fieldState.error]} />
+									)}
+								</Field>
+							)}
+						/>
+					</div>
 
 					{/* EMAIL */}
 					<Controller
@@ -199,13 +200,6 @@ export default function SignupForm() {
 				</form>
 			</CardContent>
 			<CardFooter className='flex-col gap-2'>
-				{/* <Button variant='outline' className='w-full'>
-					Signup with Google
-				</Button> */}
-				{/* <Button variant='outline' className='form-button-google w-full'>
-					<img src={googleIcon} alt='Google' className='form-google-icon' />
-					Signup with Google
-				</Button> */}
 				<div className='form-alt-action mt-2 text-center text-sm'>
 					Already have an account?{' '}
 					<span

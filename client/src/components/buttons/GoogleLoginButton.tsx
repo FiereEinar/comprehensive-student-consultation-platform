@@ -1,7 +1,9 @@
 import axiosInstance from '@/api/axios';
-import { GoogleLogin } from '@react-oauth/google';
+import { useGoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { Button } from '../ui/button';
+import googleIcon from '@/assets/Images/Google_Icon.png';
 
 export default function GoogleLoginButton() {
 	const navigate = useNavigate();
@@ -26,11 +28,20 @@ export default function GoogleLoginButton() {
 		}
 	};
 
+	const login = useGoogleLogin({
+		onSuccess: handleLoginSuccess,
+		onError: () =>
+			toast.error('Failed to login, accept cookies and please try again'),
+	});
+
 	return (
-		<GoogleLogin
-			width={345}
-			onSuccess={handleLoginSuccess}
-			onError={() => console.log('Login Failed')}
-		/>
+		<Button
+			onClick={() => login()}
+			variant='outline'
+			className='form-button-google w-full'
+		>
+			<img src={googleIcon} alt='Google' className='size-4' />
+			Signup with Google
+		</Button>
 	);
 }
