@@ -82,9 +82,9 @@ export function AppSidebar() {
 						<SidebarGroupContent>
 							<SidebarMenu>
 								{studentSidebarLinks.map((item) => (
-									<SidebarMenuItem key={item.title}>
-										<SidebarNavLink item={item} />
-									</SidebarMenuItem>
+									// <SidebarMenuItem key={item.title}>
+									<SidebarNavLink key={item.title} item={item} />
+									// {/* </SidebarMenuItem> */}
 								))}
 							</SidebarMenu>
 						</SidebarGroupContent>
@@ -175,15 +175,19 @@ export function AppSidebar() {
 function SidebarNavLink({ item }: { item: SidebarNavLink }) {
 	return (
 		<NavLink
-			className={({ isActive }) => `${isActive ? 'bg-custom-primary/20' : ''}`}
+			className={({ isActive }) =>
+				`rounded-md ${isActive ? 'bg-custom-primary/20' : ''}`
+			}
 			to={item.url}
 		>
-			<SidebarMenuButton asChild>
-				<div className='flex items-center gap-2'>
-					<item.icon />
-					<span>{item.title}</span>
-				</div>
-			</SidebarMenuButton>
+			<SidebarMenuItem>
+				<SidebarMenuButton>
+					<div className='flex items-center gap-2'>
+						<item.icon />
+						<span>{item.title}</span>
+					</div>
+				</SidebarMenuButton>
+			</SidebarMenuItem>
 		</NavLink>
 	);
 }

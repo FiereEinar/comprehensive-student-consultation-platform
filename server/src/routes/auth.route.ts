@@ -1,6 +1,6 @@
 import express from 'express';
 import {
-	googleLoginHandler,
+	googleLoginHandlerV2,
 	loginHandler,
 	logoutHandler,
 	recaptchaVerify,
@@ -16,6 +16,6 @@ router.post('/token/verify', verifyAuthHandler);
 router.get('/logout', logoutHandler);
 router.get('/refresh', refreshTokenHandler);
 router.post('/recaptcha/verify', recaptchaVerify);
-router.post('/google', googleLoginHandler);
+router.post('/google', googleLoginHandlerV2);
 
 export default router;

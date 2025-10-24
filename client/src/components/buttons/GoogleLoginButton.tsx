@@ -8,28 +8,43 @@ import googleIcon from '@/assets/Images/Google_Icon.png';
 export default function GoogleLoginButton() {
 	const navigate = useNavigate();
 
-	const handleLoginSuccess = async (credentialResponse: any) => {
-		try {
-			const { credential } = credentialResponse;
+	// const handleLoginSuccess = async (credentialResponse: any) => {
+	// 	try {
+	// 		const { access_token } = credentialResponse;
+	// 		console.log(credentialResponse);
 
-			// Send the Google ID token to your backend
-			const { data } = await axiosInstance.post(
-				`${import.meta.env.VITE_API_URL}/auth/google`,
-				{
-					token: credential,
-				}
-			);
+	// 		// Send the Google ID token to your backend
+	// 		const { data } = await axiosInstance.post(
+	// 			`${import.meta.env.VITE_API_URL}/auth/google`,
+	// 			{
+	// 				token: access_token,
+	// 			}
+	// 		);
 
-			toast.success(data.message);
-			navigate('/');
-		} catch (error: any) {
-			console.error('Login failed', error);
-			toast.error('Failed to login', error);
-		}
-	};
+	// 		toast.success(data.message);
+	// 		navigate('/');
+	// 	} catch (error: any) {
+	// 		console.error('Login failed', error);
+	// 		toast.error('Failed to login', error);
+	// 	}
+	// };
 
 	const login = useGoogleLogin({
-		onSuccess: handleLoginSuccess,
+		onSuccess: async (credentialResponse) => {
+			try {
+				console.log(credentialResponse);
+				const { access_token } = credentialResponse;
+				const { data } = await axiosInstance.post('/auth/google', {
+					token: access_token,
+				});
+
+				toast.success(data.message);
+				navigate('/');
+			} catch (error: any) {
+				console.error('Login failed', error);
+				toast.error('Failed to login', error);
+			}
+		},
 		onError: () =>
 			toast.error('Failed to login, accept cookies and please try again'),
 	});
@@ -41,7 +56,7 @@ export default function GoogleLoginButton() {
 			className='form-button-google w-full'
 		>
 			<img src={googleIcon} alt='Google' className='size-4' />
-			Signup with Google
+			Continue with Google
 		</Button>
 	);
 }

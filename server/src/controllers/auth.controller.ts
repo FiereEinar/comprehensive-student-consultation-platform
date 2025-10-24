@@ -38,6 +38,7 @@ import CustomResponse from '../utils/response';
 import { AppErrorCodes } from '../constants';
 import { verifyRecaptcha } from '../utils/recaptcha';
 import { googleClient } from '../utils/google';
+import axios from 'axios';
 
 /**
  * @route POST /api/v1/auth/login - Login
@@ -267,6 +268,57 @@ export const googleLoginHandler = asyncHandler(async (req, res) => {
 	appAssert(payload, UNAUTHORIZED, 'Invalid Google token');
 
 	const { email, name, sub: googleID } = payload;
+
+	// Check if user exists
+	let user = await UserModel.findOne({ email });
+	if (!user) {
+		const randomPassword = await bcrypt.hash(crypto.randomUUID(), 10);
+		user = await UserModel.create({
+			name,
+			email,
+			googleID,
+			institutionalID: email?.split('@')[0],
+			password: randomPassword,
+		});
+	}
+
+	// Create session
+	const { ip, userAgent } = getUserRequestInfo(req);
+	const userID = user._id as string;
+
+	const session = await SessionModel.create({
+		userID,
+		ip,
+		userAgent,
+		expiresAt: thirtyDaysFromNow(),
+	});
+
+	// Create JWT tokens
+	const sessionID = session._id as string;
+	const accessToken = signToken({ sessionID, userID });
+	const refreshToken = signToken({ sessionID }, refreshTokenSignOptions);
+	setAuthCookie({ res, accessToken, refreshToken });
+
+	res.json({ accessToken, user, message: 'Login successful' });
+});
+
+/**
+ * @route POST /api/v1/auth/google
+ */
+export const googleLoginHandlerV2 = asyncHandler(async (req, res) => {
+	const { token } = req.body;
+	appAssert(token, UNAUTHORIZED, 'No token found');
+
+	const { data: googleUser } = await axios.get(
+		'https://www.googleapis.com/oauth2/v1/userinfo?alt=json',
+		{
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		}
+	);
+
+	const { email, name, id: googleID } = googleUser;
 
 	// Check if user exists
 	let user = await UserModel.findOne({ email });
