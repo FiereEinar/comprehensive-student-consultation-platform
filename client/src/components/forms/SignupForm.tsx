@@ -2,7 +2,6 @@ import { Controller, useForm } from 'react-hook-form';
 import { Button } from '../ui/button';
 import {
 	Card,
-	CardAction,
 	CardContent,
 	CardDescription,
 	CardFooter,
@@ -20,7 +19,6 @@ import { toast } from 'sonner';
 import GoogleLoginButton from '../buttons/GoogleLoginButton';
 import { useState } from 'react';
 import Recaptcha from '../Recaptcha';
-import googleIcon from '../../assets/images/google_icon.png';
 
 export type SignupFormValues = z.infer<typeof signupSchema>;
 
@@ -63,23 +61,23 @@ export default function SignupForm() {
 
 	return (
 		// {/* to remove styles of card, add this class to the card "border-none shadow-none bg-transparent" */}
-		<Card className='w-full max-w-sm'>
+		<Card className='form-card w-full max-w-sm'>
 			<CardHeader>
 				<CardTitle>Create an your account</CardTitle>
 				<CardDescription>
 					Fill up the form below to create an account
 				</CardDescription>
-				<CardAction>
+				{/* <CardAction>
 					<Button variant='link' onClick={() => navigate('/login')}>
 						Login
 					</Button>
-				</CardAction>
+				</CardAction> */}
 			</CardHeader>
 			<CardContent>
 				<form
 					id='signup-form'
 					onSubmit={handleSubmit(onSubmit)}
-					className='form-fields space-y-4'
+					className=' space-y-4'
 				>
 					{/* INSTITUTIONAL ID */}
 					<Controller
@@ -185,29 +183,36 @@ export default function SignupForm() {
 							</Field>
 						)}
 					/>
-					{errors.root && <FieldError errors={[errors.root]} />}
+					<div className='space-y-2'>
+						<Recaptcha onVerify={setRecaptchaToken} />
+
+						<Button
+							type='submit'
+							form='signup-form'
+							className='form-button-primary w-full'
+						>
+							Signup
+						</Button>
+						<GoogleLoginButton />
+						{errors.root && <FieldError errors={[errors.root]} />}
+					</div>
 				</form>
 			</CardContent>
 			<CardFooter className='flex-col gap-2'>
-				<Recaptcha onVerify={setRecaptchaToken} />
-				<Button type='submit' form='signup-form' className='w-full'>
-					Signup
-				</Button>
 				{/* <Button variant='outline' className='w-full'>
 					Signup with Google
 				</Button> */}
-				<Button variant='outline' className='form-button-google w-full'>
+				{/* <Button variant='outline' className='form-button-google w-full'>
 					<img src={googleIcon} alt='Google' className='form-google-icon' />
 					Signup with Google
-				</Button>
-				<GoogleLoginButton />
+				</Button> */}
 				<div className='form-alt-action mt-2 text-center text-sm'>
 					Already have an account?{' '}
 					<span
 						className='form-link text-purple-500 underline cursor-pointer'
 						onClick={() => navigate('/login')}
 					>
-						Sign in
+						Log in
 					</span>
 				</div>
 			</CardFooter>

@@ -1,4 +1,4 @@
-import { Clock, LayoutDashboard, Settings } from 'lucide-react';
+import { Clock, LayoutDashboard, Power, Settings } from 'lucide-react';
 import type { JSX } from 'react';
 import SidebarLink from './SidebarLink';
 import SidebarHeader from './SidebarHeader';
@@ -10,6 +10,7 @@ export type SidebarNavLink = {
 	href: string;
 	icon: JSX.Element;
 };
+
 const instructorSidebarLinks: SidebarNavLink[] = [
 	{
 		name: 'Dashboard',
@@ -102,7 +103,10 @@ export default function Sidebar() {
 						icon: <Settings />,
 					}}
 				/>
-				<LogoutButton />
+				<LogoutButton>
+					<Power />
+					<p>Logout</p>
+				</LogoutButton>
 			</div>
 		</aside>
 	);

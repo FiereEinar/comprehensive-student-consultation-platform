@@ -7,7 +7,7 @@ export default function TopBar() {
 	const { user } = useUserStore((state) => state);
 
 	return (
-		<div className='bg-white p-2 pr-5 w-full flex justify-between'>
+		<div className='bg-white p-2 pr-5 w-full flex justify-between items-center'>
 			<SidebarTrigger />
 			<div className='flex items-center text-end gap-2'>
 				<div>

@@ -18,7 +18,6 @@ import { Field, FieldError, FieldLabel } from '../ui/field';
 import { Input } from '../ui/input';
 import GoogleLoginButton from '../buttons/GoogleLoginButton';
 import { useUserStore } from '@/stores/user';
-import googleIcon from '../../assets/images/google_icon.png';
 import { useState } from 'react';
 import Recaptcha from '../Recaptcha';
 
@@ -76,7 +75,7 @@ export default function LoginForm() {
 				<form
 					id='login-form'
 					onSubmit={handleSubmit(onSubmit)}
-					className='form-fields space-y-4'
+					className='space-y-4'
 				>
 					{/* keep when we change from email to institutional ID */}
 					{/* INSTITUTIONAL ID */}
@@ -155,15 +154,18 @@ export default function LoginForm() {
 						</a>
 					</div>
 
-					<Button
-						type='submit'
-						form='login-form'
-						className='form-button-primary w-full'
-					>
-						Login
-					</Button>
-
-					{errors.root && <FieldError errors={[errors.root]} />}
+					<div className='flex flex-col justify-center items-center gap-2'>
+						<Recaptcha onVerify={setRecaptchaToken} />
+						<Button
+							type='submit'
+							form='login-form'
+							className='form-button-primary w-full m-0'
+						>
+							Login
+						</Button>
+						<GoogleLoginButton />
+						{errors.root && <FieldError errors={[errors.root]} />}
+					</div>
 				</form>
 			</CardContent>
 			<CardFooter className='flex-col gap-2'>
@@ -176,21 +178,19 @@ export default function LoginForm() {
 						Create account
 					</span>
 				</div>
-				<Recaptcha onVerify={setRecaptchaToken} />
-				<Button type='submit' form='login-form' className='w-full'>
+				{/* <Button type='submit' form='login-form' className='w-full'>
 					Login
-				</Button>
+				</Button> */}
 				{/* <Button variant='outline' className='w-full'>
 					Login with Google
 				</Button> */}
-				<Button
+				{/* <Button
 					variant='outline'
 					className='form-button-google w-full mt-2 flex items-center justify-center gap-2'
 				>
 					<img src={googleIcon} alt='Google' className='form-google-icon' />
 					Login with Google
-				</Button>
-				<GoogleLoginButton />
+				</Button> */}
 			</CardFooter>
 		</Card>
 	);

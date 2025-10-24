@@ -28,6 +28,7 @@ export default function GoogleLoginButton() {
 
 	return (
 		<GoogleLogin
+			width={345}
 			onSuccess={handleLoginSuccess}
 			onError={() => console.log('Login Failed')}
 		/>

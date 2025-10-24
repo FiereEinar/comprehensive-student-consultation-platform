@@ -1,8 +1,11 @@
 import axiosInstance from '@/api/axios';
-import { Power } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-export default function LogoutButton() {
+type LogoutButtonProps = {
+	children?: React.ReactNode;
+};
+
+export default function LogoutButton({ children }: LogoutButtonProps) {
 	const navigate = useNavigate();
 
 	const onLogout = async () => {
@@ -19,10 +22,7 @@ export default function LogoutButton() {
 			onClick={onLogout}
 			className='transition-all cursor-pointer w-full p-2 hover:bg-black/20 rounded-md'
 		>
-			<div className='flex gap-2'>
-				<Power />
-				<p>Logout</p>
-			</div>
+			<div className='flex gap-2'>{children}</div>
 		</button>
 	);
 }

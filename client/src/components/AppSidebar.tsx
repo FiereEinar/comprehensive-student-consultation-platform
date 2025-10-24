@@ -1,4 +1,10 @@
-import { Calendar, Home, Inbox, Search, Settings } from 'lucide-react';
+import {
+	Calendar,
+	LayoutDashboard,
+	Power,
+	Settings,
+	type LucideProps,
+} from 'lucide-react';
 
 import {
 	Sidebar,
@@ -6,62 +12,178 @@ import {
 	SidebarGroup,
 	SidebarGroupContent,
 	SidebarGroupLabel,
+	SidebarHeader,
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { useUserStore } from '@/stores/user';
+import { NavLink } from 'react-router-dom';
+import LogoutButton from './buttons/LogoutButton';
 
-// Menu items.
-const items = [
+type SidebarNavLink = {
+	title: string;
+	url: string;
+	icon: React.ForwardRefExoticComponent<
+		Omit<LucideProps, 'ref'> & React.RefAttributes<SVGSVGElement>
+	>;
+};
+
+const instructorSidebarLinks: SidebarNavLink[] = [
 	{
-		title: 'Home',
-		url: '#',
-		icon: Home,
+		title: 'Dashboard',
+		url: '/instructor/dashboard',
+		icon: LayoutDashboard,
 	},
 	{
-		title: 'Inbox',
-		url: '#',
-		icon: Inbox,
-	},
-	{
-		title: 'Calendar',
-		url: '#',
+		title: 'Consultations',
+		url: '/instructor/consultation',
 		icon: Calendar,
 	},
+];
+
+const studentSidebarLinks: SidebarNavLink[] = [
 	{
-		title: 'Search',
-		url: '#',
-		icon: Search,
+		title: 'Dashboard',
+		url: '/student/dashboard',
+		icon: LayoutDashboard,
 	},
 	{
-		title: 'Settings',
-		url: '#',
-		icon: Settings,
+		title: 'Consultations',
+		url: '/student/consultation',
+		icon: Calendar,
 	},
 ];
 
 export function AppSidebar() {
+	const { user } = useUserStore((state) => state);
+
 	return (
 		<Sidebar>
+			<SidebarHeader>
+				<div className='flex gap-2 items-center'>
+					<img
+						src='/images/logo.png'
+						alt='Logo'
+						className='size-10 bg-black/90 rounded-md'
+					/>
+
+					{/* <IconInnerShadowTop className="!size-5" /> */}
+					<p className='text-sm font-semibold'>
+						Comprehensive Student Consultation Platform
+					</p>
+				</div>
+			</SidebarHeader>
 			<SidebarContent>
+				{/* STUDENT SIDEBAR */}
+				{user?.role === 'student' && (
+					<SidebarGroup>
+						<SidebarGroupLabel>Student Panel</SidebarGroupLabel>
+						<SidebarGroupContent>
+							<SidebarMenu>
+								{studentSidebarLinks.map((item) => (
+									<SidebarMenuItem key={item.title}>
+										<SidebarNavLink item={item} />
+									</SidebarMenuItem>
+								))}
+							</SidebarMenu>
+						</SidebarGroupContent>
+					</SidebarGroup>
+				)}
+
+				{/* INSTRUCTOR SIDEBAR */}
+				{user?.role === 'instructor' && (
+					<SidebarGroup>
+						<SidebarGroupLabel>Instructor Panel</SidebarGroupLabel>
+						<SidebarGroupContent>
+							<SidebarMenu>
+								{instructorSidebarLinks.map((item) => (
+									<SidebarMenuItem key={item.title}>
+										<SidebarMenuButton asChild>
+											<NavLink
+												className={({ isActive }) =>
+													`transition-all w-full p-2 pr-8 hover:bg-black/20 rounded-md ${
+														isActive ? 'bg-black/20' : ''
+													}`
+												}
+												to={item.url}
+											>
+												<item.icon />
+												<span>{item.title}</span>
+											</NavLink>
+										</SidebarMenuButton>
+									</SidebarMenuItem>
+								))}
+							</SidebarMenu>
+						</SidebarGroupContent>
+					</SidebarGroup>
+				)}
+
+				{/* SETTINGS AND LOGOUT */}
 				<SidebarGroup>
-					<SidebarGroupLabel>Application</SidebarGroupLabel>
+					{/* <SidebarGroupLabel>Instructor Panel</SidebarGroupLabel> */}
 					<SidebarGroupContent>
 						<SidebarMenu>
-							{items.map((item) => (
-								<SidebarMenuItem key={item.title}>
-									<SidebarMenuButton asChild>
-										<a href={item.url}>
-											<item.icon />
-											<span>{item.title}</span>
-										</a>
-									</SidebarMenuButton>
-								</SidebarMenuItem>
-							))}
+							{/* <SidebarMenuItem>
+								<SidebarMenuButton asChild>
+									<ThemeToggle />
+								</SidebarMenuButton>
+							</SidebarMenuItem> */}
+
+							<SidebarMenuItem>
+								<SidebarMenuButton asChild>
+									<NavLink
+										className={({ isActive }) =>
+											`transition-all w-full p-2 pr-8 hover:bg-black/20 rounded-md ${
+												isActive ? 'bg-black/20' : ''
+											}`
+										}
+										to='/settings'
+									>
+										<Settings />
+										<span>Settings</span>
+									</NavLink>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+
+							<SidebarMenuItem>
+								<SidebarMenuButton asChild>
+									{/* <NavLink
+												className={({ isActive }) =>
+													`transition-all w-full p-2 pr-8 hover:bg-black/20 rounded-md ${
+														isActive ? 'bg-black/20' : ''
+													}`
+												}
+												to='/settings'
+									> */}
+									<LogoutButton>
+										<Power className='size-4' />
+										<span>Logout</span>
+									</LogoutButton>
+
+									{/* </NavLink> */}
+								</SidebarMenuButton>
+							</SidebarMenuItem>
 						</SidebarMenu>
 					</SidebarGroupContent>
 				</SidebarGroup>
 			</SidebarContent>
 		</Sidebar>
+	);
+}
+
+function SidebarNavLink({ item }: { item: SidebarNavLink }) {
+	return (
+		<NavLink
+			className={({ isActive }) => `${isActive ? 'bg-custom-primary/20' : ''}`}
+			to={item.url}
+		>
+			<SidebarMenuButton asChild>
+				<div className='flex items-center gap-2'>
+					<item.icon />
+					<span>{item.title}</span>
+				</div>
+			</SidebarMenuButton>
+		</NavLink>
 	);
 }

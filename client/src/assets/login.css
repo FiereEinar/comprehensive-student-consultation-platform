@@ -1,198 +1,197 @@
 /* Background and Panel */
 .auth-container {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f5f3ff;
+	min-height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: #f5f3ff;
 }
 
 /* Big Panel */
 .auth-panel {
-  display: flex;
-  width: 1300px;
-  max-width: 95vw;
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 8px 32px #a084ff36;
-  border: 2.5px solid #a084ff;
+	display: flex;
+	width: 1300px;
+	max-width: 95vw;
+	border-radius: 24px;
+	overflow: hidden;
+	box-shadow: 0 8px 32px #a084ff36;
+	border: 2.5px solid #a084ff;
 }
-
 
 /* Purple border around whole panel */
 .auth-panel-bordered {
-  border: 2.5px solid #a084ff;
+	border: 2.5px solid #a084ff;
 }
 
 /* Left: pure white background with image centered */
 .illustration-section-with-white {
-  flex: 1;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 36px 0;
+	flex: 1;
+	background: #fff;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 36px 0;
 }
 
 /* Image */
 .auth-illustration {
-  width: 95%;
-  max-width: 500px;
-  display: block;
+	width: 95%;
+	max-width: 500px;
+	display: block;
 }
 
 /* Right: gradient background with form centered */
 .form-section-with-gradient {
-  flex: 1;
-  background: linear-gradient(135deg, #b25dcc 0%, #764fc0 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 36px 0;
+	flex: 1;
+	background: linear-gradient(135deg, #b25dcc 0%, #764fc0 100%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 36px 0;
 }
 
 /* Card Styling */
 .form-card {
-  width: 100%;
-  max-width: 450px;
-  background: #fff;
-  border-radius: 18px;
-  box-shadow: 0 4px 24px rgba(148,87,235,0.08);
-  padding: 34px 28px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+	width: 100%;
+	max-width: 450px;
+	background: #fff;
+	border-radius: 18px;
+	box-shadow: 0 4px 24px rgba(148, 87, 235, 0.08);
+	padding: 34px 28px;
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
 }
 
 /* Headings and Descriptions */
 .form-title {
-  text-align: center;
-  color: #8a49ff;
-  font-weight: 700;
-  font-size: 2.1rem;
-  margin-bottom: 8px;
+	text-align: center;
+	color: #8a49ff;
+	font-weight: 700;
+	font-size: 2.1rem;
+	margin-bottom: 8px;
 }
 
 .form-description {
-  text-align: center;
-  color: #666;
-  font-size: 1rem;
-  margin-bottom: 10px;
+	text-align: center;
+	color: #666;
+	font-size: 1rem;
+	margin-bottom: 10px;
 }
 
 /* Fields */
 .form-fields {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
 }
 .field-group {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
 }
 .field-label {
-  color: #7c3aed;
-  font-weight: 500;
-  font-size: 1rem;
-  margin-bottom: 2px;
+	color: #7c3aed;
+	font-weight: 500;
+	font-size: 1rem;
+	margin-bottom: 2px;
 }
 .field-input {
-  width: 100%;
-  padding: 11px 14px;
-  border: 1.5px solid #e4ddf4;
-  border-radius: 8px;
-  background: #f7f3ff;
-  font-size: 1rem;
-  transition: border 0.2s;
+	width: 100%;
+	padding: 11px 14px;
+	border: 1.5px solid #e4ddf4;
+	border-radius: 8px;
+	background: #f7f3ff;
+	font-size: 1rem;
+	transition: border 0.2s;
 }
 .field-input:focus {
-  outline: none;
-  border-color: #b084ff;
+	outline: none;
+	border-color: #b084ff;
 }
 .field-input-error {
-  border-color: #e8505b;
-  background: #fbeaec;
+	border-color: #e8505b;
+	background: #fbeaec;
 }
 .field-error {
-  color: #e8505b;
-  font-size: 0.93rem;
-  margin-top: 3px;
+	color: #e8505b;
+	font-size: 0.93rem;
+	margin-top: 3px;
 }
 
 /* Extra options row */
 .form-extra {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 2px;
-  font-size: 0.97rem;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 2px;
+	font-size: 0.97rem;
 }
 .form-remember {
-  color: #8a49ff;
-  font-size: 0.99rem;
+	color: #8a49ff;
+	font-size: 0.99rem;
 }
 .form-checkbox {
-  margin-right: 7px;
+	margin-right: 7px;
 }
 .form-link {
-  color: #8a49ff;
-  cursor: pointer;
-  text-decoration: underline;
+	color: #8a49ff;
+	cursor: pointer;
+	text-decoration: underline;
 }
 .form-link:hover {
-  color: #b084ff;
+	color: #b084ff;
 }
 
 /* Buttons */
 .form-button-primary {
-  width: 100%;
-  background: #734EC0;
-  color: #fff;
-  padding: 12px 0;
-  border: none;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 1.09rem;
-  margin: 10px 0 0 0;
-  cursor: pointer;
-  transition: background 0.2s;
+	width: 100%;
+	background: #734ec0;
+	color: #fff;
+	padding: 12px 0;
+	border: none;
+	border-radius: 8px;
+	font-weight: 600;
+	font-size: 1.09rem;
+	/* margin: 10px 0 0 0; */
+	cursor: pointer;
+	transition: background 0.2s;
 }
 .form-button-primary:hover {
-  background: linear-gradient(90deg, #8a49ff 40%, #b084ff 100%);
+	background: linear-gradient(90deg, #8a49ff 40%, #b084ff 100%);
 }
 
 /* Google button */
 .form-button-google {
-  width: 100%;
-  background: #fff;
-  color: #555;
-  border: 1.5px solid #b084ff;
-  border-radius: 8px;
-  padding: 10px 0;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 9px;
-  margin-top: 11px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: box-shadow 0.18s, border 0.18s;
+	width: 100%;
+	background: #fff;
+	color: #555;
+	border: 1.5px solid #b084ff;
+	border-radius: 8px;
+	padding: 10px 0;
+	font-weight: 500;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 9px;
+	margin-top: 11px;
+	cursor: pointer;
+	font-size: 1rem;
+	transition: box-shadow 0.18s, border 0.18s;
 }
 .form-button-google:hover {
-  border-color: #8a49ff;
-  box-shadow: 0 1px 10px #b084ff40;
+	border-color: #8a49ff;
+	box-shadow: 0 1px 10px #b084ff40;
 }
 .form-google-icon {
-  width: 23px;
-  height: 23px;
+	width: 23px;
+	height: 23px;
 }
 
 /* Alt action */
 .form-alt-action {
-  text-align: center;
-  margin-top: 3px;
-  font-size: 0.98rem;
-  color: #666;
+	text-align: center;
+	margin-top: 3px;
+	font-size: 0.98rem;
+	color: #666;
 }

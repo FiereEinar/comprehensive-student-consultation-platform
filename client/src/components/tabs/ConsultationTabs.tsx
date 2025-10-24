@@ -4,6 +4,7 @@ import { useUserStore } from '@/stores/user';
 import type { ConsultationStatus } from '@/types/consultation';
 import { useQuery } from '@tanstack/react-query';
 import ConsultationCard from '../ConsultationCard';
+import ConsultationSheet from '../ConsultationSheet';
 
 type ConsultationTabsProps = {
 	userID: string;
@@ -39,11 +40,23 @@ export default function ConsultationTabs({
 						</div>
 					)}
 					{consultations?.map((consultation) => (
-						<ConsultationCard
-							info={user?.role === 'student' ? 'instructor' : 'student'}
+						<ConsultationSheet
 							key={consultation._id}
 							consultation={consultation}
+							trigger={
+								<div>
+									<ConsultationCard
+										info={user?.role === 'student' ? 'instructor' : 'student'}
+										consultation={consultation}
+									/>
+								</div>
+							}
 						/>
+						// <ConsultationCard
+						// 	info={user?.role === 'student' ? 'instructor' : 'student'}
+						// 	key={consultation._id}
+						// 	consultation={consultation}
+						// />
 					))}
 				</>
 			)}
