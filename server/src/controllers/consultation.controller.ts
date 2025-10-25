@@ -13,6 +13,7 @@ import { BAD_REQUEST, NOT_FOUND } from '../constants/http';
 import AvailabilityModel from '../models/availability.model';
 import { getStartAndEndofDay } from '../utils/date';
 import { DEFAULT_LIMIT } from '../constants';
+import { subDays } from 'date-fns';
 
 /**
  * @route GET /api/v1/consultation - get all recent consultations
@@ -135,6 +136,69 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 			true,
 			consultation,
 			`Consultation status updated ${status}`
+		)
+	);
+});
+
+/**
+ * @route GET /api/v1/consultation/dashboard-data
+ */
+export const getAdminDashboardData = asynchandler(async (req, res) => {
+	// count the total number of students, instructors and consultations
+	const [totalStudents, totalInstructors, totalConsultations] =
+		await Promise.all([
+			UserModel.countDocuments({ role: 'student' }),
+			UserModel.countDocuments({ role: 'instructor' }),
+			ConsultationModel.countDocuments(),
+		]);
+
+	// get pending consultations
+	const pendingConsultations = await ConsultationModel.find({
+		status: 'pending',
+	})
+		.populate('student instructor')
+		.sort({ scheduledAt: -1 })
+		.limit(5)
+		.exec();
+
+	// get recent consultations (latest 5 only)
+	const recentConsultations = await ConsultationModel.find()
+		.populate('student instructor')
+		.sort({ createdAt: -1 })
+		.limit(5)
+		.exec();
+
+	// get active instructors (instructors with upcoming or ongoing consultations) ===
+	const activeInstructorIDs = await ConsultationModel.distinct('instructor', {
+		status: { $in: ['pending', 'accepted'] },
+		scheduledAt: { $gte: new Date() },
+	});
+	const activeInstructors = await UserModel.find({
+		_id: { $in: activeInstructorIDs },
+	}).select('name email');
+
+	// get recently joined students (joined in last 7 days)
+	const recentStudents = await UserModel.find({
+		role: 'student',
+		createdAt: { $gte: subDays(new Date(), 7) },
+	})
+		.sort({ createdAt: -1 })
+		.limit(5)
+		.select('name email createdAt');
+
+	res.json(
+		new CustomResponse(
+			true,
+			{
+				totalStudents,
+				totalInstructors,
+				totalConsultations,
+				pendingConsultations,
+				recentConsultations,
+				activeInstructors,
+				recentStudents,
+			},
+			'Dashboard data fetched'
 		)
 	);
 });
