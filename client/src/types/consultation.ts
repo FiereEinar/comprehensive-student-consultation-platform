@@ -14,4 +14,6 @@ export type Consultation = {
 	status: ConsultationStatus;
 	title: string;
 	description: string;
+	createdAt: Date;
+	updatedAt: Date;
 };

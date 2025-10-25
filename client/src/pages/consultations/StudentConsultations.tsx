@@ -10,7 +10,7 @@ export default function StudentConsultations() {
 	return (
 		<section className='space-y-5'>
 			<div className='flex w-full justify-between'>
-				<Header>Student Consultations</Header>
+				<Header size='md'>Student Consultations</Header>
 				<ConsultationForm />
 			</div>
 			<div className='flex gap-3'>
@@ -32,11 +32,18 @@ export default function StudentConsultations() {
 							Requests
 						</TabsTrigger>
 					</TabsList>
+
 					<TabsContent value='Upcoming'>
-						<ConsultationTabs userID={user?._id ?? ''} status='accepted' />
+						<ConsultationTabs
+							userID={user?._id ?? ''}
+							status={['accepted', 'completed']}
+						/>
 					</TabsContent>
 					<TabsContent value='Requests'>
-						<ConsultationTabs userID={user?._id ?? ''} status='pending' />
+						<ConsultationTabs
+							userID={user?._id ?? ''}
+							status={['pending', 'declined']}
+						/>
 					</TabsContent>
 				</Tabs>
 

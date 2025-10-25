@@ -32,7 +32,6 @@ export default function GoogleLoginButton() {
 	const login = useGoogleLogin({
 		onSuccess: async (credentialResponse) => {
 			try {
-				console.log(credentialResponse);
 				const { access_token } = credentialResponse;
 				const { data } = await axiosInstance.post('/auth/google', {
 					token: access_token,

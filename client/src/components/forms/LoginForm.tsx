@@ -54,8 +54,12 @@ export default function LoginForm() {
 
 			setUser(data.data);
 			data.data.role === 'instructor'
-				? navigate('/instructor/consultation')
-				: navigate('/student/consultation');
+				? navigate('/instructor/dashboard')
+				: data.data.role === 'student'
+				? navigate('/student/dashboard')
+				: data.data.role === 'admin'
+				? navigate('/admin/dashboard')
+				: navigate('/');
 		} catch (error: any) {
 			console.error('Failed to login', error);
 			toast.error(error.message ?? 'Failed to login');

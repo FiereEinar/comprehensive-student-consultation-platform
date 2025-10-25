@@ -19,7 +19,7 @@ export default function Header({
 				<h1 className={cn('text-3xl font-bold', className)}>{children}</h1>
 			)}
 			{size === 'md' && (
-				<h1 className={cn('text-2xl font-bold', className)}>{children}</h1>
+				<h1 className={cn('text-2xl font-semibold', className)}>{children}</h1>
 			)}
 			{size === 'sm' && (
 				<h1 className={cn('text-xl font-bold', className)}>{children}</h1>

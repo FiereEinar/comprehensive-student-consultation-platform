@@ -87,7 +87,7 @@ export const createConsultation = asynchandler(async (req, res) => {
 
 /**
  * @route GET /api/v1/user/:userID/consultation
- * query: status = 'pending' | 'accepted' | 'declined' | 'completed'
+ * query: status = 'pending' | 'accepted' | 'declined' | 'completed' - can be joined with comma
  * limit: number
  */
 export const getUserConsultations = asynchandler(async (req, res) => {
@@ -99,7 +99,9 @@ export const getUserConsultations = asynchandler(async (req, res) => {
 	};
 
 	if (status) {
+		const statuses = status.toString().split(',');
 		filter.status = status;
+		if (statuses.length > 0) filter.status = { $in: statuses };
 	}
 
 	const consultations = await ConsultationModel.find(filter)

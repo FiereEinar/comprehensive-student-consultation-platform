@@ -55,6 +55,19 @@ const studentSidebarLinks: SidebarNavLink[] = [
 	},
 ];
 
+const adminSidebarLinks: SidebarNavLink[] = [
+	{
+		title: 'Dashboard',
+		url: '/admin/dashboard',
+		icon: LayoutDashboard,
+	},
+	{
+		title: 'Consultations',
+		url: '/admin/consultation',
+		icon: Calendar,
+	},
+];
+
 export function AppSidebar() {
 	const { user } = useUserStore((state) => state);
 
@@ -82,9 +95,7 @@ export function AppSidebar() {
 						<SidebarGroupContent>
 							<SidebarMenu>
 								{studentSidebarLinks.map((item) => (
-									// <SidebarMenuItem key={item.title}>
 									<SidebarNavLink key={item.title} item={item} />
-									// {/* </SidebarMenuItem> */}
 								))}
 							</SidebarMenu>
 						</SidebarGroupContent>
@@ -98,21 +109,21 @@ export function AppSidebar() {
 						<SidebarGroupContent>
 							<SidebarMenu>
 								{instructorSidebarLinks.map((item) => (
-									<SidebarMenuItem key={item.title}>
-										<SidebarMenuButton asChild>
-											<NavLink
-												className={({ isActive }) =>
-													`transition-all w-full p-2 pr-8 hover:bg-black/20 rounded-md ${
-														isActive ? 'bg-black/20' : ''
-													}`
-												}
-												to={item.url}
-											>
-												<item.icon />
-												<span>{item.title}</span>
-											</NavLink>
-										</SidebarMenuButton>
-									</SidebarMenuItem>
+									<SidebarNavLink key={item.title} item={item} />
+								))}
+							</SidebarMenu>
+						</SidebarGroupContent>
+					</SidebarGroup>
+				)}
+
+				{/* ADMIN SIDEBAR */}
+				{user?.role === 'admin' && (
+					<SidebarGroup>
+						<SidebarGroupLabel>Admin Panel</SidebarGroupLabel>
+						<SidebarGroupContent>
+							<SidebarMenu>
+								{adminSidebarLinks.map((item) => (
+									<SidebarNavLink key={item.title} item={item} />
 								))}
 							</SidebarMenu>
 						</SidebarGroupContent>
@@ -129,33 +140,16 @@ export function AppSidebar() {
 									<ThemeToggle />
 								</SidebarMenuButton>
 							</SidebarMenuItem> */}
+							<SidebarNavLink
+								item={{
+									title: 'Settings',
+									url: '/settings',
+									icon: Settings,
+								}}
+							/>
 
 							<SidebarMenuItem>
 								<SidebarMenuButton asChild>
-									<NavLink
-										className={({ isActive }) =>
-											`transition-all w-full p-2 pr-8 hover:bg-black/20 rounded-md ${
-												isActive ? 'bg-black/20' : ''
-											}`
-										}
-										to='/settings'
-									>
-										<Settings />
-										<span>Settings</span>
-									</NavLink>
-								</SidebarMenuButton>
-							</SidebarMenuItem>
-
-							<SidebarMenuItem>
-								<SidebarMenuButton asChild>
-									{/* <NavLink
-												className={({ isActive }) =>
-													`transition-all w-full p-2 pr-8 hover:bg-black/20 rounded-md ${
-														isActive ? 'bg-black/20' : ''
-													}`
-												}
-												to='/settings'
-									> */}
 									<LogoutButton>
 										<Power className='size-4' />
 										<span>Logout</span>
@@ -176,14 +170,16 @@ function SidebarNavLink({ item }: { item: SidebarNavLink }) {
 	return (
 		<NavLink
 			className={({ isActive }) =>
-				`rounded-md ${isActive ? 'bg-custom-primary/20' : ''}`
+				`rounded-md hover:bg-custom-primary/20 ${
+					isActive ? 'bg-custom-primary/20' : ''
+				}`
 			}
 			to={item.url}
 		>
 			<SidebarMenuItem>
 				<SidebarMenuButton>
 					<div className='flex items-center gap-2'>
-						<item.icon />
+						<item.icon className='size-5' />
 						<span>{item.title}</span>
 					</div>
 				</SidebarMenuButton>

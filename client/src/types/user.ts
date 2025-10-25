@@ -10,6 +10,8 @@ export type User = {
 	email: string;
 	password: string;
 	role: UserTypes;
+	createdAt: Date;
+	updatedAt: Date;
 };
 
 export type InstructorAvailability = z.infer<typeof createAvilabilitySchema> & {

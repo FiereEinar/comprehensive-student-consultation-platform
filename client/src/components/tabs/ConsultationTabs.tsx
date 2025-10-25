@@ -8,7 +8,7 @@ import ConsultationSheet from '../ConsultationSheet';
 
 type ConsultationTabsProps = {
 	userID: string;
-	status: ConsultationStatus;
+	status: ConsultationStatus[];
 };
 
 export default function ConsultationTabs({
@@ -22,7 +22,7 @@ export default function ConsultationTabs({
 		error,
 	} = useQuery({
 		queryKey: [QUERY_KEYS.CONSULTATIONS, status],
-		queryFn: () => fetchUserConsultations(userID, status),
+		queryFn: () => fetchUserConsultations(userID, status.join(',')),
 	});
 
 	return (

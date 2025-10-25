@@ -1,19 +1,21 @@
-import type { Consultation, ConsultationStatus } from '@/types/consultation';
+import type { Consultation } from '@/types/consultation';
 import axiosInstance from './axios';
 
 /**
- * query: status = 'pending' | 'accepted' | 'declined' | 'completed'
+ * query: status = 'pending' | 'accepted' | 'declined' | 'completed' - can be joined with comma
  * limit: number
  */
 export const fetchUserConsultations = async (
 	userID: string,
-	query?: ConsultationStatus,
+	status?: string,
 	limit?: number
 ): Promise<Consultation[]> => {
 	try {
-		const { data } = await axiosInstance.get(
-			`/user/${userID}/consultation?status=${query}&limit=${limit}`
-		);
+		let url = `/user/${userID}/consultation?`;
+		if (status) url += `status=${status}&`;
+		if (limit) url += `limit=${limit}`;
+
+		const { data } = await axiosInstance.get(url);
 
 		return data.data;
 	} catch (error: any) {
