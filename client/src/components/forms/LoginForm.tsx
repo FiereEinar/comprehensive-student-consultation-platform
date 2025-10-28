@@ -2,7 +2,7 @@ import axiosInstance from '@/api/axios';
 import { loginSchema } from '@/lib/schemas/auth.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import type z from 'zod';
 import {
@@ -152,9 +152,12 @@ export default function LoginForm() {
 							<input type='checkbox' className='form-checkbox mr-2' />
 							Remember me
 						</label>
-						<a href='/forgot' className='form-link text-purple-500 underline'>
+						<Link
+							to='/forgot-password'
+							className='form-link text-purple-500 underline'
+						>
 							Forgot password?
-						</a>
+						</Link>
 					</div>
 
 					<div className='flex flex-col justify-center items-center gap-2'>

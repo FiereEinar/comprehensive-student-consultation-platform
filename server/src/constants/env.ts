@@ -21,3 +21,5 @@ export const ACCESS_TOKEN_COOKIE_NAME = getEnv('ACCESS_TOKEN_COOKIE_NAME');
 export const REFRESH_TOKEN_COOKIE_NAME = getEnv('REFRESH_TOKEN_COOKIE_NAME');
 export const GOOGLE_CLIENT_ID = getEnv('GOOGLE_CLIENT_ID');
 export const GOOGLE_CLIENT_SECRET = getEnv('GOOGLE_CLIENT_SECRET');
+export const EMAIL_USER = getEnv('EMAIL_USER');
+export const EMAIL_PASS = getEnv('EMAIL_PASS');

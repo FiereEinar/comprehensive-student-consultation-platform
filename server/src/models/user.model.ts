@@ -11,6 +11,8 @@ export interface IUser extends mongoose.Document {
 	password: string;
 	googleID: string;
 	role: UserTypes;
+	resetPasswordToken?: string;
+	resetPasswordExpires?: Date | undefined;
 	omitPassword: () => Omit<IUser, 'password'>;
 }
 
@@ -32,6 +34,8 @@ const UserSchema = new Schema<IUser>(
 			default: 'student',
 			required: true,
 		},
+		resetPasswordToken: { type: String, required: false },
+		resetPasswordExpires: { type: Date, required: false },
 	},
 	{
 		timestamps: true,

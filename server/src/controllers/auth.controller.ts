@@ -15,11 +15,18 @@ import {
 	BCRYPT_SALT,
 	JWT_REFRESH_SECRET_KEY,
 	GOOGLE_CLIENT_ID,
+	FRONTEND_URL,
+	EMAIL_USER,
+	EMAIL_PASS,
 } from '../constants/env';
 import SessionModel from '../models/session.model';
 import UserModel from '../models/user.model';
 import { getUserRequestInfo } from '../utils/utils';
-import { ONE_DAY_MS, thirtyDaysFromNow } from '../utils/date';
+import {
+	ONE_DAY_MS,
+	ONE_HOUR_FROM_NOW,
+	thirtyDaysFromNow,
+} from '../utils/date';
 import {
 	getAccessToken,
 	RefreshTokenPayload,
@@ -39,6 +46,8 @@ import { AppErrorCodes } from '../constants';
 import { verifyRecaptcha } from '../utils/recaptcha';
 import { googleClient } from '../utils/google';
 import axios from 'axios';
+import crypto from 'crypto';
+import nodemailer from 'nodemailer';
 
 /**
  * @route POST /api/v1/auth/login - Login
@@ -351,4 +360,90 @@ export const googleLoginHandlerV2 = asyncHandler(async (req, res) => {
 	setAuthCookie({ res, accessToken, refreshToken });
 
 	res.json({ accessToken, user, message: 'Login successful' });
+});
+
+/**
+ * @route POST /api/v1/auth/forgot-password
+ */
+export const forgotPasswordHandler = asyncHandler(async (req, res) => {
+	const { email } = req.body;
+
+	const user = await UserModel.findOne({ email });
+	appAssert(user, BAD_REQUEST, 'Email not found');
+
+	// generate token
+	const resetToken = crypto.randomBytes(32).toString('hex');
+	const hashedToken = crypto
+		.createHash('sha256')
+		.update(resetToken)
+		.digest('hex');
+
+	// set token and expiry (1 hour)
+	user.resetPasswordToken = hashedToken;
+	user.resetPasswordExpires = ONE_HOUR_FROM_NOW;
+	await user.save();
+
+	// send email
+	const resetURL = `${FRONTEND_URL}/reset-password/${resetToken}`;
+
+	const transporter = nodemailer.createTransport({
+		service: 'gmail',
+		auth: {
+			user: EMAIL_USER,
+			pass: EMAIL_PASS,
+		},
+	});
+
+	const message = {
+		from: EMAIL_USER,
+		to: user.email,
+		subject: 'Password Reset Request',
+		html: `
+      <p>You requested a password reset.</p>
+      <p>Click <a href="${resetURL}">here</a> to reset your password.</p>
+      <p>This link expires in 1 hour.</p>
+    `,
+	};
+
+	await transporter.sendMail(message);
+
+	res.json(
+		new CustomResponse(
+			true,
+			null,
+			'If this email exists, a reset link has been sent.'
+		)
+	);
+});
+
+/**
+ * @route POST /api/v1/auth/reset-password/:token
+ */
+export const resetPasswordHandler = asyncHandler(async (req, res) => {
+	const { token } = req.params;
+	const { password } = req.body;
+
+	// Hash token to compare with DB
+	const hashedToken = crypto
+		.createHash('sha256')
+		.update(token ?? '')
+		.digest('hex');
+
+	const user = await UserModel.findOne({
+		resetPasswordToken: hashedToken,
+		resetPasswordExpires: { $gt: new Date() },
+	});
+
+	appAssert(user, BAD_REQUEST, 'Invalid or expired token');
+
+	// Update password
+	const hashedPassword = await bcrypt.hash(password, 10);
+	user.password = hashedPassword;
+	user.resetPasswordToken = '';
+	user.resetPasswordExpires = undefined;
+	await user.save();
+
+	res.json(
+		new CustomResponse(true, null, 'Password has been reset successfully')
+	);
 });

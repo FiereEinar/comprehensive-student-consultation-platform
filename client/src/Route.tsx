@@ -15,6 +15,8 @@ import Settings from './pages/Settings';
 import ProtectedRoute from './components/ProtectedRoute';
 import InstructorConsultations2 from './pages/consultations/InstructorConsultations2';
 import InstructorConsultations from './pages/consultations/InstructorConsultations';
+import ForgotPassword from './pages/ForgotPassword';
+import PasswordReset from './pages/PasswordReset';
 
 export default function Route() {
 	const route = createBrowserRouter([
@@ -71,6 +73,14 @@ export default function Route() {
 		{
 			path: '/signup',
 			element: <Signup />,
+		},
+		{
+			path: '/forgot-password',
+			element: <ForgotPassword />,
+		},
+		{
+			path: '/reset-password/:token',
+			element: <PasswordReset />,
 		},
 	]);
 
