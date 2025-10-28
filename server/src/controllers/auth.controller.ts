@@ -21,7 +21,10 @@ import {
 } from '../constants/env';
 import SessionModel from '../models/session.model';
 import UserModel from '../models/user.model';
-import { getUserRequestInfo } from '../utils/utils';
+import {
+	getPasswordResetEmailTemplate,
+	getUserRequestInfo,
+} from '../utils/utils';
 import {
 	ONE_DAY_MS,
 	ONE_HOUR_FROM_NOW,
@@ -395,25 +398,15 @@ export const forgotPasswordHandler = asyncHandler(async (req, res) => {
 	});
 
 	const message = {
-		from: EMAIL_USER,
+		from: `"Comprehensive Student Consultation Platform" <${EMAIL_USER}>`,
 		to: user.email,
 		subject: 'Password Reset Request',
-		html: `
-      <p>You requested a password reset.</p>
-      <p>Click <a href="${resetURL}">here</a> to reset your password.</p>
-      <p>This link expires in 1 hour.</p>
-    `,
+		html: getPasswordResetEmailTemplate(resetURL),
 	};
 
 	await transporter.sendMail(message);
 
-	res.json(
-		new CustomResponse(
-			true,
-			null,
-			'If this email exists, a reset link has been sent.'
-		)
-	);
+	res.json(new CustomResponse(true, null, 'Reset link has been sent.'));
 });
 
 /**

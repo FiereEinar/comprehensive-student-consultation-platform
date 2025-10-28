@@ -15,10 +15,12 @@ import axiosInstance from '@/api/axios';
 
 export default function ForgotPasswordForm() {
 	const [email, setEmail] = useState<string>('');
+	const [isLoading, setIsLoading] = useState(false);
 
 	const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		try {
 			e.preventDefault();
+			setIsLoading(true);
 			const { data } = await axiosInstance.post('/auth/forgot-password', {
 				email,
 			});
@@ -27,6 +29,8 @@ export default function ForgotPasswordForm() {
 		} catch (error: any) {
 			console.error('Failed to send email', error);
 			toast.error(error.message ?? 'Failed to send your email');
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -58,6 +62,7 @@ export default function ForgotPasswordForm() {
 
 					<div className='flex flex-col justify-center items-center gap-2'>
 						<Button
+							disabled={isLoading}
 							type='submit'
 							form='forgot-password-form'
 							className='form-button-primary w-full m-0'
@@ -67,17 +72,7 @@ export default function ForgotPasswordForm() {
 					</div>
 				</form>
 			</CardContent>
-			<CardFooter className='flex-col gap-2'>
-				{/* <div className='form-alt-action mt-3 text-center text-sm'>
-					Don't have an account?{' '}
-					<span
-						className='form-link text-purple-500 underline cursor-pointer'
-						onClick={() => navigate('/signup')}
-					>
-						Create account
-					</span>
-				</div> */}
-			</CardFooter>
+			<CardFooter className='flex-col gap-2'></CardFooter>
 		</Card>
 	);
 }

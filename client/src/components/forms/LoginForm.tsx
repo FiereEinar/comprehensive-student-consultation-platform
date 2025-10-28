@@ -27,6 +27,8 @@ export default function LoginForm() {
 	const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 	const { setUser } = useUserStore((state) => state);
 	const navigate = useNavigate();
+	const [isLoading, setIsLoading] = useState(false);
+
 	const {
 		control,
 		handleSubmit,
@@ -48,6 +50,7 @@ export default function LoginForm() {
 				return;
 			}
 
+			setIsLoading(true);
 			const { data } = await axiosInstance.post('/auth/login', formData);
 
 			toast.success(data.message);
@@ -63,6 +66,8 @@ export default function LoginForm() {
 		} catch (error: any) {
 			console.error('Failed to login', error);
 			toast.error(error.message ?? 'Failed to login');
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -163,6 +168,7 @@ export default function LoginForm() {
 					<div className='flex flex-col justify-center items-center gap-2'>
 						<Recaptcha onVerify={setRecaptchaToken} />
 						<Button
+							disabled={isLoading}
 							type='submit'
 							form='login-form'
 							className='form-button-primary w-full m-0'
