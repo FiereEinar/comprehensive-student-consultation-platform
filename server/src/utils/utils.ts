@@ -1,4 +1,6 @@
 import { Request } from 'express';
+import crypto from 'crypto';
+import { HASH_ALGORITHM, HASH_ENCODING } from '../constants';
 
 export const getUserRequestInfo = (req: Request) => {
 	const xforwarded = req.headers['x-forwarded-for'];
@@ -9,6 +11,14 @@ export const getUserRequestInfo = (req: Request) => {
 	const userAgent = req.headers['user-agent'];
 
 	return { ip, userAgent };
+};
+
+export const generateCypto = (length = 32) => {
+	return crypto.randomBytes(length).toString(HASH_ENCODING);
+};
+
+export const hashCrypto = (data: string) => {
+	return crypto.createHash(HASH_ALGORITHM).update(data).digest(HASH_ENCODING);
 };
 
 export const getPasswordResetEmailTemplate = (resetURL: string) => {

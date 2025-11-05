@@ -22,10 +22,13 @@ import {
 import SessionModel from '../models/session.model';
 import UserModel from '../models/user.model';
 import {
+	generateCypto,
 	getPasswordResetEmailTemplate,
 	getUserRequestInfo,
+	hashCrypto,
 } from '../utils/utils';
 import {
+	ONE_DAY_FROM_NOW,
 	ONE_DAY_MS,
 	ONE_HOUR_FROM_NOW,
 	thirtyDaysFromNow,
@@ -49,8 +52,8 @@ import { AppErrorCodes } from '../constants';
 import { verifyRecaptcha } from '../utils/recaptcha';
 import { googleClient } from '../utils/google';
 import axios from 'axios';
-import crypto from 'crypto';
-import nodemailer from 'nodemailer';
+import InvitationModel from '../models/invitation.model';
+import { sendMail } from '../utils/email';
 
 /**
  * @route POST /api/v1/auth/login - Login
@@ -375,11 +378,8 @@ export const forgotPasswordHandler = asyncHandler(async (req, res) => {
 	appAssert(user, BAD_REQUEST, 'Email not found');
 
 	// generate token
-	const resetToken = crypto.randomBytes(32).toString('hex');
-	const hashedToken = crypto
-		.createHash('sha256')
-		.update(resetToken)
-		.digest('hex');
+	const resetToken = generateCypto();
+	const hashedToken = hashCrypto(resetToken);
 
 	// set token and expiry (1 hour)
 	user.resetPasswordToken = hashedToken;
@@ -389,14 +389,6 @@ export const forgotPasswordHandler = asyncHandler(async (req, res) => {
 	// send email
 	const resetURL = `${FRONTEND_URL}/reset-password/${resetToken}`;
 
-	const transporter = nodemailer.createTransport({
-		service: 'gmail',
-		auth: {
-			user: EMAIL_USER,
-			pass: EMAIL_PASS,
-		},
-	});
-
 	const message = {
 		from: `"Comprehensive Student Consultation Platform" <${EMAIL_USER}>`,
 		to: user.email,
@@ -404,7 +396,7 @@ export const forgotPasswordHandler = asyncHandler(async (req, res) => {
 		html: getPasswordResetEmailTemplate(resetURL),
 	};
 
-	await transporter.sendMail(message);
+	await sendMail(message);
 
 	res.json(new CustomResponse(true, null, 'Reset link has been sent.'));
 });
@@ -417,10 +409,7 @@ export const resetPasswordHandler = asyncHandler(async (req, res) => {
 	const { password } = req.body;
 
 	// Hash token to compare with DB
-	const hashedToken = crypto
-		.createHash('sha256')
-		.update(token ?? '')
-		.digest('hex');
+	const hashedToken = hashCrypto(token ?? '');
 
 	const user = await UserModel.findOne({
 		resetPasswordToken: hashedToken,
@@ -438,5 +427,112 @@ export const resetPasswordHandler = asyncHandler(async (req, res) => {
 
 	res.json(
 		new CustomResponse(true, null, 'Password has been reset successfully')
+	);
+});
+
+/**
+ * @route GET /api/v1/auth/invite
+ */
+export const getInvitations = asyncHandler(async (req, res) => {
+	const invitations = await InvitationModel.find({ status: 'pending' });
+	res.json(new CustomResponse(true, invitations, 'Invitations found'));
+});
+
+/**
+ * @route POST /api/v1/auth/invite/instructor
+ */
+export const inviteInstructor = asyncHandler(async (req, res) => {
+	const { email, name } = req.body;
+
+	// 1. Prevent duplicate invites
+	const existingInvite = await InvitationModel.findOne({
+		email,
+		status: 'pending',
+	});
+
+	appAssert(
+		!existingInvite,
+		BAD_REQUEST,
+		'An invitation is already pending for this email.'
+	);
+
+	const existingEmail = await UserModel.findOne({ email });
+	appAssert(
+		!existingEmail,
+		BAD_REQUEST,
+		'An account already exists for this email.'
+	);
+
+	// 2. Generate a unique token
+	const token = generateCypto();
+	const expiresAt = ONE_DAY_FROM_NOW;
+
+	// 3. Create the invitation
+	const invitation = await InvitationModel.create({
+		email,
+		name: name.toLowerCase(),
+		token,
+		expiresAt,
+	});
+
+	// 4. Construct email
+	const inviteLink = `${FRONTEND_URL}/invite/instructor/accept?token=${token}`;
+	const message = {
+		from: `"Consultation Admin" <${EMAIL_USER}>`,
+		to: email,
+		subject: 'Instructor Invitation',
+		html: `
+      <div style="font-family:sans-serif;padding:1rem;border-radius:8px;background:#f9fafb;">
+        <h2 style="color:#111;">You’ve been invited to join as an Instructor!</h2>
+        <p>Hello ${name || ''},</p>
+        <p>You’ve been invited to join the Comprehensive Student Consultation Platform as an Instructor.</p>
+        <a href="${inviteLink}" 
+           style="display:inline-block;margin-top:1rem;padding:.6rem 1rem;background:#111;color:#fff;border-radius:6px;text-decoration:none;">
+           Accept Invitation
+        </a>
+        <p style="margin-top:1rem;font-size:12px;color:#555;">This link will expire in 24 hours.</p>
+      </div>
+    `,
+	};
+
+	await sendMail(message);
+
+	res.json(new CustomResponse(true, null, 'Invitation sent successfully.'));
+});
+
+/**
+ * @route POST /api/v1/auth/invite/instructor/accept
+ */
+export const acceptInvitation = asyncHandler(async (req, res) => {
+	const { token, password } = req.body;
+
+	const invitation = await InvitationModel.findOne({
+		token,
+		status: 'pending',
+	});
+	appAssert(
+		invitation && invitation.expiresAt > new Date(),
+		BAD_REQUEST,
+		'Invalid or expired invitation link.'
+	);
+
+	// Create the instructor user
+	const user = await UserModel.create({
+		institutionalID: invitation.email?.split('@')[0],
+		email: invitation.email,
+		name: invitation.name,
+		password: await bcrypt.hash(password, parseInt(BCRYPT_SALT)),
+		role: 'instructor',
+	});
+
+	invitation.status = 'accepted';
+	await invitation.save();
+
+	res.json(
+		new CustomResponse(
+			true,
+			user.omitPassword(),
+			'Invitation accepted. Account created.'
+		)
 	);
 });

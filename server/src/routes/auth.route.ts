@@ -1,7 +1,10 @@
 import express from 'express';
 import {
+	acceptInvitation,
 	forgotPasswordHandler,
+	getInvitations,
 	googleLoginHandlerV2,
+	inviteInstructor,
 	loginHandler,
 	logoutHandler,
 	recaptchaVerify,
@@ -17,9 +20,15 @@ router.post('/signup', signupHandler);
 router.post('/token/verify', verifyAuthHandler);
 router.get('/logout', logoutHandler);
 router.get('/refresh', refreshTokenHandler);
+
 router.post('/recaptcha/verify', recaptchaVerify);
 router.post('/google', googleLoginHandlerV2);
 router.post('/forgot-password', forgotPasswordHandler);
 router.post('/reset-password/:token', resetPasswordHandler);
+
+// might wanna separate to /api/v1/invitations ???
+router.get('/invite', getInvitations);
+router.post('/invite/instructor', inviteInstructor);
+router.post('/invite/instructor/accept', acceptInvitation);
 
 export default router;
