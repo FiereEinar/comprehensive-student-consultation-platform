@@ -24,3 +24,18 @@ export const loginSchema = z.object({
 			`Passwords must be atleast ${MIN_PASSWORD_LEN} characters`
 		),
 });
+
+export const completeInstructorAccountSchema = z
+	.object({
+		password: z.string().min(6, 'Password must be atleast 6 characters'),
+		confirmPassword: z.string().min(6, 'Password must be atleast 6 characters'),
+	})
+	.refine((data) => data.password === data.confirmPassword, {
+		message: 'Passwords do not match',
+		path: ['confirmPassword'],
+	});
+
+export const inviteInstructorSchema = z.object({
+	email: z.email('Invalid email'),
+	name: z.string().min(1, 'Name is required'),
+});

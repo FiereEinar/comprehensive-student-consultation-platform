@@ -1,4 +1,4 @@
-import type { InstructorAvailability, User } from '@/types/user';
+import type { InstructorAvailability, Invitation, User } from '@/types/user';
 import axiosInstance from './axios';
 
 export const fetchInstructors = async (): Promise<User[]> => {
@@ -25,6 +25,17 @@ export const fetchAvailabilities = async (
 		return data.data;
 	} catch (error: any) {
 		console.error('Failed to fetch instructors availabilities', error);
+		throw error;
+	}
+};
+
+export const fetchInvitations = async (): Promise<Invitation[]> => {
+	try {
+		const { data } = await axiosInstance.get(`/auth/invite`);
+
+		return data.data;
+	} catch (error: any) {
+		console.error('Failed to fetch invitations', error);
 		throw error;
 	}
 };

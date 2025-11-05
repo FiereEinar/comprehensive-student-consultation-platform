@@ -17,6 +17,8 @@ import InstructorConsultations2 from './pages/consultations/InstructorConsultati
 import InstructorConsultations from './pages/consultations/InstructorConsultations';
 import ForgotPassword from './pages/ForgotPassword';
 import PasswordReset from './pages/PasswordReset';
+import AcceptInstructorInvitation from './pages/AcceptInstructorInvitation';
+import AdminInstructorsPage from './pages/AdminInstructorsPage';
 
 export default function Route() {
 	const route = createBrowserRouter([
@@ -39,6 +41,10 @@ export default function Route() {
 				{
 					path: '/admin/consultation',
 					element: <AdminConsultations />,
+				},
+				{
+					path: '/admin/instructors',
+					element: <AdminInstructorsPage />,
 				},
 				{
 					path: '/student/dashboard',
@@ -81,6 +87,10 @@ export default function Route() {
 		{
 			path: '/reset-password/:token',
 			element: <PasswordReset />,
+		},
+		{
+			path: '/invite/instructor/accept',
+			element: <AcceptInstructorInvitation />,
 		},
 	]);
 

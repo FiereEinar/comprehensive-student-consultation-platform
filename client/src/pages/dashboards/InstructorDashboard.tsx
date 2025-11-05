@@ -1,6 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
 	CalendarDays,
@@ -19,6 +18,7 @@ import ConsultationCardActions from '@/components/ConsultationCardActions';
 import Header from '@/components/ui/header';
 import { fetchUserConsultations } from '@/api/consultation';
 import { useUserStore } from '@/stores/user';
+import DashboardOverviewCard from '@/components/DashboardOverviewCard';
 
 export default function InstructorDashboard() {
 	const { user } = useUserStore((state) => state);
@@ -46,22 +46,22 @@ export default function InstructorDashboard() {
 
 			{/* === Overview Cards === */}
 			<div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-				<OverviewCard
+				<DashboardOverviewCard
 					icon={<UserPlus className='h-5 w-5 text-primary' />}
 					label='Pending Requests'
 					value={pendingConsultations.length.toString()}
 				/>
-				<OverviewCard
+				<DashboardOverviewCard
 					icon={<CalendarDays className='h-5 w-5 text-primary' />}
 					label='Upcoming Consultations'
 					value={upcomingConsultations.length.toString()}
 				/>
-				<OverviewCard
+				<DashboardOverviewCard
 					icon={<CheckCircle2 className='h-5 w-5 text-primary' />}
 					label='Completed Consultations'
 					value={completedConsultations.length.toString()}
 				/>
-				<OverviewCard
+				<DashboardOverviewCard
 					icon={<Clock className='h-5 w-5 text-primary' />}
 					label='Set Availability'
 					value={
@@ -160,7 +160,7 @@ export default function InstructorDashboard() {
 											{format(new Date(c.scheduledAt), 'MMM dd, yyyy')}
 										</p>
 									</div>
-									<Badge variant='secondary'>Completed</Badge>
+									<StatusBadge status={c.status} />
 								</div>
 							))
 						) : (
@@ -172,29 +172,5 @@ export default function InstructorDashboard() {
 				</Card>
 			</section>
 		</div>
-	);
-}
-
-function OverviewCard({
-	icon,
-	label,
-	value,
-}: {
-	icon: React.ReactNode;
-	label: string;
-	value: React.ReactNode;
-}) {
-	return (
-		<Card>
-			<CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-				<CardTitle className='text-sm font-medium text-muted-foreground flex gap-2 items-center'>
-					{icon}
-					{label}
-				</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<div className='text-2xl font-semibold'>{value}</div>
-			</CardContent>
-		</Card>
 	);
 }

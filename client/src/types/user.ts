@@ -18,3 +18,15 @@ export type InstructorAvailability = z.infer<typeof createAvilabilitySchema> & {
 	_id: string;
 	user: string;
 };
+
+export type Invitation = {
+	_id: string;
+	email: string;
+	name: string;
+	role: 'instructor';
+	token: string;
+	expiresAt: Date;
+	status: 'pending' | 'accepted' | 'expired';
+	createdAt: Date;
+	updatedAt: Date;
+};

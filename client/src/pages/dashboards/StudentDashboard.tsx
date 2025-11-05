@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +15,7 @@ import Header from '@/components/ui/header';
 import { fetchUserConsultations } from '@/api/consultation';
 import { fetchInstructors } from '@/api/instructor';
 import type { User } from '@/types/user';
+import DashboardOverviewCard from '@/components/DashboardOverviewCard';
 
 export default function StudentDashboard() {
 	const { user } = useUserStore((state) => state);
@@ -48,7 +49,7 @@ export default function StudentDashboard() {
 
 			{/* === Overview Cards === */}
 			<div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-				<OverviewCard
+				<DashboardOverviewCard
 					icon={<CalendarDays className='h-5 w-5 text-primary' />}
 					label='Upcoming Consultation'
 					value={
@@ -60,17 +61,17 @@ export default function StudentDashboard() {
 							: 'No upcoming'
 					}
 				/>
-				<OverviewCard
+				<DashboardOverviewCard
 					icon={<Clock className='h-5 w-5 text-primary' />}
 					label='Pending Requests'
 					value={pendingConsultations.length.toString()}
 				/>
-				<OverviewCard
+				<DashboardOverviewCard
 					icon={<UserCheck className='h-5 w-5 text-primary' />}
 					label='Completed Consultations'
 					value={completedConsultations.length.toString()}
 				/>
-				<OverviewCard
+				<DashboardOverviewCard
 					icon={<BookOpen className='h-5 w-5 text-primary' />}
 					label='Available Instructors'
 					value={instructors?.length.toString() ?? '0'}
@@ -181,29 +182,5 @@ export default function StudentDashboard() {
 				</Card>
 			</section>
 		</div>
-	);
-}
-
-function OverviewCard({
-	icon,
-	label,
-	value,
-}: {
-	icon: React.ReactNode;
-	label: string;
-	value: string;
-}) {
-	return (
-		<Card>
-			<CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-				<CardTitle className='text-sm font-medium text-muted-foreground flex gap-2 items-center'>
-					{icon}
-					{label}
-				</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<div className='text-2xl font-semibold'>{value}</div>
-			</CardContent>
-		</Card>
 	);
 }

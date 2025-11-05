@@ -1,5 +1,6 @@
 import {
 	Calendar,
+	GraduationCap,
 	LayoutDashboard,
 	Power,
 	Settings,
@@ -65,6 +66,11 @@ const adminSidebarLinks: SidebarNavLink[] = [
 		title: 'Consultations',
 		url: '/admin/consultation',
 		icon: Calendar,
+	},
+	{
+		title: 'Instructors',
+		url: '/admin/instructors',
+		icon: GraduationCap,
 	},
 ];
 

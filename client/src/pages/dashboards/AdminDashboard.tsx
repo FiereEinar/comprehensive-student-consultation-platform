@@ -1,4 +1,4 @@
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -18,6 +18,7 @@ import type { Consultation } from '@/types/consultation';
 import type { User } from '@/types/user';
 import { QUERY_KEYS } from '@/constants';
 import Header from '@/components/ui/header';
+import DashboardOverviewCard from '@/components/DashboardOverviewCard';
 
 export default function AdminDashboard() {
 	const navigate = useNavigate();
@@ -46,22 +47,22 @@ export default function AdminDashboard() {
 
 			{/* === Overview Cards === */}
 			<div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
-				<OverviewCard
+				<DashboardOverviewCard
 					icon={<Users className='h-5 w-5 text-primary' />}
 					label='Total Students'
 					value={totalStudents}
 				/>
-				<OverviewCard
+				<DashboardOverviewCard
 					icon={<GraduationCap className='h-5 w-5 text-primary' />}
 					label='Total Instructors'
 					value={totalInstructors}
 				/>
-				<OverviewCard
+				<DashboardOverviewCard
 					icon={<CalendarDays className='h-5 w-5 text-primary' />}
 					label='Consultations'
 					value={totalConsultations}
 				/>
-				<OverviewCard
+				<DashboardOverviewCard
 					icon={<Clock className='h-5 w-5 text-primary' />}
 					label='Pending Requests'
 					value={pendingConsultations.length}
@@ -180,30 +181,5 @@ export default function AdminDashboard() {
 				</div>
 			</section>
 		</div>
-	);
-}
-
-// === Overview Card ===
-function OverviewCard({
-	icon,
-	label,
-	value,
-}: {
-	icon: React.ReactNode;
-	label: string;
-	value: React.ReactNode;
-}) {
-	return (
-		<Card>
-			<CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-				<CardTitle className='text-sm font-medium text-muted-foreground flex gap-2 items-center'>
-					{icon}
-					{label}
-				</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<div className='text-2xl font-semibold'>{value}</div>
-			</CardContent>
-		</Card>
 	);
 }
