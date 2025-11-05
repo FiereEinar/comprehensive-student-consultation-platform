@@ -1,4 +1,5 @@
 import {
+	Book,
 	Calendar,
 	GraduationCap,
 	LayoutDashboard,
@@ -40,6 +41,11 @@ const instructorSidebarLinks: SidebarNavLink[] = [
 		title: 'Consultations',
 		url: '/instructor/consultation',
 		icon: Calendar,
+	},
+	{
+		title: 'Subjects',
+		url: '/instructor/subject',
+		icon: Book,
 	},
 ];
 

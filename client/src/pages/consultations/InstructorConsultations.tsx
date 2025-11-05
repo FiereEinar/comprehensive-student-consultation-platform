@@ -17,7 +17,7 @@ export default function InstructorConsultations() {
 	return (
 		<section className='space-y-5'>
 			<div className='flex w-full justify-between'>
-				<Header size='md'>Instructor Consultations</Header>
+				<Header size='md'>My Consultations</Header>
 				<ConsultationForm />
 			</div>
 			<div className='flex gap-3'>

@@ -43,8 +43,18 @@ export default function AdminInstructorsPage() {
 
 			<Tabs defaultValue='active' className='w-full'>
 				<TabsList>
-					<TabsTrigger value='active'>Active</TabsTrigger>
-					<TabsTrigger value='pending'>Pending Invitations</TabsTrigger>
+					<TabsTrigger
+						className='bg-custom-secondary data-[state=active]:bg-custom-secondary data-[state=active]:shadow-none data-[state=active]:text-custom-primary data-[state=active]:border-b-custom-primary border-b-2 rounded-none'
+						value='active'
+					>
+						Active
+					</TabsTrigger>
+					<TabsTrigger
+						className='bg-custom-secondary data-[state=active]:bg-custom-secondary data-[state=active]:shadow-none data-[state=active]:text-custom-primary data-[state=active]:border-b-custom-primary border-b-2 rounded-none'
+						value='pending'
+					>
+						Pending Invitations
+					</TabsTrigger>
 					{/* <TabsTrigger value='all'>All Instructors</TabsTrigger> */}
 				</TabsList>
 

@@ -83,7 +83,7 @@ export default function ConsultationForm({ title }: ConsultationFormProps) {
 	return (
 		<Dialog>
 			<DialogTrigger asChild>
-				<Button variant='default' className='cursor-pointer'>
+				<Button size='sm' variant='default' className='cursor-pointer'>
 					<Plus className='mr-2 h-4 w-4' />
 					{title ?? 'Add Consultation'}
 				</Button>

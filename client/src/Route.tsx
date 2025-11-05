@@ -19,6 +19,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import PasswordReset from './pages/PasswordReset';
 import AcceptInstructorInvitation from './pages/AcceptInstructorInvitation';
 import AdminInstructorsPage from './pages/AdminInstructorsPage';
+import Subjects from './pages/Subjects';
 
 export default function Route() {
 	const route = createBrowserRouter([
@@ -65,6 +66,10 @@ export default function Route() {
 				{
 					path: '/instructor/consultation',
 					element: <InstructorConsultations />,
+				},
+				{
+					path: '/instructor/subject',
+					element: <Subjects />,
 				},
 				{
 					path: '/settings',

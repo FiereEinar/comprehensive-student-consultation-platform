@@ -5,4 +5,6 @@ export const QUERY_KEYS = {
 	INSTRUCTORS_AVAILABILITIES: 'instructors-availabilities',
 	ADMIN_DASHBOARD: 'admin-dashboard',
 	INVITATIONS: 'invitations',
+	SUBJECTS: 'subjects',
+	SECTIONS: 'sections',
 };
