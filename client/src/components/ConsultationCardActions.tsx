@@ -12,6 +12,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from './ui/dropdown-menu';
+import ConfirmDeleteDialog from './ConfirmDeleteDialog';
 
 type ConsultationCardActionsProps = {
 	consultationID: string;
@@ -52,14 +53,21 @@ export default function ConsultationCardActions({
 					>
 						<Check className='w-4 h-4' /> Accept
 					</Button>
-					<Button
-						variant='link'
-						size='sm'
-						onClick={() => handleAction('declined')}
-						className='text-red-500 flex items-center gap-1 text-xs'
-					>
-						<Ban className='w-4 h-4' /> Decline
-					</Button>
+					<ConfirmDeleteDialog
+						trigger={
+							<Button
+								variant='link'
+								size='sm'
+								className='text-red-500 flex items-center gap-1 text-xs'
+							>
+								<Ban className='w-4 h-4' /> Decline
+							</Button>
+						}
+						onConfirm={() => handleAction('declined')}
+						confirmText='Decline'
+						title='Decline request?'
+						description='Are you sure you want to decline this request? This action can not be undone.'
+					/>
 				</>
 			)}
 

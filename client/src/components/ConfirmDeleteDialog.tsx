@@ -21,6 +21,7 @@ type ConfirmDeleteDialogProps = {
 	cancelText?: string;
 	successMessage?: string;
 	errorMessage?: string;
+	icon?: ReactNode;
 };
 
 /**
@@ -39,6 +40,7 @@ export default function ConfirmDeleteDialog({
 	onConfirm,
 	confirmText = 'Delete',
 	cancelText = 'Cancel',
+	icon,
 	successMessage = 'Item deleted successfully.',
 	errorMessage = 'Failed to delete item.',
 }: ConfirmDeleteDialogProps) {
@@ -69,7 +71,7 @@ export default function ConfirmDeleteDialog({
 			<DialogContent className='sm:max-w-[400px]'>
 				<DialogHeader>
 					<DialogTitle className='flex items-center gap-2'>
-						<AlertTriangle className='w-5 h-5 text-red-500' />
+						{icon ? icon : <AlertTriangle className='w-5 h-5 text-red-500' />}
 						{title}
 					</DialogTitle>
 					<DialogDescription>{description}</DialogDescription>
