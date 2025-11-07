@@ -2,7 +2,7 @@ import asyncHandler from 'express-async-handler';
 import UserModel from '../models/user.model';
 import CustomResponse from '../utils/response';
 import appAssert from '../errors/app-assert';
-import { NOT_FOUND } from '../constants/http';
+import { BAD_REQUEST, NOT_FOUND } from '../constants/http';
 import { DEFAULT_LIMIT } from '../constants';
 
 /**
@@ -39,4 +39,29 @@ export const getSingleUser = asyncHandler(async (req, res) => {
 	const user = data.omitPassword();
 
 	res.json(new CustomResponse(true, user, 'User fetched'));
+});
+
+/**
+ * @route PATCH /api/v1/user/:userID/name
+ */
+export const updateUserName = asyncHandler(async (req, res) => {
+	const { name } = req.body;
+	const { userID } = req.params;
+
+	appAssert(name, BAD_REQUEST, 'Name is required.');
+
+	const user = await UserModel.findByIdAndUpdate(
+		userID,
+		{ name },
+		{ new: true }
+	);
+	appAssert(user, NOT_FOUND, 'User not found.');
+
+	res.json(
+		new CustomResponse(
+			true,
+			user.omitPassword(),
+			'User name updated successfully!'
+		)
+	);
 });

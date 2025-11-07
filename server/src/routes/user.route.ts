@@ -1,6 +1,10 @@
 import express from 'express';
 import { getUserConsultations } from '../controllers/consultation.controller';
-import { getSingleUser, getUsers } from '../controllers/user.controller';
+import {
+	getSingleUser,
+	getUsers,
+	updateUserName,
+} from '../controllers/user.controller';
 import {
 	getInstructorAvailability,
 	updateInstructorAvailability,
@@ -9,6 +13,7 @@ const router = express.Router();
 
 router.get('/', getUsers);
 router.get('/:userID', getSingleUser);
+router.patch('/:userID/name', updateUserName);
 
 router.get('/:userID/consultation', getUserConsultations);
 
