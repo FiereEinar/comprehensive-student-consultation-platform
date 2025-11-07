@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { useState } from 'react';
 import Header from '@/components/ui/header';
 import { useUserStore } from '@/stores/user';
 import axiosInstance from '@/api/axios';
@@ -21,7 +20,6 @@ type PasswordFormValues = {
 };
 
 export default function Settings() {
-	const [userEmail] = useState('user@example.com'); // mock, replace with actual user context later
 	const { user, setUser } = useUserStore((state) => state);
 
 	const {
@@ -41,27 +39,43 @@ export default function Settings() {
 	} = useForm<PasswordFormValues>();
 
 	const onProfileSubmit = async (formData: ProfileFormValues) => {
-		console.log('Profile update:', formData);
 		try {
-			if (!user) {
-				return;
-			}
+			if (!user) return;
 
 			const { data } = await axiosInstance.patch(
 				`/user/${user._id}/name`,
 				formData
 			);
-			toast.success(data.message);
+			toast.success(data.message || 'Profile name udpated successfully');
 			setUser(data.data);
 		} catch (error: any) {
 			console.error('Failed to update name', error);
-			toast.error('Failed to update name');
+			toast.error(error.response?.data?.message || 'Failed to update name');
 		}
 	};
 
-	const onPasswordSubmit = async (data: PasswordFormValues) => {
-		console.log('Password update:', data);
-		// TODO: call API endpoint for changing password
+	const onPasswordSubmit = async (formData: PasswordFormValues) => {
+		try {
+			if (!user) return;
+
+			if (formData.newPassword !== formData.confirmPassword) {
+				toast.error('New passwords do not match');
+				return;
+			}
+
+			const { data } = await axiosInstance.patch(
+				`/user/${user._id}/password`,
+				formData
+			);
+
+			toast.success(data.message || 'Password updated successfully');
+		} catch (error: any) {
+			console.error('Failed to update password:', error);
+			const message =
+				error.response?.data?.message ||
+				'Failed to update password. Please check your current password.';
+			toast.error(message);
+		}
 	};
 
 	return (
@@ -141,11 +155,7 @@ export default function Settings() {
 								{...registerPassword('confirmPassword', { required: true })}
 							/>
 						</div>
-						<Button
-							type='submit'
-							variant='secondary'
-							disabled={updatingPassword}
-						>
+						<Button type='submit' disabled={updatingPassword}>
 							{updatingPassword ? 'Updating...' : 'Update Password'}
 						</Button>
 					</form>

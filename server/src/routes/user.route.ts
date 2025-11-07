@@ -4,6 +4,7 @@ import {
 	getSingleUser,
 	getUsers,
 	updateUserName,
+	updateUserPassword,
 } from '../controllers/user.controller';
 import {
 	getInstructorAvailability,
@@ -14,6 +15,7 @@ const router = express.Router();
 router.get('/', getUsers);
 router.get('/:userID', getSingleUser);
 router.patch('/:userID/name', updateUserName);
+router.patch('/:userID/password', updateUserPassword);
 
 router.get('/:userID/consultation', getUserConsultations);
 

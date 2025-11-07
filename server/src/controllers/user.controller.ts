@@ -2,8 +2,11 @@ import asyncHandler from 'express-async-handler';
 import UserModel from '../models/user.model';
 import CustomResponse from '../utils/response';
 import appAssert from '../errors/app-assert';
-import { BAD_REQUEST, NOT_FOUND } from '../constants/http';
+import { BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } from '../constants/http';
 import { DEFAULT_LIMIT } from '../constants';
+import { updateUserPasswordSchema } from '../schemas/user.schema';
+import bcrypt from 'bcryptjs';
+import { BCRYPT_SALT } from '../constants/env';
 
 /**
  * @route GET /api/v1/user
@@ -50,6 +53,12 @@ export const updateUserName = asyncHandler(async (req, res) => {
 
 	appAssert(name, BAD_REQUEST, 'Name is required.');
 
+	appAssert(
+		req.user._id.toString() === userID,
+		UNAUTHORIZED,
+		'You are not authorized to update this account'
+	);
+
 	const user = await UserModel.findByIdAndUpdate(
 		userID,
 		{ name },
@@ -64,4 +73,29 @@ export const updateUserName = asyncHandler(async (req, res) => {
 			'User name updated successfully!'
 		)
 	);
+});
+
+/**
+ * @route PATCH /api/v1/user/:userID/passsord
+ */
+export const updateUserPassword = asyncHandler(async (req, res) => {
+	const body = updateUserPasswordSchema.parse(req.body);
+	const { userID } = req.params;
+
+	appAssert(
+		req.user._id.toString() === userID,
+		UNAUTHORIZED,
+		'You are not authorized to update this account'
+	);
+
+	const user = await UserModel.findById(userID);
+	appAssert(user, NOT_FOUND, 'User not found');
+
+	const isMatch = await bcrypt.compare(body.currentPassword, user.password);
+	appAssert(isMatch, BAD_REQUEST, 'Current password is incorrect');
+
+	user.password = await bcrypt.hash(body.newPassword, parseInt(BCRYPT_SALT));
+	await user.save();
+
+	res.json(new CustomResponse(true, null, 'Password updated successfully'));
 });

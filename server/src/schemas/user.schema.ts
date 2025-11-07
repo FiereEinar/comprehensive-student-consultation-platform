@@ -40,5 +40,31 @@ export const loginSchema = z.object({
 		),
 });
 
+export const updateUserPasswordSchema = z
+	.object({
+		currentPassword: z
+			.string()
+			.min(
+				MIN_PASSWORD_LEN,
+				`Passwords must be atleast ${MIN_PASSWORD_LEN} characters`
+			),
+		newPassword: z
+			.string()
+			.min(
+				MIN_PASSWORD_LEN,
+				`Passwords must be atleast ${MIN_PASSWORD_LEN} characters`
+			),
+		confirmPassword: z
+			.string()
+			.min(
+				MIN_PASSWORD_LEN,
+				`Passwords must be atleast ${MIN_PASSWORD_LEN} characters`
+			),
+	})
+	.refine((data) => data.newPassword === data.confirmPassword, {
+		message: 'Passwords do not match',
+		path: ['confirmPassword'],
+	});
+
 export type CreateUserInputs = z.infer<typeof createUserSchema>;
 export type UpdateUserInputs = z.infer<typeof updateUserSchema>;
