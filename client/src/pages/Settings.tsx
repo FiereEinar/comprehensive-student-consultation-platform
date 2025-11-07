@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
 import Header from '@/components/ui/header';
 import { useUserStore } from '@/stores/user';
 import axiosInstance from '@/api/axios';
@@ -79,15 +78,15 @@ export default function Settings() {
 	};
 
 	return (
-		<div className='max-w-2xl space-y-8'>
+		<div className='max-w-2xl space-y-5'>
 			<div>
 				<Header size='md'>Settings</Header>
-				<p className='text-sm text-gray-500'>
+				{/* <p className='text-sm text-gray-500'>
 					Manage your account information and password.
-				</p>
+				</p> */}
 			</div>
 
-			<Separator />
+			{/* <Separator /> */}
 
 			{/* Profile Info */}
 			<Card>
