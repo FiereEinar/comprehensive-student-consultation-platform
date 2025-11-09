@@ -3,16 +3,31 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
-import type { ActivityLog } from '@/types/log';
+import { RESOURCE_TYPES, type ActivityLog } from '@/types/log';
 import { QUERY_KEYS } from '@/constants';
 import axiosInstance from '@/api/axios';
+import { useState } from 'react';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select';
 
 export default function Logs() {
+	const [selectedResource, setSelectedResource] = useState<string>(
+		RESOURCE_TYPES.ALL
+	);
+
 	const { data, isLoading, error } = useQuery({
-		queryKey: [QUERY_KEYS.LOGS],
+		queryKey: [QUERY_KEYS.LOGS, selectedResource],
 		queryFn: async () => {
-			const { data } = await axiosInstance.get('/log');
-			console.log(data);
+			const query =
+				selectedResource !== RESOURCE_TYPES.ALL
+					? `/log?resource=${selectedResource}`
+					: '/log';
+			const { data } = await axiosInstance.get(query);
 			return data.data as ActivityLog[];
 		},
 	});
@@ -30,11 +45,31 @@ export default function Logs() {
 		);
 
 	return (
-		<div className='space-y-5'>
-			<h1 className='text-2xl font-semibold'>System Logs</h1>
+		<div className='space-y-6'>
+			<div className='flex justify-between items-center'>
+				<h1 className='text-2xl font-semibold'>System Logs</h1>
 
-			<Card>
-				<CardHeader className='grid grid-cols-6 font-medium text-muted-foreground text-sm border-b pb-2'>
+				<div>
+					<Select
+						value={selectedResource}
+						onValueChange={(val) => setSelectedResource(val)}
+					>
+						<SelectTrigger className='bg-white'>
+							<SelectValue placeholder='Filter by resource' />
+						</SelectTrigger>
+						<SelectContent>
+							{Object.values(RESOURCE_TYPES).map((type) => (
+								<SelectItem key={type} value={type}>
+									{type}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</div>
+			</div>
+
+			<Card className='gap-0'>
+				<CardHeader className='grid grid-cols-6 font-medium text-muted-foreground text-sm border-b pb-0'>
 					<span>User</span>
 					<span>Action</span>
 					<span>Description</span>
