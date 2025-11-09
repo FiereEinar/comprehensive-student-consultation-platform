@@ -3,17 +3,16 @@ import {
 	consutationStatusSchema,
 	createConsultationSchema,
 } from '../schemas/consultation.schema';
-import ConsultationModel, {
-	ConsultationStatus,
-} from '../models/consultation.models';
+import ConsultationModel from '../models/consultation.models';
 import CustomResponse from '../utils/response';
 import UserModel from '../models/user.model';
 import appAssert from '../errors/app-assert';
 import { BAD_REQUEST, NOT_FOUND } from '../constants/http';
 import AvailabilityModel from '../models/availability.model';
 import { getStartAndEndofDay } from '../utils/date';
-import { DEFAULT_LIMIT } from '../constants';
+import { DEFAULT_LIMIT, RESOURCE_TYPES } from '../constants';
 import { subDays } from 'date-fns';
+import { logActivity } from '../utils/activity-logger';
 
 /**
  * @route GET /api/v1/consultation - get all recent consultations
@@ -31,6 +30,12 @@ export const getConsultations = asynchandler(async (req, res) => {
  * @route POST /api/v1/consultation - create a consultation
  */
 export const createConsultation = asynchandler(async (req, res) => {
+	await logActivity(req, {
+		action: 'CREATE_CONSULTATION',
+		description: 'Created a consultation',
+		resourceType: RESOURCE_TYPES.CONSULTATION,
+	});
+
 	const body = createConsultationSchema.parse(req.body);
 
 	// check if  instructor and student exist
@@ -119,6 +124,14 @@ export const getUserConsultations = asynchandler(async (req, res) => {
 export const updateConsultationStatus = asynchandler(async (req, res) => {
 	const currentUser = req.user;
 	const { consultationID } = req.params;
+
+	await logActivity(req, {
+		action: 'UPDATE_CONSULTATION',
+		description: 'Updated a consultation',
+		resourceId: consultationID,
+		resourceType: RESOURCE_TYPES.CONSULTATION,
+	});
+
 	const status = consutationStatusSchema.parse(req.body.status);
 
 	const consultation = await ConsultationModel.findById(consultationID);

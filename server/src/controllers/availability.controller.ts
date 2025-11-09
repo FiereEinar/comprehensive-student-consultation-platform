@@ -5,6 +5,7 @@ import appAssert from '../errors/app-assert';
 import { BAD_REQUEST, NOT_FOUND } from '../constants/http';
 import AvailabilityModel from '../models/availability.model';
 import CustomResponse from '../utils/response';
+import { logActivity } from '../utils/activity-logger';
 
 /**
  * @route PUT /api/v1/user/:userID/availability

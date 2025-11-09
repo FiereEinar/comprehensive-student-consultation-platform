@@ -7,4 +7,5 @@ export const QUERY_KEYS = {
 	INVITATIONS: 'invitations',
 	SUBJECTS: 'subjects',
 	SECTIONS: 'sections',
+	LOGS: 'logs',
 };

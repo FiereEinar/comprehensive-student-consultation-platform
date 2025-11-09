@@ -1,6 +1,7 @@
 import {
 	Book,
 	Calendar,
+	ClipboardClock,
 	GraduationCap,
 	LayoutDashboard,
 	Power,
@@ -77,6 +78,11 @@ const adminSidebarLinks: SidebarNavLink[] = [
 		title: 'Instructors',
 		url: '/admin/instructors',
 		icon: GraduationCap,
+	},
+	{
+		title: 'Logs',
+		url: '/admin/logs',
+		icon: ClipboardClock,
 	},
 ];
 

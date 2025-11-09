@@ -18,6 +18,8 @@ import authRoutes from './routes/auth.route';
 import userRoutes from './routes/user.route';
 import consultationRoutes from './routes/consultation.routes';
 import instructorRoutes from './routes/instructor.routes';
+import logRoutes from './routes/log.route';
+import { requestLogger } from './middlewares/logger';
 
 const app = express();
 app.use(cors(corsOptions));
@@ -25,6 +27,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(helmet());
+app.use(requestLogger);
 app.get('/', healthcheck);
 
 // Routes
@@ -33,6 +36,7 @@ app.use(auth);
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/consultation', consultationRoutes);
 app.use('/api/v1/instructor', instructorRoutes);
+app.use('/api/v1/log', logRoutes);
 
 // Error handlers
 app.use(notFoundHandler);

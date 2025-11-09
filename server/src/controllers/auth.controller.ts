@@ -20,7 +20,7 @@ import {
 	EMAIL_PASS,
 } from '../constants/env';
 import SessionModel from '../models/session.model';
-import UserModel from '../models/user.model';
+import UserModel, { IUser } from '../models/user.model';
 import {
 	generateCypto,
 	getPasswordResetEmailTemplate,
@@ -48,12 +48,13 @@ import {
 	setAuthCookie,
 } from '../utils/cookie';
 import CustomResponse from '../utils/response';
-import { AppErrorCodes } from '../constants';
+import { AppErrorCodes, RESOURCE_TYPES } from '../constants';
 import { verifyRecaptcha } from '../utils/recaptcha';
 import { googleClient } from '../utils/google';
 import axios from 'axios';
 import InvitationModel from '../models/invitation.model';
 import { sendMail } from '../utils/email';
+import { logActivity } from '../utils/activity-logger';
 
 /**
  * @route POST /api/v1/auth/login - Login
@@ -86,6 +87,13 @@ export const loginHandler = asyncHandler(async (req, res) => {
 	const accessToken = signToken({ sessionID, userID });
 	const refreshToken = signToken({ sessionID }, refreshTokenSignOptions);
 	setAuthCookie({ res, accessToken, refreshToken });
+
+	await logActivity(req, {
+		action: 'USER_LOGIN',
+		description: 'User logged in',
+		resourceId: userID,
+		resourceType: RESOURCE_TYPES.USER,
+	});
 
 	res.json(new CustomResponse(true, user.omitPassword(), 'Login successful'));
 });
@@ -121,7 +129,12 @@ export const signupHandler = asyncHandler(async (req, res) => {
 
 	// create user
 	const user = await UserModel.create(body);
-
+	await logActivity(req, {
+		action: 'USER_SIGNUP',
+		description: 'User sign up',
+		resourceId: user._id as string,
+		resourceType: RESOURCE_TYPES.USER,
+	});
 	res.json(new CustomResponse(true, user.omitPassword(), 'Signup successful'));
 });
 
@@ -129,6 +142,12 @@ export const signupHandler = asyncHandler(async (req, res) => {
  * @route GET /api/v1/auth/logout - Logout
  */
 export const logoutHandler = asyncHandler(async (req, res) => {
+	await logActivity(req, {
+		action: 'USER_LOGOUT',
+		description: 'User logged out',
+		resourceType: RESOURCE_TYPES.USER,
+	});
+
 	const accessToken = getAccessToken(req);
 
 	// check if token is present
@@ -314,6 +333,13 @@ export const googleLoginHandler = asyncHandler(async (req, res) => {
 	const refreshToken = signToken({ sessionID }, refreshTokenSignOptions);
 	setAuthCookie({ res, accessToken, refreshToken });
 
+	await logActivity(req, {
+		action: 'USER_LOGIN',
+		description: 'User logged in via Google',
+		resourceId: userID,
+		resourceType: RESOURCE_TYPES.USER,
+	});
+
 	res.json({ accessToken, user, message: 'Login successful' });
 });
 
@@ -365,6 +391,13 @@ export const googleLoginHandlerV2 = asyncHandler(async (req, res) => {
 	const refreshToken = signToken({ sessionID }, refreshTokenSignOptions);
 	setAuthCookie({ res, accessToken, refreshToken });
 
+	await logActivity(req, {
+		action: 'USER_LOGIN',
+		description: 'User logged in via Google',
+		resourceId: userID,
+		resourceType: RESOURCE_TYPES.USER,
+	});
+
 	res.json({ accessToken, user, message: 'Login successful' });
 });
 
@@ -373,6 +406,13 @@ export const googleLoginHandlerV2 = asyncHandler(async (req, res) => {
  */
 export const forgotPasswordHandler = asyncHandler(async (req, res) => {
 	const { email } = req.body;
+
+	await logActivity(req, {
+		action: 'USER_FORGOT_PASSWORD',
+		description: 'User forgot password',
+		resourceId: email,
+		resourceType: RESOURCE_TYPES.USER,
+	});
 
 	const user = await UserModel.findOne({ email });
 	appAssert(user, BAD_REQUEST, 'Email not found');
@@ -416,6 +456,13 @@ export const resetPasswordHandler = asyncHandler(async (req, res) => {
 		resetPasswordExpires: { $gt: new Date() },
 	});
 
+	await logActivity(req, {
+		action: 'USER_RESET_PASSWORD',
+		description: 'User reset password',
+		resourceId: user?._id as string,
+		resourceType: RESOURCE_TYPES.USER,
+	});
+
 	appAssert(user, BAD_REQUEST, 'Invalid or expired token');
 
 	// Update password
@@ -443,6 +490,13 @@ export const getInvitations = asyncHandler(async (req, res) => {
  */
 export const inviteInstructor = asyncHandler(async (req, res) => {
 	const { email, name } = req.body;
+
+	await logActivity(req, {
+		action: 'ADMIN_INVITE',
+		description: 'Admin invited an instructor',
+		resourceId: email,
+		resourceType: RESOURCE_TYPES.USER,
+	});
 
 	// 1. Prevent duplicate invites
 	const existingInvite = await InvitationModel.findOne({
@@ -523,6 +577,13 @@ export const acceptInvitation = asyncHandler(async (req, res) => {
 		name: invitation.name,
 		password: await bcrypt.hash(password, parseInt(BCRYPT_SALT)),
 		role: 'instructor',
+	});
+
+	await logActivity(req, {
+		action: 'USER_ACCEPT_INVITE',
+		description: 'User accepted an invite',
+		resourceId: user._id as string,
+		resourceType: RESOURCE_TYPES.USER,
 	});
 
 	invitation.status = 'accepted';

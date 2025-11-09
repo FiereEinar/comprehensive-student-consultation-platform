@@ -3,10 +3,11 @@ import UserModel from '../models/user.model';
 import CustomResponse from '../utils/response';
 import appAssert from '../errors/app-assert';
 import { BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } from '../constants/http';
-import { DEFAULT_LIMIT } from '../constants';
+import { DEFAULT_LIMIT, RESOURCE_TYPES } from '../constants';
 import { updateUserPasswordSchema } from '../schemas/user.schema';
 import bcrypt from 'bcryptjs';
 import { BCRYPT_SALT } from '../constants/env';
+import { logActivity } from '../utils/activity-logger';
 
 /**
  * @route GET /api/v1/user
@@ -51,6 +52,13 @@ export const updateUserName = asyncHandler(async (req, res) => {
 	const { name } = req.body;
 	const { userID } = req.params;
 
+	await logActivity(req, {
+		action: 'UPDATE_USER',
+		description: 'Update user name',
+		resourceId: userID,
+		resourceType: RESOURCE_TYPES.USER,
+	});
+
 	appAssert(name, BAD_REQUEST, 'Name is required.');
 
 	appAssert(
@@ -81,6 +89,13 @@ export const updateUserName = asyncHandler(async (req, res) => {
 export const updateUserPassword = asyncHandler(async (req, res) => {
 	const body = updateUserPasswordSchema.parse(req.body);
 	const { userID } = req.params;
+
+	await logActivity(req, {
+		action: 'UPDATE_USER',
+		description: 'Update user password',
+		resourceId: userID,
+		resourceType: RESOURCE_TYPES.USER,
+	});
 
 	appAssert(
 		req.user._id.toString() === userID,

@@ -10,6 +10,8 @@ import {
 import SubjectModel from '../models/subject.model';
 import CustomResponse from '../utils/response';
 import SectionModel from '../models/section.model';
+import { logActivity } from '../utils/activity-logger';
+import { RESOURCE_TYPES } from '../constants';
 
 /**
  * @route GET /api/v1/instructor/subjects
@@ -52,9 +54,13 @@ export const getSubjectById = asyncHandler(async (req, res) => {
  * @route POST /api/v1/instructor/subject - Create a subject
  */
 export const createSubject = asyncHandler(async (req, res) => {
-	appAssert(req.user, FORBIDDEN, 'Unauthorized');
-	appAssert(req.user.role === 'instructor', FORBIDDEN, 'Access denied');
+	await logActivity(req, {
+		action: 'CREATE_SUBJECT',
+		description: 'Created a subject',
+		resourceType: RESOURCE_TYPES.SUBJECT,
+	});
 
+	appAssert(req.user.role === 'instructor', FORBIDDEN, 'Access denied');
 	const body = createSubjectSchema.parse(req.body);
 
 	const subject = await SubjectModel.create({
@@ -69,7 +75,12 @@ export const createSubject = asyncHandler(async (req, res) => {
  * @route PUT /api/v1/instructor/subject/:id - Update a subject
  */
 export const updateSubject = asyncHandler(async (req, res) => {
-	appAssert(req.user, FORBIDDEN, 'Unauthorized');
+	await logActivity(req, {
+		action: 'UPDATE_SUBJECT',
+		description: 'Updated a subject',
+		resourceType: RESOURCE_TYPES.SUBJECT,
+	});
+
 	appAssert(req.user.role === 'instructor', FORBIDDEN, 'Access denied');
 
 	const { id } = req.params;
@@ -89,7 +100,12 @@ export const updateSubject = asyncHandler(async (req, res) => {
  * @route DELETE /api/v1/instructor/subject/:id - Delete a subject
  */
 export const deleteSubject = asyncHandler(async (req, res) => {
-	appAssert(req.user, FORBIDDEN, 'Unauthorized');
+	await logActivity(req, {
+		action: 'DELETE_SUBJECT',
+		description: 'Deleted a subject',
+		resourceType: RESOURCE_TYPES.SUBJECT,
+	});
+
 	appAssert(req.user.role === 'instructor', FORBIDDEN, 'Access denied');
 
 	const { id } = req.params;
@@ -109,7 +125,12 @@ export const deleteSubject = asyncHandler(async (req, res) => {
  * @route POST /api/v1/instructor/section - Create a section
  */
 export const createSection = asyncHandler(async (req, res) => {
-	appAssert(req.user, FORBIDDEN, 'Unauthorized');
+	await logActivity(req, {
+		action: 'CREATE_SECTION',
+		description: 'Created a section',
+		resourceType: RESOURCE_TYPES.SECTION,
+	});
+
 	appAssert(req.user.role === 'instructor', FORBIDDEN, 'Access denied');
 
 	const body = createSectionSchema.parse(req.body);
@@ -129,7 +150,12 @@ export const createSection = asyncHandler(async (req, res) => {
  * @route PUT /api/v1/instructor/section/:id - Update a section
  */
 export const updateSection = asyncHandler(async (req, res) => {
-	appAssert(req.user, FORBIDDEN, 'Unauthorized');
+	await logActivity(req, {
+		action: 'UPDATE_SECTION',
+		description: 'Updated a section',
+		resourceType: RESOURCE_TYPES.SECTION,
+	});
+
 	appAssert(req.user.role === 'instructor', FORBIDDEN, 'Access denied');
 
 	const { id } = req.params;
@@ -154,7 +180,12 @@ export const updateSection = asyncHandler(async (req, res) => {
  * @route DELETE /api/v1/instructor/section/:id - Delete a section
  */
 export const deleteSection = asyncHandler(async (req, res) => {
-	appAssert(req.user, FORBIDDEN, 'Unauthorized');
+	await logActivity(req, {
+		action: 'DELETE_SECTION',
+		description: 'Deleted a section',
+		resourceType: RESOURCE_TYPES.SECTION,
+	});
+
 	appAssert(req.user.role === 'instructor', FORBIDDEN, 'Access denied');
 
 	const { id } = req.params;

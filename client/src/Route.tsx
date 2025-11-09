@@ -20,6 +20,7 @@ import PasswordReset from './pages/PasswordReset';
 import AcceptInstructorInvitation from './pages/AcceptInstructorInvitation';
 import AdminInstructorsPage from './pages/AdminInstructorsPage';
 import Subjects from './pages/Subjects';
+import Logs from './pages/Logs';
 
 export default function Route() {
 	const route = createBrowserRouter([
@@ -46,6 +47,10 @@ export default function Route() {
 				{
 					path: '/admin/instructors',
 					element: <AdminInstructorsPage />,
+				},
+				{
+					path: '/admin/logs',
+					element: <Logs />,
 				},
 				{
 					path: '/student/dashboard',

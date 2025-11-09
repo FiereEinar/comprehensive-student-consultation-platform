@@ -1,7 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { CalendarDays, Clock, UserCheck, BookOpen } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
@@ -82,13 +80,13 @@ export default function StudentDashboard() {
 			<section>
 				<div className='flex justify-between items-center mb-3'>
 					<h2 className='text-lg font-medium'>Upcoming Consultations</h2>
-					<Button
+					{/* <Button
 						variant='outline'
 						size='sm'
 						// onClick={() => navigate('/consultations')}
 					>
 						View All
-					</Button>
+					</Button> */}
 				</div>
 				<Card>
 					<CardContent className='divide-y'>
@@ -170,7 +168,7 @@ export default function StudentDashboard() {
 											{format(new Date(c.scheduledAt), 'MMM dd, yyyy')}
 										</p>
 									</div>
-									<Badge variant='secondary'>Completed</Badge>
+									<StatusBadge status={c.status} />
 								</div>
 							))
 						) : (

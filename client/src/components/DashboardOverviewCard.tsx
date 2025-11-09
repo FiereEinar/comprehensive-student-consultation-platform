@@ -19,7 +19,7 @@ export default function DashboardOverviewCard({
 				</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<div className='text-2xl font-semibold'>{value}</div>
+				<div className='font-semibold'>{value}</div>
 			</CardContent>
 		</Card>
 	);
