@@ -20,6 +20,8 @@ import consultationRoutes from './routes/consultation.routes';
 import instructorRoutes from './routes/instructor.routes';
 import logRoutes from './routes/log.route';
 import { requestLogger } from './middlewares/logger';
+import availabilityRoutes from './routes/availability.route';
+
 
 const app = express();
 app.use(cors(corsOptions));
@@ -37,6 +39,7 @@ app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/consultation', consultationRoutes);
 app.use('/api/v1/instructor', instructorRoutes);
 app.use('/api/v1/log', logRoutes);
+app.use('/api/v1/availability', availabilityRoutes);
 
 // Error handlers
 app.use(notFoundHandler);

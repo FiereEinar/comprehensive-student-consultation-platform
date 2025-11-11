@@ -5,16 +5,22 @@ import path from 'path';
 
 // https://vite.dev/config/
 export default defineConfig({
-	plugins: [react(), tailwindcss()],
-	resolve: {
-		alias: {
-			'@': path.resolve(__dirname, './src'),
-		},
-	},
-	server: {
-		headers: {
-			'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
-			'Cross-Origin-Embedder-Policy': 'unsafe-none',
-		},
-	},
+  plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    }
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+        secure: false
+      }
+    }
+  }
 });
+
+
+

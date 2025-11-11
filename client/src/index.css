@@ -135,3 +135,12 @@
 * {
 	font-family: 'Poppins', sans-serif;
 }
+
+
+/*CHECKBOX COLORING FOR INSTRUCTOR AVAILABILITY SETTINGS*/
+input[type="checkbox"].custom-purple:checked {
+  accent-color: #B276D2; /* Use your exact hex here */
+  transition: accent-color 2s;
+}
+
+
