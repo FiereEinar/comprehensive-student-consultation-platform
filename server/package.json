@@ -17,6 +17,7 @@
 		"axios": "^1.12.2",
 		"bcryptjs": "^3.0.2",
 		"cookie-parser": "^1.4.7",
+		"cookie-session": "^2.1.1",
 		"cors": "^2.8.5",
 		"crypto": "^1.0.1",
 		"date-fns": "^4.1.0",
@@ -24,6 +25,7 @@
 		"express": "^5.1.0",
 		"express-async-handler": "^1.2.0",
 		"google-auth-library": "^10.4.1",
+		"googleapis": "^165.0.0",
 		"helmet": "^8.1.0",
 		"jsonwebtoken": "^9.0.2",
 		"mongoose": "^8.19.1",
@@ -34,6 +36,7 @@
 	},
 	"devDependencies": {
 		"@types/cookie-parser": "^1.4.9",
+		"@types/cookie-session": "^2.0.49",
 		"@types/cors": "^2.8.19",
 		"@types/express": "^5.0.3",
 		"@types/jsonwebtoken": "^9.0.10",

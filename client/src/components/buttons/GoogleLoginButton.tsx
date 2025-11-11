@@ -8,27 +8,6 @@ import googleIcon from '@/assets/Images/Google_Icon.png';
 export default function GoogleLoginButton() {
 	const navigate = useNavigate();
 
-	// const handleLoginSuccess = async (credentialResponse: any) => {
-	// 	try {
-	// 		const { access_token } = credentialResponse;
-	// 		console.log(credentialResponse);
-
-	// 		// Send the Google ID token to your backend
-	// 		const { data } = await axiosInstance.post(
-	// 			`${import.meta.env.VITE_API_URL}/auth/google`,
-	// 			{
-	// 				token: access_token,
-	// 			}
-	// 		);
-
-	// 		toast.success(data.message);
-	// 		navigate('/');
-	// 	} catch (error: any) {
-	// 		console.error('Login failed', error);
-	// 		toast.error('Failed to login', error);
-	// 	}
-	// };
-
 	const login = useGoogleLogin({
 		onSuccess: async (credentialResponse) => {
 			try {

@@ -1,3 +1,4 @@
+import cookieSession from 'cookie-session';
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import dotenv from 'dotenv';
@@ -23,6 +24,13 @@ import { requestLogger } from './middlewares/logger';
 
 const app = express();
 app.use(cors(corsOptions));
+app.use(
+	cookieSession({
+		name: 'session',
+		keys: ['secret1', 'secret2'],
+		maxAge: 24 * 60 * 60 * 1000, // 1 day
+	})
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

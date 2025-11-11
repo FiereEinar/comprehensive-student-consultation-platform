@@ -55,6 +55,7 @@ import axios from 'axios';
 import InvitationModel from '../models/invitation.model';
 import { sendMail } from '../utils/email';
 import { logActivity } from '../utils/activity-logger';
+import { oAuth2Client } from '../utils/google-client';
 
 /**
  * @route POST /api/v1/auth/login - Login
@@ -360,6 +361,7 @@ export const googleLoginHandlerV2 = asyncHandler(async (req, res) => {
 	);
 
 	const { email, name, id: googleID } = googleUser;
+	console.log({ googleUser });
 
 	// Check if user exists
 	let user = await UserModel.findOne({ email });
@@ -596,4 +598,40 @@ export const acceptInvitation = asyncHandler(async (req, res) => {
 			'Invitation accepted. Account created.'
 		)
 	);
+});
+
+export const googleCalendarHandler = asyncHandler(async (req, res) => {
+	// can get user info via "req.user"
+	// can i store this in session here so that the controller below can access it?
+	const scopes = ['https://www.googleapis.com/auth/calendar.events'];
+
+	req.session!.userID = req.user._id;
+
+	const url = oAuth2Client.generateAuthUrl({
+		access_type: 'offline', // get refresh token
+		scope: scopes,
+		prompt: 'consent', // always ask for consent to get refresh token
+	});
+
+	res.redirect(url);
+});
+
+export const googleCalendarCallbackHandler = asyncHandler(async (req, res) => {
+	// can not get user info via "req.user"
+	const code = req.query.code as string;
+	appAssert(code, BAD_REQUEST, 'No code provided');
+
+	const { tokens } = await oAuth2Client.getToken(code);
+	console.log({ tokens });
+	oAuth2Client.setCredentials(tokens);
+
+	// Save tokens in user document
+	const userId = req.session!.userID; // Assuming user is logged in and session has userID
+	appAssert(userId, BAD_REQUEST, 'User session not found');
+
+	await UserModel.findByIdAndUpdate(userId, {
+		googleCalendarTokens: tokens,
+	});
+
+	res.send('Google Calendar connected! You can now create meetings.');
 });

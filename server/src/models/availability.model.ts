@@ -10,6 +10,7 @@ export interface IAvailability {
 	startTime: string; // in 24 hour format
 	endTime: string; // in 24 hour format
 	slots: number; // number of slots
+	mainMeetLink?: string | undefined | null;
 }
 
 const AvailabilitySchema = new Schema<IAvailability>({
@@ -30,6 +31,7 @@ const AvailabilitySchema = new Schema<IAvailability>({
 	startTime: { type: String, required: true },
 	endTime: { type: String, required: true },
 	slots: { type: Number, required: true },
+	mainMeetLink: { type: String, default: null },
 });
 
 const AvailabilityModel = mongoose.model('Availability', AvailabilitySchema);

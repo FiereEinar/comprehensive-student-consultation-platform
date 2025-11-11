@@ -3,6 +3,8 @@ import {
 	acceptInvitation,
 	forgotPasswordHandler,
 	getInvitations,
+	googleCalendarCallbackHandler,
+	googleCalendarHandler,
 	googleLoginHandlerV2,
 	inviteInstructor,
 	loginHandler,
@@ -13,6 +15,7 @@ import {
 	signupHandler,
 	verifyAuthHandler,
 } from '../controllers/auth.controller';
+import { auth } from '../middlewares/auth';
 const router = express.Router();
 
 router.post('/login', loginHandler);
@@ -23,6 +26,8 @@ router.get('/refresh', refreshTokenHandler);
 
 router.post('/recaptcha/verify', recaptchaVerify);
 router.post('/google', googleLoginHandlerV2);
+router.get('/google-calendar', auth, googleCalendarHandler);
+router.get('/google-calendar/callback', auth, googleCalendarCallbackHandler);
 router.post('/forgot-password', forgotPasswordHandler);
 router.post('/reset-password/:token', resetPasswordHandler);
 

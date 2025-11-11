@@ -1,16 +1,18 @@
-import asycHandler from 'express-async-handler';
+import asyncHandler from 'express-async-handler';
 import { createAvilabilitySchema } from '../schemas/availability.schema';
 import UserModel from '../models/user.model';
 import appAssert from '../errors/app-assert';
-import { BAD_REQUEST, NOT_FOUND } from '../constants/http';
+import { BAD_REQUEST, CREATED, NOT_FOUND, OK } from '../constants/http';
 import AvailabilityModel from '../models/availability.model';
 import CustomResponse from '../utils/response';
 import { logActivity } from '../utils/activity-logger';
+import ConsultationModel from '../models/consultation.models';
+import { link } from 'fs';
 
 /**
  * @route PUT /api/v1/user/:userID/availability
  */
-export const updateInstructorAvailability = asycHandler(async (req, res) => {
+export const updateInstructorAvailability = asyncHandler(async (req, res) => {
 	const { userID } = req.params;
 	const { day, startTime, endTime, slots } = createAvilabilitySchema.parse(
 		req.body
@@ -50,7 +52,7 @@ export const updateInstructorAvailability = asycHandler(async (req, res) => {
 /**
  * @route GET /api/v1/user/:userID/availability
  */
-export const getInstructorAvailability = asycHandler(async (req, res) => {
+export const getInstructorAvailability = asyncHandler(async (req, res) => {
 	const { userID } = req.params;
 
 	const instructor = await UserModel.findById(userID);

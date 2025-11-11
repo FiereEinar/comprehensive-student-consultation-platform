@@ -21,5 +21,6 @@ router.get('/:userID/consultation', getUserConsultations);
 
 router.get('/:userID/availability', getInstructorAvailability);
 router.put('/:userID/availability', updateInstructorAvailability);
+// router.put('/:userID/availability/:availabilityID/meet', generateDailyMeetLink);
 
 export default router;

@@ -2,8 +2,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Header from '@/components/ui/header';
 import UpdateProfileForm from '@/components/forms/UpdateProfileForm';
 import ResetPasswordForm from '@/components/forms/ResetPasswordForm';
+import UpdateAvailability from '@/components/UpdateAvailability';
+import { useUserStore } from '@/stores/user';
+import InstructorAvailabilities from '@/components/InstructorAvailabilities';
+import type { User } from '@/types/user';
 
 export default function Settings() {
+	const { user } = useUserStore((state) => state);
+
 	return (
 		<div className='max-w-2xl space-y-5'>
 			<div>
@@ -27,6 +33,24 @@ export default function Settings() {
 				</CardHeader>
 				<CardContent>
 					<ResetPasswordForm />
+				</CardContent>
+			</Card>
+
+			<Card>
+				<CardHeader>
+					<CardTitle>Update Availability</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<UpdateAvailability user={user as User} />
+				</CardContent>
+			</Card>
+
+			<Card>
+				<CardHeader>
+					<CardTitle>Availability</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<InstructorAvailabilities instructorID={user?._id as string} />
 				</CardContent>
 			</Card>
 		</div>

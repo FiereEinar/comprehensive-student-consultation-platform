@@ -13,6 +13,9 @@ import {
 import { Separator } from './ui/separator';
 import { Card, CardContent } from './ui/card';
 import { Calendar, Clock, UserRound } from 'lucide-react';
+import axiosInstance from '@/api/axios';
+import { Button } from './ui/button';
+import { useState } from 'react';
 
 type ConsultationSheetProps = {
 	consultation: Consultation;
@@ -25,6 +28,39 @@ export default function ConsultationSheet({
 }: ConsultationSheetProps) {
 	const { student, instructor, title, description, scheduledAt, status } =
 		consultation;
+
+	const [meetingLink, setMeetingLink] = useState<string | null>(null);
+	const [loading, setLoading] = useState(false);
+
+	const handleGenerateMeeting = async () => {
+		setLoading(true);
+
+		try {
+			const response = await axiosInstance.post(
+				'/consultation/create-meeting',
+				{
+					consultationID: consultation._id,
+					summary: `Consultation with ${student.name}`,
+					startTime: scheduledAt,
+					endTime: new Date(new Date(scheduledAt).getTime() + 60 * 60 * 1000), // 1 hour
+				}
+			);
+
+			setMeetingLink(response.data.meetLink);
+		} catch (err: any) {
+			if (err.status === 401) {
+				// User does not have Google Calendar token → redirect to consent screen
+				window.location.href =
+					import.meta.env.VITE_API_URL + '/auth/google-calendar';
+				// await axiosInstance.get('/auth/google-calendar');
+			} else {
+				alert('Failed to generate meeting link');
+				console.error(err);
+			}
+		} finally {
+			setLoading(false);
+		}
+	};
 
 	return (
 		<Sheet>
@@ -115,6 +151,27 @@ export default function ConsultationSheet({
 								</CardContent>
 							</Card>
 						</div>
+					</div>
+
+					<Separator />
+
+					{/* Generate Meeting Link */}
+					<div className='flex flex-col gap-2'>
+						<Button
+							onClick={handleGenerateMeeting}
+							disabled={loading}
+							className='w-full'
+						>
+							{loading ? 'Generating...' : 'Generate Meeting Link'}
+						</Button>
+
+						{meetingLink && (
+							<p className='text-sm text-blue-600'>
+								<a href={meetingLink} target='_blank' rel='noopener noreferrer'>
+									Join Google Meet
+								</a>
+							</p>
+						)}
 					</div>
 				</div>
 			</SheetContent>

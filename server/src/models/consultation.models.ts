@@ -16,6 +16,7 @@ export interface IConsultation {
 	status: ConsultationStatus;
 	title: string;
 	description: string;
+	meetLink?: string;
 }
 
 const ConsultationSchema = new Schema(
@@ -30,6 +31,7 @@ const ConsultationSchema = new Schema(
 			required: true,
 		},
 		title: { type: String, required: true },
+		meetLink: { type: String, default: null },
 		description: { type: String, required: true },
 	},
 	{
