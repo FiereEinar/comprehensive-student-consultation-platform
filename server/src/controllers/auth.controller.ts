@@ -634,4 +634,5 @@ export const googleCalendarCallbackHandler = asyncHandler(async (req, res) => {
 	});
 
 	res.send('Google Calendar connected! You can now create meetings.');
+	res.redirect(FRONTEND_URL);
 });
