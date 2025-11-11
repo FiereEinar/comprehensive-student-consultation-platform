@@ -9,7 +9,10 @@ import {
 import {
 	getInstructorAvailability,
 	updateInstructorAvailability,
-} from '../controllers/availability.controller';
+	createInstructorAvailability,
+	updateSingleAvailability,
+} from '../controllers/availability.controller'; //
+
 const router = express.Router();
 
 router.get('/', getUsers);
@@ -20,7 +23,8 @@ router.patch('/:userID/password', updateUserPassword);
 router.get('/:userID/consultation', getUserConsultations);
 
 router.get('/:userID/availability', getInstructorAvailability);
+router.put('/availability/:availabilityID', updateSingleAvailability);
+router.post('/:userID/availability', createInstructorAvailability);
 router.put('/:userID/availability', updateInstructorAvailability);
 // router.put('/:userID/availability/:availabilityID/meet', generateDailyMeetLink);
-
 export default router;
