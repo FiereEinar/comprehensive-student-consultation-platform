@@ -29,6 +29,9 @@ import {
 	GOOGLE_REDIRECT_URI,
 } from '../constants/env';
 import { sendMail } from '../utils/email';
+import { createGoogleMeetLink } from '../utils/google-meet';
+import { createCalendarEvent } from '../utils/google-calendar';
+import { sendConsultationEmail } from '../utils/consultation-email';
 
 /**
  * @route GET /api/v1/consultation - get all recent consultations
@@ -46,12 +49,6 @@ export const getConsultations = asynchandler(async (req, res) => {
  * @route POST /api/v1/consultation - create a consultation
  */
 export const createConsultation = asynchandler(async (req, res) => {
-	await logActivity(req, {
-		action: 'CREATE_CONSULTATION',
-		description: 'Created a consultation',
-		resourceType: RESOURCE_TYPES.CONSULTATION,
-	});
-
 	const body = createConsultationSchema.parse(req.body);
 
 	// check if  instructor and student exist
@@ -82,7 +79,7 @@ export const createConsultation = asynchandler(async (req, res) => {
 	appAssert(
 		availability,
 		BAD_REQUEST,
-		'Instructor has no availability set for this day'
+		'Instructor is not available for this day'
 	);
 
 	// check how many consultations the instructor has for this day
@@ -90,7 +87,7 @@ export const createConsultation = asynchandler(async (req, res) => {
 	const existingConsultations = await ConsultationModel.countDocuments({
 		instructor: instructor._id,
 		scheduledAt: { $gte: startOfDay, $lte: endOfDay },
-		status: { $ne: 'cancelled' },
+		status: { $nin: ['cancelled', 'declined'] },
 	});
 
 	appAssert(
@@ -99,7 +96,24 @@ export const createConsultation = asynchandler(async (req, res) => {
 		'No remaining consultation slots for this day'
 	);
 
+	// if student already has a consultation for this day then reject
+	const existingConsultation = await ConsultationModel.findOne({
+		student: student._id,
+		scheduledAt: { $gte: startOfDay, $lte: endOfDay },
+		status: { $nin: ['cancelled', 'declined'] },
+	});
+	appAssert(
+		!existingConsultation,
+		BAD_REQUEST,
+		'Student already has a consultation for this day'
+	);
 	const consultation = await ConsultationModel.create(body);
+
+	await logActivity(req, {
+		action: 'CREATE_CONSULTATION',
+		description: 'Created a consultation',
+		resourceType: RESOURCE_TYPES.CONSULTATION,
+	});
 
 	res.json(
 		new CustomResponse(true, consultation, 'Consultation request created')
@@ -129,6 +143,7 @@ export const getUserConsultations = asynchandler(async (req, res) => {
 		.populate('student')
 		.populate('instructor')
 		.limit(Number(limit) ?? DEFAULT_LIMIT)
+		.sort({ createdAt: -1 })
 		.exec();
 
 	res.json(new CustomResponse(true, consultations, 'Consultations fetched'));
@@ -140,17 +155,14 @@ export const getUserConsultations = asynchandler(async (req, res) => {
 export const updateConsultationStatus = asynchandler(async (req, res) => {
 	const currentUser = req.user;
 	const { consultationID } = req.params;
-
-	await logActivity(req, {
-		action: 'UPDATE_CONSULTATION',
-		description: 'Updated a consultation',
-		resourceId: consultationID,
-		resourceType: RESOURCE_TYPES.CONSULTATION,
-	});
-
 	const status = consutationStatusSchema.parse(req.body.status);
 
-	const consultation = await ConsultationModel.findById(consultationID);
+	const consultation = await ConsultationModel.findById<IConsultation>(
+		consultationID
+	)
+		.populate('student')
+		.populate('instructor')
+		.exec();
 	appAssert(consultation, NOT_FOUND, 'Consultation not found');
 
 	appAssert(
@@ -159,8 +171,121 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 		'Only instructors can update consultation status'
 	);
 
+	const { student, instructor } = consultation;
+
 	consultation.status = status;
 	await consultation.save();
+
+	try {
+		const message = {
+			from: `"Consultation Admin" <${EMAIL_USER}>`,
+			to: student.email,
+			subject: `Consultation ${
+				status === 'accepted'
+					? 'Accepted'
+					: status === 'declined'
+					? 'Declined'
+					: status === 'completed'
+					? 'Completed'
+					: 'Updated'
+			}`,
+			html: `
+        <div style="font-family:sans-serif;padding:1rem;border-radius:8px;background:#f9fafb;">
+          <h2 style="color:#111;">Consultation Status Update</h2>
+          <p>Hello ${student.name},</p>
+          <p>Your consultation with <b>${
+						instructor.name
+					}</b> has been <b>${status}</b>.</p>
+          ${
+						status === 'accepted' && consultation.meetLink
+							? `<p>You can join using this link:</p>
+               <a href="${consultation.meetLink}" 
+                  style="display:inline-block;margin-top:1rem;padding:.6rem 1rem;background:#111;color:#fff;border-radius:6px;text-decoration:none;">
+                  Join Google Meet
+               </a>`
+							: ''
+					}
+          <p style="margin-top:1rem;font-size:12px;color:#555;">
+            This is an automated notification from the Consultation System.
+          </p>
+        </div>
+      `,
+		};
+		await sendMail(message);
+	} catch (error) {
+		console.error('Failed to send consultation status email:', error);
+	}
+
+	// 📅 Manage Google Calendar event based on status
+	try {
+		const instructorUser = await UserModel.findById(instructor._id);
+		if (instructorUser?.googleCalendarTokens) {
+			const oAuth2Client = new google.auth.OAuth2(
+				GOOGLE_CLIENT_ID,
+				GOOGLE_CLIENT_SECRET,
+				GOOGLE_REDIRECT_URI
+			);
+			oAuth2Client.setCredentials(instructorUser.googleCalendarTokens);
+			const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
+
+			if (status === 'accepted') {
+				// ✅ Create event if accepted
+				const event = {
+					summary: `Consultation with ${student.name}`,
+					description: consultation.description || 'Consultation meeting',
+					start: {
+						dateTime: consultation.scheduledAt.toISOString(),
+						timeZone: 'Asia/Manila',
+					},
+					end: {
+						dateTime: new Date(
+							new Date(consultation.scheduledAt).getTime() + 60 * 60 * 1000
+						).toISOString(),
+						timeZone: 'Asia/Manila',
+					},
+					conferenceData: {
+						createRequest: {
+							requestId: Math.random().toString(36).substring(2, 15),
+							conferenceSolutionKey: { type: 'hangoutsMeet' },
+						},
+					},
+					attendees: [{ email: instructor.email }, { email: student.email }],
+				};
+
+				const response = await calendar.events.insert({
+					calendarId: 'primary',
+					requestBody: event,
+					conferenceDataVersion: 1,
+				});
+
+				const eventId = response.data.id;
+				const meetLink = response.data?.conferenceData?.entryPoints?.[0]?.uri;
+
+				if (eventId) consultation.googleCalendarEventId = eventId;
+				if (meetLink) consultation.meetLink = meetLink;
+				await consultation.save();
+			}
+
+			if (status === 'completed' && consultation.googleCalendarEventId) {
+				// 🗑 Remove event if completed
+				await calendar.events.delete({
+					calendarId: 'primary',
+					eventId: consultation.googleCalendarEventId,
+				});
+				consultation.googleCalendarEventId = null;
+				await consultation.save();
+			}
+		}
+	} catch (error) {
+		console.error('Failed to manage Google Calendar event:', error);
+	}
+
+	await logActivity(req, {
+		action: 'UPDATE_CONSULTATION',
+		description: 'Updated a consultation',
+		resourceId: consultationID,
+		resourceType: RESOURCE_TYPES.CONSULTATION,
+	});
 
 	res.json(
 		new CustomResponse(
@@ -237,7 +362,6 @@ export const getAdminDashboardData = asynchandler(async (req, res) => {
 export const createConsultationMeeting = asynchandler(async (req, res) => {
 	const userId = req.session!.userID;
 	const user = await UserModel.findById(userId);
-
 	appAssert(
 		user && user.googleCalendarTokens,
 		UNAUTHORIZED,
@@ -250,7 +374,6 @@ export const createConsultationMeeting = asynchandler(async (req, res) => {
 		.populate('student')
 		.populate('instructor')
 		.exec();
-
 	appAssert(consultation, NOT_FOUND, 'Consultation not found');
 
 	const { student, instructor } = consultation;
@@ -261,124 +384,56 @@ export const createConsultationMeeting = asynchandler(async (req, res) => {
 	);
 
 	oAuth2Client.setCredentials(user.googleCalendarTokens);
-	const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
 
-	try {
-		const event = {
-			summary: req.body.summary || 'Consultation Meeting',
-			description:
-				req.body.description || 'Consultation meeting via Google Meet',
-			start: { dateTime: req.body.startTime, timeZone: 'Asia/Manila' },
-			end: { dateTime: req.body.endTime, timeZone: 'Asia/Manila' },
-			conferenceData: {
-				createRequest: {
-					requestId: Math.random().toString(36).substring(2, 15),
-					conferenceSolutionKey: { type: 'hangoutsMeet' },
-				},
-			},
-		};
+	// Create Meet link
+	const meetLink = await createGoogleMeetLink(oAuth2Client, req.body);
+	appAssert(
+		meetLink,
+		INTERNAL_SERVER_ERROR,
+		'Failed to generate Google Meet link'
+	);
 
-		const response = await calendar.events.insert({
-			calendarId: 'primary',
-			requestBody: event,
-			conferenceDataVersion: 1,
-		});
+	consultation.meetLink = meetLink;
+	await consultation.save();
 
-		const meetLink = response.data?.conferenceData?.entryPoints?.[0]?.uri;
-		appAssert(
+	// disabled this because creating a meeting link already creates a calendar event
+	// Add to instructor’s calendar if connected
+	// const instructorUser = await UserModel.findById(instructor._id);
+	// if (instructorUser?.googleCalendarTokens) {
+	// 	const instructorAuth = new google.auth.OAuth2(
+	// 		GOOGLE_CLIENT_ID,
+	// 		GOOGLE_CLIENT_SECRET,
+	// 		GOOGLE_REDIRECT_URI
+	// 	);
+	// 	instructorAuth.setCredentials(instructorUser.googleCalendarTokens);
+
+	// 	await createCalendarEvent(instructorAuth, {
+	// 		summary: req.body.summary,
+	// 		description: `Consultation meeting with student ${student.name}`,
+	// 		startTime: req.body.startTime,
+	// 		endTime: req.body.endTime,
+	// 		attendees: [{ email: instructor.email }, { email: student.email }],
+	// 	});
+	// } else {
+	// 	console.warn('Instructor does not have Google Calendar connected.');
+	// }
+
+	// Send emails
+	const recipients = [
+		{ name: instructor.name, email: instructor.email },
+		{ name: student.name, email: student.email },
+	];
+
+	for (const recipient of recipients) {
+		await sendConsultationEmail(recipient, {
+			student,
+			instructor,
+			summary: req.body.summary,
+			startTime: req.body.startTime,
+			endTime: req.body.endTime,
 			meetLink,
-			INTERNAL_SERVER_ERROR,
-			'Failed to generate Google Meet link'
-		);
-
-		consultation.meetLink = meetLink;
-		await consultation.save();
-
-		//  ADDED: Create event on the INSTRUCTOR's Google Calendar
-		const instructorUser = await UserModel.findById(instructor._id); // ADDED
-		if (instructorUser?.googleCalendarTokens) {
-			// ADDED
-			const instructorAuth = new google.auth.OAuth2( // ADDED
-				GOOGLE_CLIENT_ID,
-				GOOGLE_CLIENT_SECRET,
-				GOOGLE_REDIRECT_URI
-			);
-			instructorAuth.setCredentials(instructorUser.googleCalendarTokens); // ADDED
-
-			const instructorCalendar = google.calendar({
-				version: 'v3',
-				auth: instructorAuth,
-			}); // ADDED
-
-			await instructorCalendar.events.insert({
-				// ADDED
-				calendarId: 'primary',
-				requestBody: {
-					summary: req.body.summary || 'Consultation Meeting',
-					description:
-						req.body.description ||
-						`Consultation meeting with student ${student.name}.`,
-					start: { dateTime: req.body.startTime, timeZone: 'Asia/Manila' },
-					end: { dateTime: req.body.endTime, timeZone: 'Asia/Manila' },
-					conferenceData: {
-						createRequest: {
-							requestId: Math.random().toString(36).substring(2, 15),
-							conferenceSolutionKey: { type: 'hangoutsMeet' },
-						},
-					},
-					attendees: [{ email: instructor.email }, { email: student.email }],
-				},
-				conferenceDataVersion: 1,
-			});
-		} else {
-			console.warn('Instructor does not have Google Calendar connected.'); // ADDED
-		}
-		// END ADDITION
-
-		const recipients = [
-			{ name: instructor.name, email: instructor.email, role: 'Instructor' },
-			{ name: student.name, email: student.email, role: 'Student' },
-		];
-
-		for (const recipient of recipients) {
-			const message = {
-				from: `"Consultation Admin" <${EMAIL_USER}>`,
-				to: recipient.email,
-				subject: 'Consultation Meeting Scheduled',
-				html: `
-          <div style="font-family:sans-serif;padding:1rem;border-radius:8px;background:#f9fafb;">
-            <h2 style="color:#111;">Consultation Meeting Scheduled</h2>
-            <p>Hello ${recipient.name || ''},</p>
-            <p>
-              A consultation meeting has been scheduled between <b>${
-								student.name
-							}</b> 
-              and <b>${instructor.name}</b>.
-            </p>
-            <p><b>Summary:</b> ${req.body.summary || 'Consultation Meeting'}</p>
-            <p><b>Start:</b> ${new Date(req.body.startTime).toLocaleString(
-							'en-PH',
-							{ timeZone: 'Asia/Manila' }
-						)}</p>
-            <p><b>End:</b> ${new Date(req.body.endTime).toLocaleString(
-							'en-PH',
-							{ timeZone: 'Asia/Manila' }
-						)}</p>
-            <a href="${meetLink}" 
-               style="display:inline-block;margin-top:1rem;padding:.6rem 1rem;background:#111;color:#fff;border-radius:6px;text-decoration:none;">
-               Join Google Meet
-            </a>
-            <p style="margin-top:1rem;font-size:12px;color:#555;">Please join on time. Meeting link is unique for this consultation.</p>
-          </div>
-        `,
-			};
-
-			await sendMail(message);
-		}
-
-		res.json({ meetLink });
-	} catch (err) {
-		console.error(err);
-		res.status(INTERNAL_SERVER_ERROR).send('Failed to create meeting');
+		});
 	}
+
+	res.json({ meetLink });
 });

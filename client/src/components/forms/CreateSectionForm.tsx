@@ -118,7 +118,9 @@ export default function AddSectionForm({
 						control={control}
 						render={({ field, fieldState }) => (
 							<Field data-invalid={fieldState.invalid}>
-								<FieldLabel htmlFor={field.name}>Schedule</FieldLabel>
+								<FieldLabel htmlFor={field.name}>
+									Schedule (MTh 10:00 - 12:00)
+								</FieldLabel>
 								<Input
 									{...field}
 									id={field.name}

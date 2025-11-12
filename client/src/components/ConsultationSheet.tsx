@@ -17,6 +17,8 @@ import axiosInstance from '@/api/axios';
 import { Button } from './ui/button';
 import { useState } from 'react';
 import { useUserStore } from '@/stores/user';
+import { queryClient } from '@/main';
+import { QUERY_KEYS } from '@/constants';
 
 type ConsultationSheetProps = {
 	consultation: Consultation;
@@ -32,24 +34,22 @@ export default function ConsultationSheet({
 	const { student, instructor, title, description, scheduledAt, status } =
 		consultation;
 
-	const [meetingLink, setMeetingLink] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
 
 	const handleGenerateMeeting = async () => {
 		setLoading(true);
 
 		try {
-			const response = await axiosInstance.post(
-				'/consultation/create-meeting',
-				{
-					consultationID: consultation._id,
-					summary: `Consultation with ${student.name}`,
-					startTime: scheduledAt,
-					endTime: new Date(new Date(scheduledAt).getTime() + 60 * 60 * 1000), // 1 hour
-				}
-			);
+			await axiosInstance.post('/consultation/create-meeting', {
+				consultationID: consultation._id,
+				summary: `Consultation with ${student.name}`,
+				startTime: scheduledAt,
+				endTime: new Date(new Date(scheduledAt).getTime() + 60 * 60 * 1000), // 1 hour
+			});
 
-			setMeetingLink(response.data.meetLink);
+			await queryClient.invalidateQueries({
+				queryKey: [QUERY_KEYS.CONSULTATIONS],
+			});
 		} catch (err: any) {
 			if (err.status === 401) {
 				// User does not have Google Calendar token → redirect to consent screen
@@ -159,29 +159,31 @@ export default function ConsultationSheet({
 					<Separator />
 
 					{/* Generate Meeting Link */}
-					{user && user.role === 'instructor' && (
-						<div className='flex flex-col gap-2'>
-							<Button
-								onClick={handleGenerateMeeting}
-								disabled={loading}
-								className='w-full'
-							>
-								{loading ? 'Generating...' : 'Generate Meeting Link'}
-							</Button>
+					{user &&
+						user.role === 'instructor' &&
+						consultation.status === 'accepted' && (
+							<div className='flex flex-col gap-2'>
+								<Button
+									onClick={handleGenerateMeeting}
+									disabled={loading || !!consultation.meetLink}
+									className='w-full'
+								>
+									{loading ? 'Generating...' : 'Generate Meeting Link'}
+								</Button>
 
-							{meetingLink && (
-								<p className='text-sm text-blue-600'>
-									<a
-										href={meetingLink}
-										target='_blank'
-										rel='noopener noreferrer'
-									>
-										Join Google Meet
-									</a>
-								</p>
-							)}
-						</div>
-					)}
+								{consultation.meetLink && (
+									<p className='text-sm text-blue-600 text-center'>
+										<a
+											href={consultation.meetLink}
+											target='_blank'
+											rel='noopener noreferrer'
+										>
+											Join Google Meet
+										</a>
+									</p>
+								)}
+							</div>
+						)}
 				</div>
 			</SheetContent>
 		</Sheet>

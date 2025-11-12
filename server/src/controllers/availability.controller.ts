@@ -6,8 +6,6 @@ import { BAD_REQUEST, CREATED, NOT_FOUND, OK } from '../constants/http';
 import AvailabilityModel from '../models/availability.model';
 import CustomResponse from '../utils/response';
 import { logActivity } from '../utils/activity-logger';
-import ConsultationModel from '../models/consultation.models';
-import { link } from 'fs';
 
 /**
  * @route PUT /api/v1/user/:userID/availability
@@ -46,6 +44,13 @@ export const updateInstructorAvailability = asyncHandler(async (req, res) => {
 		});
 	}
 
+	await logActivity(req, {
+		action: 'UPDATE_AVAILABILITY',
+		description: 'Updated availability',
+		resourceId: instructor._id as string,
+		resourceType: RESOURCE_TYPES.USER,
+	});
+
 	res.json(new CustomResponse(true, availability, 'Availability updated'));
 });
 
@@ -53,6 +58,14 @@ export const updateSingleAvailability = asyncHandler(async (req, res) => {
 	const { availabilityID } = req.params;
 	// Optionally validate with Zod or your custom schema
 	const updateFields = req.body;
+
+	const instructor = await UserModel.findById(req.user._id);
+	appAssert(instructor, NOT_FOUND, 'Instructor not found');
+	appAssert(
+		instructor.role === 'instructor',
+		BAD_REQUEST,
+		'User is not an instructor'
+	);
 
 	// Find the record
 	const availability = await AvailabilityModel.findById(availabilityID);
@@ -69,6 +82,13 @@ export const updateSingleAvailability = asyncHandler(async (req, res) => {
 		availability.slots = parseInt(updateFields.slots);
 
 	await availability.save();
+
+	await logActivity(req, {
+		action: 'UPDATE_AVAILABILITY',
+		description: 'Updated availability',
+		resourceId: instructor._id as string,
+		resourceType: RESOURCE_TYPES.USER,
+	});
 
 	res.json(new CustomResponse(true, availability, 'Availability updated'));
 });
@@ -95,6 +115,7 @@ export const getInstructorAvailability = asyncHandler(async (req, res) => {
 });
 
 import { Request, Response } from 'express';
+import { RESOURCE_TYPES } from '../constants';
 
 export const createInstructorAvailability = async (
 	req: Request,
@@ -103,6 +124,14 @@ export const createInstructorAvailability = async (
 	try {
 		const userID = req.params.userID;
 		const { day, startTime, endTime, slots } = req.body;
+
+		const instructor = await UserModel.findById(req.user._id);
+		appAssert(instructor, NOT_FOUND, 'Instructor not found');
+		appAssert(
+			instructor.role === 'instructor',
+			BAD_REQUEST,
+			'User is not an instructor'
+		);
 
 		// Create new availability (MongoDB auto-generates _id and __v)
 		const newAvailability = new AvailabilityModel({
@@ -115,6 +144,13 @@ export const createInstructorAvailability = async (
 
 		await newAvailability.save();
 
+		await logActivity(req, {
+			action: 'CREATE_AVAILABILITY',
+			description: 'Instructor created availability',
+			resourceId: instructor._id as string,
+			resourceType: RESOURCE_TYPES.USER,
+		});
+
 		res.status(201).json({
 			message: 'Availability created!',
 			data: newAvailability,
@@ -126,7 +162,24 @@ export const createInstructorAvailability = async (
 
 export const deleteSingleAvailability = asyncHandler(async (req, res) => {
 	const { availabilityID } = req.params;
+
+	const instructor = await UserModel.findById(req.user._id);
+	appAssert(instructor, NOT_FOUND, 'Instructor not found');
+	appAssert(
+		instructor.role === 'instructor',
+		BAD_REQUEST,
+		'User is not an instructor'
+	);
+
 	const result = await AvailabilityModel.findByIdAndDelete(availabilityID);
 	appAssert(result, NOT_FOUND, 'Availability not found');
+
+	await logActivity(req, {
+		action: 'DELETE_AVAILABILITY',
+		description: 'Instructor deleted availability',
+		resourceId: instructor._id as string,
+		resourceType: RESOURCE_TYPES.USER,
+	});
+
 	res.json(new CustomResponse(true, result, 'Availability deleted'));
 });

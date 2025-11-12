@@ -14,6 +14,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
+import { startCase } from 'lodash';
 
 export default function Logs() {
 	const [selectedResource, setSelectedResource] = useState<string>(
@@ -85,7 +86,7 @@ export default function Logs() {
 								key={log._id}
 								className='grid grid-cols-6 py-3 text-sm items-center'
 							>
-								<span>{log.user?.name || 'System'}</span>
+								<span>{startCase(log.user?.name || 'System')}</span>
 								<span className='font-medium'>{log.action}</span>
 								<span className='truncate'>{log.description || '—'}</span>
 								<span>

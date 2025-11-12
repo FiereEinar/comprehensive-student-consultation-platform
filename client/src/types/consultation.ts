@@ -16,4 +16,5 @@ export type Consultation = {
 	description: string;
 	createdAt: Date;
 	updatedAt: Date;
+	meetLink?: string;
 };
