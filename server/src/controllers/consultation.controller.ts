@@ -9,7 +9,12 @@ import ConsultationModel, {
 import CustomResponse from '../utils/response';
 import UserModel from '../models/user.model';
 import appAssert from '../errors/app-assert';
-import { BAD_REQUEST, NOT_FOUND } from '../constants/http';
+import {
+	BAD_REQUEST,
+	INTERNAL_SERVER_ERROR,
+	NOT_FOUND,
+	UNAUTHORIZED,
+} from '../constants/http';
 import AvailabilityModel from '../models/availability.model';
 import { getStartAndEndofDay } from '../utils/date';
 import { DEFAULT_LIMIT, RESOURCE_TYPES } from '../constants';
@@ -232,10 +237,12 @@ export const getAdminDashboardData = asynchandler(async (req, res) => {
 export const createConsultationMeeting = asynchandler(async (req, res) => {
 	const userId = req.session!.userID;
 	const user = await UserModel.findById(userId);
-	if (!user || !user.googleCalendarTokens) {
-		res.status(401).json({ error: 'Google Calendar not connected' });
-		return;
-	}
+
+	appAssert(
+		user && user.googleCalendarTokens,
+		UNAUTHORIZED,
+		'Google Calendar not connected'
+	);
 
 	const consultation = await ConsultationModel.findById<IConsultation>(
 		req.body.consultationID
@@ -278,7 +285,14 @@ export const createConsultationMeeting = asynchandler(async (req, res) => {
 		});
 
 		const meetLink = response.data?.conferenceData?.entryPoints?.[0]?.uri;
-		appAssert(meetLink, 500, 'Failed to generate Google Meet link');
+		appAssert(
+			meetLink,
+			INTERNAL_SERVER_ERROR,
+			'Failed to generate Google Meet link'
+		);
+
+		consultation.meetLink = meetLink;
+		await consultation.save();
 
 		//  ADDED: Create event on the INSTRUCTOR's Google Calendar
 		const instructorUser = await UserModel.findById(instructor._id); // ADDED
@@ -365,6 +379,6 @@ export const createConsultationMeeting = asynchandler(async (req, res) => {
 		res.json({ meetLink });
 	} catch (err) {
 		console.error(err);
-		res.status(500).send('Failed to create meeting');
+		res.status(INTERNAL_SERVER_ERROR).send('Failed to create meeting');
 	}
 });

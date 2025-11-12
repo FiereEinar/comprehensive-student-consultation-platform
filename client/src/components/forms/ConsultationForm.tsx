@@ -192,7 +192,10 @@ export default function ConsultationForm({ title }: ConsultationFormProps) {
 
 					{selectedInstructor && selectedInstructor !== '' && (
 						<div className='text-xs text-muted-foreground px-2'>
-							<InstructorAvailabilities instructorID={selectedInstructor} />
+							<InstructorAvailabilities
+								viewOnly
+								instructorID={selectedInstructor}
+							/>
 						</div>
 					)}
 

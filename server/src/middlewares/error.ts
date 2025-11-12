@@ -1,6 +1,10 @@
 import { ErrorRequestHandler, Request, Response } from 'express';
 import { z } from 'zod';
-import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from '../constants/http';
+import {
+	BAD_REQUEST,
+	CONFLICT,
+	INTERNAL_SERVER_ERROR,
+} from '../constants/http';
 import AppError from '../errors/app-error';
 import { logActivity } from '../utils/activity-logger';
 
@@ -36,6 +40,51 @@ const handleZodError = (req: Request, res: Response, error: z.ZodError) => {
 	});
 };
 
+const handleMongoError = (req: Request, res: Response, error: any) => {
+	let message = 'A database error occurred.';
+	let status = INTERNAL_SERVER_ERROR;
+
+	// Handle Duplicate Key Error
+	if (error.code === 11000) {
+		const key = Object.keys(error.keyPattern || {})[0];
+		const value = error.keyValue?.[key as string];
+		message = `Duplicate value for "${key}": "${value}". This value must be unique.`;
+		status = CONFLICT;
+	}
+
+	// Handle Mongoose Validation Errors
+	else if (error.name === 'ValidationError') {
+		const fields = Object.values(error.errors || {}).map((e: any) => e.message);
+		message = `Validation failed: ${fields.join(', ')}`;
+		status = BAD_REQUEST;
+	}
+
+	// Handle CastError (e.g., invalid ObjectId)
+	else if (error.name === 'CastError') {
+		message = `Invalid value for field "${error.path}": ${error.value}`;
+		status = BAD_REQUEST;
+	}
+
+	// Handle MongoServerError or others
+	else if (error.name === 'MongoServerError') {
+		message = error.errmsg || 'Unexpected MongoDB server error.';
+		status = INTERNAL_SERVER_ERROR;
+	}
+
+	logActivity(req, {
+		action: 'DATABASE_ERROR',
+		description: message,
+		status: 'failure',
+	});
+
+	res.status(status).json({
+		message,
+		code: error.code,
+		name: error.name,
+		details: error.errmsg || undefined,
+	});
+};
+
 export const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
 	console.log(`PATH ${req.path}`, error);
 
@@ -46,6 +95,15 @@ export const errorHandler: ErrorRequestHandler = (error, req, res, next) => {
 
 	if (error instanceof AppError) {
 		handleAppError(req, res, error);
+		return;
+	}
+
+	if (
+		error.name?.includes('Mongo') ||
+		error.name?.includes('ValidationError') ||
+		error.name === 'CastError'
+	) {
+		handleMongoError(req, res, error);
 		return;
 	}
 

@@ -59,7 +59,7 @@ export default function CreateSubjectForm({
 			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.SUBJECTS] });
 		} catch (error: any) {
 			console.error('Failed to create subject', error);
-			toast.error(error.response?.data?.message ?? 'Failed to create subject');
+			toast.error(error.message ?? 'Failed to create subject');
 		}
 	};
 

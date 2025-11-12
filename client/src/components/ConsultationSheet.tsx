@@ -16,6 +16,7 @@ import { Calendar, Clock, UserRound } from 'lucide-react';
 import axiosInstance from '@/api/axios';
 import { Button } from './ui/button';
 import { useState } from 'react';
+import { useUserStore } from '@/stores/user';
 
 type ConsultationSheetProps = {
 	consultation: Consultation;
@@ -26,6 +27,8 @@ export default function ConsultationSheet({
 	consultation,
 	trigger,
 }: ConsultationSheetProps) {
+	const { user } = useUserStore((state) => state);
+
 	const { student, instructor, title, description, scheduledAt, status } =
 		consultation;
 
@@ -156,23 +159,29 @@ export default function ConsultationSheet({
 					<Separator />
 
 					{/* Generate Meeting Link */}
-					<div className='flex flex-col gap-2'>
-						<Button
-							onClick={handleGenerateMeeting}
-							disabled={loading}
-							className='w-full'
-						>
-							{loading ? 'Generating...' : 'Generate Meeting Link'}
-						</Button>
+					{user && user.role === 'instructor' && (
+						<div className='flex flex-col gap-2'>
+							<Button
+								onClick={handleGenerateMeeting}
+								disabled={loading}
+								className='w-full'
+							>
+								{loading ? 'Generating...' : 'Generate Meeting Link'}
+							</Button>
 
-						{meetingLink && (
-							<p className='text-sm text-blue-600'>
-								<a href={meetingLink} target='_blank' rel='noopener noreferrer'>
-									Join Google Meet
-								</a>
-							</p>
-						)}
-					</div>
+							{meetingLink && (
+								<p className='text-sm text-blue-600'>
+									<a
+										href={meetingLink}
+										target='_blank'
+										rel='noopener noreferrer'
+									>
+										Join Google Meet
+									</a>
+								</p>
+							)}
+						</div>
+					)}
 				</div>
 			</SheetContent>
 		</Sheet>

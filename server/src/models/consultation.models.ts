@@ -9,7 +9,7 @@ export type ConsultationStatus =
 	| 'declined'
 	| 'completed';
 
-export interface IConsultation {
+export interface IConsultation extends mongoose.Document {
 	student: IUser;
 	instructor: IUser;
 	scheduledAt: Date;

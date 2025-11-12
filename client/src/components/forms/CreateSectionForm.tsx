@@ -71,7 +71,7 @@ export default function AddSectionForm({
 			});
 		} catch (error: any) {
 			console.error('Failed to create section', error);
-			toast.error(error.response?.data?.message ?? 'Failed to create section');
+			toast.error(error.message ?? 'Failed to create section');
 		}
 	};
 

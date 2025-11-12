@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Header from '@/components/ui/header';
 import UpdateProfileForm from '@/components/forms/UpdateProfileForm';
@@ -33,6 +33,7 @@ export default function Settings() {
 			<div>
 				<Header size='md'>Settings</Header>
 			</div>
+
 			<Card>
 				<CardHeader>
 					<CardTitle>Profile Information</CardTitle>
@@ -41,6 +42,7 @@ export default function Settings() {
 					<UpdateProfileForm />
 				</CardContent>
 			</Card>
+
 			<Card>
 				<CardHeader>
 					<CardTitle>Reset Password</CardTitle>
@@ -49,31 +51,27 @@ export default function Settings() {
 					<ResetPasswordForm />
 				</CardContent>
 			</Card>
-			<Card>
-				<CardHeader>
-					<CardTitle>Set Your Availability</CardTitle>
-				</CardHeader>
-				<CardContent>
-					{user && user.role === 'instructor' ? (
-						<>
-							<UpdateAvailability user={user} />
-							<hr className='my-6' />
-							<InstructorAvailabilities
-								instructorID={user._id}
-								onEdit={handleEdit}
-							/>
-							<EditInstructorAvailability
-								availability={editAvailability}
-								open={editOpen}
-								onClose={() => setEditOpen(false)}
-								onSuccess={() => window.location.reload()}
-							/>
-						</>
-					) : (
-						<p>You must be an instructor to set or view availabilities.</p>
-					)}
-				</CardContent>
-			</Card>
+
+			{user && user.role === 'instructor' && (
+				<Card>
+					<CardHeader>
+						<CardTitle>Set Your Availability</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<UpdateAvailability user={user} />
+						<hr className='my-6' />
+						<InstructorAvailabilities
+							instructorID={user._id}
+							onEdit={handleEdit}
+						/>
+						<EditInstructorAvailability
+							availability={editAvailability}
+							open={editOpen}
+							onClose={() => setEditOpen(false)}
+						/>
+					</CardContent>
+				</Card>
+			)}
 		</div>
 	);
 }
