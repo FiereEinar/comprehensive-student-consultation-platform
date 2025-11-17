@@ -138,7 +138,7 @@ export default function RightSidebar() {
 					{status && (
 						<>
 							<div className='flex justify-between'>
-								<p className='font-medium text-green-600'>Accepted:</p>
+								<p className='font-medium text-blue-600'>Accepted:</p>
 								<p>{status.accepted}</p>
 							</div>
 
@@ -153,7 +153,7 @@ export default function RightSidebar() {
 							</div>
 
 							<div className='flex justify-between'>
-								<p className='font-medium text-blue-600'>Completed:</p>
+								<p className='font-medium text-green-600'>Completed:</p>
 								<p>{status.completed}</p>
 							</div>
 						</>
@@ -162,7 +162,7 @@ export default function RightSidebar() {
 			</Card>
 
 			{/* C. RECENT CONSULTATION LOGS */}
-			{['instructor', 'admin'].includes(user?.role ?? '') && (
+			{user?.role === 'admin' && (
 				<Card className='rounded-2xl shadow-sm'>
 					<CardHeader>
 						<CardTitle className='text-lg font-semibold'>Recent Logs</CardTitle>

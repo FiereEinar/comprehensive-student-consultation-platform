@@ -1,32 +1,32 @@
-import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Header from '@/components/ui/header';
 import UpdateProfileForm from '@/components/forms/UpdateProfileForm';
 import ResetPasswordForm from '@/components/forms/ResetPasswordForm';
-import InstructorAvailabilities from '@/components/InstructorAvailabilities';
-import UpdateAvailability from '@/components/UpdateAvailability';
-import EditInstructorAvailability from '@/components/forms/EditInstructorAvailability';
-import { useUserStore } from '@/stores/user';
+// import { useState } from 'react';
+// import InstructorAvailabilities from '@/components/InstructorAvailabilities';
+// import UpdateAvailability from '@/components/UpdateAvailability';
+// import EditInstructorAvailability from '@/components/forms/EditInstructorAvailability';
+// import { useUserStore } from '@/stores/user';
 
-type AvailabilityType = {
-	_id: string;
-	day: string;
-	startTime: string;
-	endTime: string;
-	slots: string;
-	user: string;
-};
+// type AvailabilityType = {
+// 	_id: string;
+// 	day: string;
+// 	startTime: string;
+// 	endTime: string;
+// 	slots: string;
+// 	user: string;
+// };
 
 export default function Settings() {
-	const user = useUserStore((state) => state.user);
-	const [editOpen, setEditOpen] = useState(false);
-	const [editAvailability, setEditAvailability] =
-		useState<AvailabilityType | null>(null);
+	// const user = useUserStore((state) => state.user);
+	// const [editOpen, setEditOpen] = useState(false);
+	// const [editAvailability, setEditAvailability] =
+	// 	useState<AvailabilityType | null>(null);
 
-	const handleEdit = (availability: AvailabilityType) => {
-		setEditAvailability(availability);
-		setEditOpen(true);
-	};
+	// const handleEdit = (availability: AvailabilityType) => {
+	// 	setEditAvailability(availability);
+	// 	setEditOpen(true);
+	// };
 
 	return (
 		<div className='max-w-2xl space-y-5'>
@@ -52,7 +52,7 @@ export default function Settings() {
 				</CardContent>
 			</Card>
 
-			{user && user.role === 'instructor' && (
+			{/* {user && user.role === 'instructor' && (
 				<Card>
 					<CardHeader>
 						<CardTitle>Set Your Availability</CardTitle>
@@ -71,7 +71,7 @@ export default function Settings() {
 						/>
 					</CardContent>
 				</Card>
-			)}
+			)} */}
 		</div>
 	);
 }

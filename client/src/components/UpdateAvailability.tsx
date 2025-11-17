@@ -39,7 +39,7 @@ export default function UpdateAvailability({ user }: UpdateAvailabilityProps) {
 			}
 
 			// Count how many days boxes are checked
-			const checkedDaysCount = formData.days.length;
+			// const checkedDaysCount = formData.days.length;
 
 			// Loop over each checked day, submit one schedule per day
 			for (const day of formData.days) {
@@ -79,9 +79,7 @@ export default function UpdateAvailability({ user }: UpdateAvailabilityProps) {
 				control={control}
 				render={({ field, fieldState }) => (
 					<div className='flex flex-col gap-3'>
-						<Label htmlFor={field.name} className='px-1'>
-							Select Days
-						</Label>
+						<Label htmlFor={field.name}>Select Days</Label>
 						<div className='flex gap-4 mb-2'>
 							{AVAILABLE_DAYS.map((day) => (
 								<div key={day} className='flex flex-col items-center'>

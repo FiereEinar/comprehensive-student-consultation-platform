@@ -1,7 +1,7 @@
 import {
-	Book,
 	Calendar,
 	ClipboardClock,
+	Clock4,
 	GraduationCap,
 	LayoutDashboard,
 	Power,
@@ -44,10 +44,15 @@ const instructorSidebarLinks: SidebarNavLink[] = [
 		icon: Calendar,
 	},
 	{
-		title: 'Subjects',
-		url: '/instructor/subject',
-		icon: Book,
+		title: 'Availability',
+		url: '/instructor/availability',
+		icon: Clock4,
 	},
+	// {
+	// 	title: 'Subjects',
+	// 	url: '/instructor/subject',
+	// 	icon: Book,
+	// },
 ];
 
 const studentSidebarLinks: SidebarNavLink[] = [

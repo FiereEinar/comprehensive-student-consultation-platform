@@ -18,8 +18,8 @@ import ForgotPassword from './pages/ForgotPassword';
 import PasswordReset from './pages/PasswordReset';
 import AcceptInstructorInvitation from './pages/AcceptInstructorInvitation';
 import AdminInstructorsPage from './pages/AdminInstructorsPage';
-import Subjects from './pages/Subjects';
 import Logs from './pages/Logs';
+import InstructorAvailability from './pages/InstructorAvailability';
 
 export default function Route() {
 	const route = createBrowserRouter([
@@ -68,8 +68,8 @@ export default function Route() {
 					element: <InstructorConsultations />,
 				},
 				{
-					path: '/instructor/subject',
-					element: <Subjects />,
+					path: '/instructor/availability',
+					element: <InstructorAvailability />,
 				},
 				{
 					path: '/settings',

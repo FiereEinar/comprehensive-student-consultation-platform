@@ -6,6 +6,8 @@ import axiosInstance from '@/api/axios';
 import { toast } from 'sonner';
 import { queryClient } from '@/main';
 import ConfirmDeleteDialog from './ConfirmDeleteDialog';
+import { Button } from './ui/button';
+import { Ban } from 'lucide-react';
 
 // Props for instructor ID
 type InstructorAvailabilitiesProps = {
@@ -56,30 +58,39 @@ export default function InstructorAvailabilities({
 			<p className='mb-3'>Available Times:</p>
 			<ul className='list-disc pl-5'>
 				{availabilities.map((availability) => (
-					<li key={availability._id} className='flex items-center mb-2 text-sm'>
+					<li
+						key={availability._id}
+						className='flex items-start text-start mb-2 text-sm'
+					>
 						<span>
 							{availability.day}: {formatTime(availability.startTime)} -{' '}
 							{formatTime(availability.endTime)} ({availability.slots} slots)
 						</span>
 						{!viewOnly && (
 							<div className='ml-auto flex items-center gap-2'>
-								<button
+								<Button
 									type='button'
-									className='cursor-pointer px-3 py-1 rounded-md bg-blue-500 hover:bg-blue-500/90 text-white text-xs'
+									variant='link'
+									size='sm'
+									// className='cursor-pointer px-3 py-1 rounded-md bg-blue-500 hover:bg-blue-500/90 text-white text-xs'
+									className='text-blue-500 flex items-center gap-1 text-xs'
 									onClick={() => onEdit?.(availability)}
 									title='Edit'
 								>
 									Edit
-								</button>
+								</Button>
 								<ConfirmDeleteDialog
 									trigger={
-										<button
+										<Button
 											type='button'
-											className='cursor-pointer px-3 py-1 rounded-md bg-destructive hover:bg-destructive/90 text-white text-xs'
+											variant='link'
+											size='sm'
+											className='text-red-500 flex items-center gap-1 text-xs'
+											// className='cursor-pointer px-3 py-1 rounded-md bg-destructive hover:bg-destructive/90 text-white text-xs'
 											title='Remove'
 										>
-											Remove
-										</button>
+											<Ban className='w-4 h-4' /> Remove
+										</Button>
 									}
 									onConfirm={() => handleDelete(availability._id)}
 								/>
