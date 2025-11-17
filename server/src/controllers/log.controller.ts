@@ -4,7 +4,7 @@ import CustomResponse from '../utils/response';
 import { RESOURCE_TYPES } from '../constants';
 
 export const getLogsHandler = asyncHandler(async (req, res) => {
-	const { resource } = req.query;
+	const { resource, limit = 10 } = req.query;
 
 	const filter: Record<string, any> = {};
 
@@ -14,7 +14,8 @@ export const getLogsHandler = asyncHandler(async (req, res) => {
 
 	const logs = await ActivityLogModel.find(filter)
 		.populate('user')
-		.sort({ timestamp: -1 });
+		.sort({ timestamp: -1 })
+		.limit(Number(limit));
 
 	res.json(new CustomResponse(true, logs, 'Logs fetched successfully'));
 });

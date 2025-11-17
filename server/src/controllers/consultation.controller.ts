@@ -32,6 +32,7 @@ import { sendMail } from '../utils/email';
 import { createGoogleMeetLink } from '../utils/google-meet';
 import { createCalendarEvent } from '../utils/google-calendar';
 import { sendConsultationEmail } from '../utils/consultation-email';
+import { custom } from 'zod';
 
 /**
  * @route GET /api/v1/consultation - get all recent consultations
@@ -216,7 +217,7 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 		console.error('Failed to send consultation status email:', error);
 	}
 
-	// 📅 Manage Google Calendar event based on status
+	// Manage Google Calendar event based on status
 	try {
 		const instructorUser = await UserModel.findById(instructor._id);
 		if (instructorUser?.googleCalendarTokens) {
@@ -229,7 +230,7 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 			const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
 
 			if (status === 'accepted') {
-				// ✅ Create event if accepted
+				// Create event if accepted
 				const event = {
 					summary: `Consultation with ${student.name}`,
 					description: consultation.description || 'Consultation meeting',
@@ -267,7 +268,7 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 			}
 
 			if (status === 'completed' && consultation.googleCalendarEventId) {
-				// 🗑 Remove event if completed
+				// Remove event if completed
 				await calendar.events.delete({
 					calendarId: 'primary',
 					eventId: consultation.googleCalendarEventId,
@@ -436,4 +437,102 @@ export const createConsultationMeeting = asynchandler(async (req, res) => {
 	}
 
 	res.json({ meetLink });
+});
+
+export const getTodayOverview = asynchandler(async (req, res) => {
+	const userID = req.user._id;
+	const isAdmin = req.user.role === 'admin';
+	const isInstructor = req.user.role === 'instructor';
+	const isStudent = req.user.role === 'student';
+
+	const start = new Date();
+	start.setHours(0, 0, 0, 0);
+
+	const end = new Date();
+	end.setHours(23, 59, 59, 999);
+
+	let todayConsultationFilter: any = {
+		scheduledAt: { $gte: start, $lte: end },
+	};
+	if (!isAdmin && isInstructor) {
+		todayConsultationFilter = {
+			instructor: userID,
+		};
+	}
+	if (!isAdmin && isStudent) {
+		todayConsultationFilter = {
+			student: userID,
+		};
+	}
+	const todaysConsultations = await ConsultationModel.find(
+		todayConsultationFilter
+	)
+		.populate('student')
+		.populate('instructor')
+		.sort({ startTime: 1 });
+
+	let pendingRequestsFilter: any = { status: 'pending' };
+	if (!isAdmin) {
+		pendingRequestsFilter = {
+			instructor: userID,
+		};
+	}
+	const pendingRequests = await ConsultationModel.countDocuments(
+		pendingRequestsFilter
+	);
+
+	const nextConsultation = todaysConsultations[0] || null;
+
+	res.json(
+		new CustomResponse(
+			true,
+			{
+				totalToday: todaysConsultations.length,
+				pendingRequests,
+				nextConsultation,
+				activeMeetLink: nextConsultation?.meetLink ?? null,
+				reminders: ['Check pending requests', 'Review completed logs'],
+			},
+			"Today's overview fetched"
+		)
+	);
+});
+
+export const getStatusBreakdown = asynchandler(async (req, res) => {
+	const userID = req.user._id;
+	const isAdmin = req.user.role === 'admin';
+	const isInstructor = req.user.role === 'instructor';
+	const isStudent = req.user.role === 'student';
+
+	const statuses = ['accepted', 'pending', 'declined', 'completed'];
+
+	let filter: any = {};
+	if (!isAdmin && isInstructor) {
+		filter = {
+			instructor: userID,
+		};
+	}
+	if (!isAdmin && isStudent) {
+		filter = {
+			student: userID,
+		};
+	}
+	const counts = await Promise.all(
+		statuses.map((s) =>
+			ConsultationModel.countDocuments({ ...filter, status: s })
+		)
+	);
+
+	res.json(
+		new CustomResponse(
+			true,
+			{
+				accepted: counts[0],
+				pending: counts[1],
+				declined: counts[2],
+				completed: counts[3],
+			},
+			'Status breakdown fetched'
+		)
+	);
 });
