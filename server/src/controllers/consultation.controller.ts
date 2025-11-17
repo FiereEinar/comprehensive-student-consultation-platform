@@ -41,6 +41,7 @@ export const getConsultations = asynchandler(async (req, res) => {
 	const consultations = await ConsultationModel.find()
 		.populate('student')
 		.populate('instructor')
+		.sort({ createdAt: -1 })
 		.exec();
 
 	res.json(new CustomResponse(true, consultations, 'Consultations fetched'));

@@ -18,6 +18,11 @@ export interface IConsultation extends mongoose.Document {
 	description: string;
 	meetLink?: string;
 	googleCalendarEventId?: string | null;
+	purpose: string;
+	sectonCode: string;
+	subjectCode: string;
+	createdAt: Date;
+	updatedAt: Date;
 }
 
 const ConsultationSchema = new Schema(
@@ -35,6 +40,9 @@ const ConsultationSchema = new Schema(
 		meetLink: { type: String, default: null },
 		googleCalendarEventId: { type: String, default: null },
 		description: { type: String, required: true },
+		purpose: { type: String, required: true },
+		sectonCode: { type: String, required: true },
+		subjectCode: { type: String, required: true },
 	},
 	{
 		timestamps: true,

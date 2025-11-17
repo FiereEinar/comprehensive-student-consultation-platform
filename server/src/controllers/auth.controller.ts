@@ -361,7 +361,6 @@ export const googleLoginHandlerV2 = asyncHandler(async (req, res) => {
 	);
 
 	const { email, name, id: googleID } = googleUser;
-	console.log({ googleUser });
 
 	// Check if user exists
 	let user = await UserModel.findOne({ email });

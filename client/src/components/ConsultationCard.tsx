@@ -49,11 +49,19 @@ export default function ConsultationCard({
 				<div className='flex items-center justify-between gap-3 w-full'>
 					<div className='flex gap-2'>
 						<Badge variant='outline' className='text-muted-foreground bg-muted'>
-							T106
+							{consultation.sectonCode || 'T106'}
 						</Badge>
 						<Badge variant='outline' className='text-muted-foreground bg-muted'>
-							IT137
+							{consultation.subjectCode || 'IT137'}
 						</Badge>
+						{consultation.purpose && (
+							<Badge
+								variant='outline'
+								className='text-muted-foreground bg-muted'
+							>
+								{consultation.purpose}
+							</Badge>
+						)}
 					</div>
 
 					<div className='flex items-center gap-3'>

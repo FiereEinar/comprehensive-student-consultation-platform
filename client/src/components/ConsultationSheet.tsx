@@ -19,6 +19,7 @@ import { useState } from 'react';
 import { useUserStore } from '@/stores/user';
 import { queryClient } from '@/main';
 import { QUERY_KEYS } from '@/constants';
+import { Badge } from './ui/badge';
 
 type ConsultationSheetProps = {
 	consultation: Consultation;
@@ -85,6 +86,26 @@ export default function ConsultationSheet({
 					<div className='space-y-1'>
 						<p className='text-xl font-semibold'>{startCase(title)}</p>
 						<p className='text-sm text-muted-foreground'>{description}</p>
+						<p className='text-sm text-muted-foreground'>
+							Requested at: {format(consultation.createdAt, 'MMM dd, yyyy')}
+						</p>
+					</div>
+
+					<div className='flex gap-2'>
+						<Badge variant='outline' className='text-muted-foreground bg-muted'>
+							{consultation.sectonCode || 'T106'}
+						</Badge>
+						<Badge variant='outline' className='text-muted-foreground bg-muted'>
+							{consultation.subjectCode || 'IT137'}
+						</Badge>
+						{consultation.purpose && (
+							<Badge
+								variant='outline'
+								className='text-muted-foreground bg-muted'
+							>
+								{consultation.purpose}
+							</Badge>
+						)}
 					</div>
 
 					<Separator />

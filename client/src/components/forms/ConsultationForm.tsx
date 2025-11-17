@@ -44,6 +44,8 @@ import { Plus } from 'lucide-react';
 
 export type ConsultationFormValues = z.infer<typeof createConsultationSchema>;
 
+const purposes = ['Grade Consultation', 'Capstone Consultation', 'Other'];
+
 type ConsultationFormProps = {
 	title?: string;
 };
@@ -58,6 +60,9 @@ export default function ConsultationForm({ title }: ConsultationFormProps) {
 			description: '',
 			scheduledAt: '',
 			instructor: '',
+			purpose: '',
+			sectonCode: '',
+			subjectCode: '',
 		},
 	});
 
@@ -68,6 +73,7 @@ export default function ConsultationForm({ title }: ConsultationFormProps) {
 
 	const onSubmit = async (formData: ConsultationFormValues) => {
 		try {
+			console.log({ formData });
 			const { data } = await axiosInstance.post('/consultation', {
 				...formData,
 				student: user?._id,
@@ -118,6 +124,89 @@ export default function ConsultationForm({ title }: ConsultationFormProps) {
 						)}
 					/>
 					{/* END TITLE */}
+
+					{/* Select purpose field */}
+					<Controller
+						name='purpose'
+						control={control}
+						render={({ field, fieldState }) => (
+							<Select
+								onValueChange={(value) => {
+									field.onChange(value);
+								}}
+								value={field.value}
+							>
+								<SelectTrigger
+									className='w-full cursor-pointer'
+									data-invalid={fieldState.invalid}
+								>
+									<SelectValue placeholder='Select Purpose' />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectGroup>
+										<SelectLabel>Available Purpose</SelectLabel>
+										{purposes.map((purpose) => (
+											<SelectItem
+												key={purpose}
+												value={purpose}
+												className='cursor-pointer'
+											>
+												{purpose}
+											</SelectItem>
+										))}
+									</SelectGroup>
+								</SelectContent>
+								{fieldState.invalid && (
+									<FieldError errors={[fieldState.error]} />
+								)}
+							</Select>
+						)}
+					/>
+					{/* END */}
+
+					<div className='flex gap-4'>
+						{/* SECTION CODE */}
+						<Controller
+							name='subjectCode'
+							control={control}
+							render={({ field, fieldState }) => (
+								<Field data-invalid={fieldState.invalid}>
+									<FieldLabel htmlFor={field.name}>Subject Code</FieldLabel>
+									<Input
+										{...field}
+										id={field.name}
+										aria-invalid={fieldState.invalid}
+										placeholder='IT101'
+									/>
+									{fieldState.invalid && (
+										<FieldError errors={[fieldState.error]} />
+									)}
+								</Field>
+							)}
+						/>
+						{/* END SECTION CODE */}
+
+						{/* SECTION CODE */}
+						<Controller
+							name='sectonCode'
+							control={control}
+							render={({ field, fieldState }) => (
+								<Field data-invalid={fieldState.invalid}>
+									<FieldLabel htmlFor={field.name}>Section Code</FieldLabel>
+									<Input
+										{...field}
+										id={field.name}
+										aria-invalid={fieldState.invalid}
+										placeholder='T108'
+									/>
+									{fieldState.invalid && (
+										<FieldError errors={[fieldState.error]} />
+									)}
+								</Field>
+							)}
+						/>
+						{/* END SECTION CODE */}
+					</div>
 
 					{/* DESCRIPTION */}
 					<Controller

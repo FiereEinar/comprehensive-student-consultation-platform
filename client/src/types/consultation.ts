@@ -17,4 +17,8 @@ export type Consultation = {
 	createdAt: Date;
 	updatedAt: Date;
 	meetLink?: string;
+	googleCalendarEventId?: string | null;
+	purpose: string;
+	sectonCode: string;
+	subjectCode: string;
 };
