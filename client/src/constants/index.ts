@@ -8,4 +8,6 @@ export const QUERY_KEYS = {
 	SUBJECTS: 'subjects',
 	SECTIONS: 'sections',
 	LOGS: 'logs',
+	TODAYS_OVERVIEW: 'today-overview',
+	STATUS_BREAKDOWN: 'status-breakdown',
 };

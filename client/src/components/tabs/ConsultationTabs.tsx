@@ -1,29 +1,20 @@
-import { fetchUserConsultations } from '@/api/consultation';
-import { QUERY_KEYS } from '@/constants';
 import { useUserStore } from '@/stores/user';
-import type { ConsultationStatus } from '@/types/consultation';
-import { useQuery } from '@tanstack/react-query';
+import type { Consultation } from '@/types/consultation';
 import ConsultationCard from '../ConsultationCard';
 import ConsultationSheet from '../ConsultationSheet';
 
 type ConsultationTabsProps = {
-	userID: string;
-	status: ConsultationStatus[];
+	consultations: Consultation[];
+	isLoading: boolean;
+	error: Error | null;
 };
 
 export default function ConsultationTabs({
-	userID,
-	status,
+	consultations,
+	isLoading,
+	error,
 }: ConsultationTabsProps) {
 	const { user } = useUserStore((state) => state);
-	const {
-		data: consultations,
-		isLoading,
-		error,
-	} = useQuery({
-		queryKey: [QUERY_KEYS.CONSULTATIONS, status],
-		queryFn: () => fetchUserConsultations(userID, status.join(',')),
-	});
 
 	return (
 		<div className='space-y-3'>
@@ -52,11 +43,6 @@ export default function ConsultationTabs({
 								</div>
 							}
 						/>
-						// <ConsultationCard
-						// 	info={user?.role === 'student' ? 'instructor' : 'student'}
-						// 	key={consultation._id}
-						// 	consultation={consultation}
-						// />
 					))}
 				</>
 			)}

@@ -1,13 +1,13 @@
-import type { InstructorAvailability, Invitation, User } from '@/types/user';
+import type { Invitation, User } from '@/types/user';
 import axiosInstance from './axios';
 
 export type AvailabilityType = {
-    _id: string;
-    day: string;
-    startTime: string;
-    endTime: string;
-    slots: string;
-    user: string;
+	_id: string;
+	day: string;
+	startTime: string;
+	endTime: string;
+	slots: string;
+	user: string;
 };
 
 export const fetchInstructors = async (): Promise<User[]> => {
@@ -21,17 +21,19 @@ export const fetchInstructors = async (): Promise<User[]> => {
 	}
 };
 
-export const fetchAvailabilities = async (instructorID: string): Promise<AvailabilityType[]> => {
-    const res = await axiosInstance.get(`/user/${instructorID}/availability`);
-    // If your API may return InstructorAvailability shaped objects, fix here:
-    return (res.data?.data || []).map((a: any) => ({
-        _id: a._id,
-        day: a.day,
-        startTime: a.startTime,
-        endTime: a.endTime,
-        slots: String(a.slots), // ensure string
-        user: a.user,
-    }));
+export const fetchAvailabilities = async (
+	instructorID: string
+): Promise<AvailabilityType[]> => {
+	const res = await axiosInstance.get(`/user/${instructorID}/availability`);
+	// If your API may return InstructorAvailability shaped objects, fix here:
+	return (res.data?.data || []).map((a: any) => ({
+		_id: a._id,
+		day: a.day,
+		startTime: a.startTime,
+		endTime: a.endTime,
+		slots: String(a.slots), // ensure string
+		user: a.user,
+	}));
 };
 
 export const fetchInvitations = async (): Promise<Invitation[]> => {
