@@ -1,38 +1,29 @@
 import type { ConsultationStatus } from '@/types/consultation';
 import { create } from 'zustand';
 
-interface ConsultationFilterState {
+export interface ConsultationFilterValues {
 	status: ConsultationStatus[];
-	setStatus: (status: ConsultationStatus[]) => void;
-
-	limit: number;
-	setLimit: (limit: number) => void;
-
 	search: string;
-	setSearch: (search: string) => void;
-
 	page: number;
-	setPage: (page: number) => void;
-
 	pageSize: number;
-	setPageSize: (pageSize: number) => void;
+	order: 'asc' | 'desc';
+	userID: string;
+}
 
-	getFilters: () => {
-		status: ConsultationStatus[];
-		limit: number;
-		search: string;
-		page: number;
-		pageSize: number;
-	};
+export interface ConsultationFilterState extends ConsultationFilterValues {
+	setStatus: (status: ConsultationStatus[]) => void;
+	setSearch: (search: string) => void;
+	setPage: (page: number) => void;
+	setPageSize: (pageSize: number) => void;
+	setOrder: (order: 'asc' | 'desc') => void;
+	setUserID: (userID: string) => void;
+	getFilters: () => ConsultationFilterValues;
 }
 
 export const useConsultationStateStore = create<ConsultationFilterState>(
 	(set, get) => ({
 		status: [],
 		setStatus: (status) => set({ status }),
-
-		limit: 10,
-		setLimit: (limit) => set({ limit }),
 
 		search: '',
 		setSearch: (search) => set({ search, page: 1 }),
@@ -43,12 +34,19 @@ export const useConsultationStateStore = create<ConsultationFilterState>(
 		pageSize: 10,
 		setPageSize: (pageSize) => set({ pageSize }),
 
-		getFilters: () => ({
+		order: 'desc',
+		setOrder: (order) => set({ order }),
+
+		userID: '',
+		setUserID: (userID) => set({ userID }),
+
+		getFilters: (): ConsultationFilterValues => ({
 			status: get().status,
-			limit: get().limit,
 			search: get().search,
 			page: get().page,
 			pageSize: get().pageSize,
+			order: get().order,
+			userID: get().userID,
 		}),
 	})
 );

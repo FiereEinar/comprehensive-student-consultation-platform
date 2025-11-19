@@ -6,7 +6,7 @@ import {
 import ConsultationModel, {
 	IConsultation,
 } from '../models/consultation.models';
-import CustomResponse from '../utils/response';
+import CustomResponse, { CustomPaginatedResponse } from '../utils/response';
 import UserModel from '../models/user.model';
 import appAssert from '../errors/app-assert';
 import {
@@ -36,15 +36,88 @@ import { custom } from 'zod';
 
 /**
  * @route GET /api/v1/consultation - get all recent consultations
+ * @query page=1
+ * @query pageSize=10
+ * @query search=keyword
+ * @query order=asc | desc
+ * @query userID=studentOrInstructorID
+ * @query status=pending,accepted,completed
  */
 export const getConsultations = asynchandler(async (req, res) => {
-	const consultations = await ConsultationModel.find()
+	const {
+		page = 1,
+		pageSize = 10,
+		search = '',
+		order = 'desc',
+		userID = '',
+		status = '',
+	} = req.query as Record<string, string>;
+
+	const numericPage = Number(page);
+	const limit = Number(pageSize);
+	const skip = (numericPage - 1) * limit;
+
+	/** ---------------------
+	 *   BUILD QUERY FILTER
+	 *  --------------------*/
+	const filter: Record<string, any> = {};
+
+	// FILTER: specific user (either student or instructor)
+	if (userID.trim() !== '') {
+		filter.$or = [{ student: userID }, { instructor: userID }];
+	}
+
+	// FILTER: status (supports multiple: "accepted,completed")
+	if (status.trim() !== '') {
+		const statuses = status.split(',').map((s) => s.trim());
+		filter.status = { $in: statuses };
+	}
+
+	// FILTER: search (search student/instructor name)
+	if (search.trim() !== '') {
+		filter.$or = [
+			{ title: { $regex: search, $options: 'i' } },
+			{ description: { $regex: search, $options: 'i' } },
+			{ purpose: { $regex: search, $options: 'i' } },
+			{ sectionCode: { $regex: search, $options: 'i' } },
+			{ subjectCode: { $regex: search, $options: 'i' } },
+			// { 'student.name': { $regex: search, $options: 'i' } },
+			// { 'instructor.name': { $regex: search, $options: 'i' } },
+		];
+	}
+
+	/** ---------------------
+	 *   BUILD SORT ORDER
+	 *  --------------------*/
+	const sortOrder = order === 'asc' ? 1 : -1;
+
+	/** ---------------------
+	 *     FETCH DATA
+	 *  --------------------*/
+	const consultations = await ConsultationModel.find(filter)
 		.populate('student')
 		.populate('instructor')
-		.sort({ createdAt: -1 })
+		.sort({ createdAt: sortOrder })
+		.skip(skip)
+		.limit(limit)
 		.exec();
 
-	res.json(new CustomResponse(true, consultations, 'Consultations fetched'));
+	// Count total for pagination
+	const total = await ConsultationModel.countDocuments(filter);
+
+	// Calculate next/prev
+	const next = skip + limit < total ? numericPage + 1 : -1;
+	const prev = numericPage > 1 ? numericPage - 1 : -1;
+
+	res.json(
+		new CustomPaginatedResponse(
+			true,
+			consultations,
+			'Consultations fetched',
+			next,
+			prev
+		)
+	);
 });
 
 /**

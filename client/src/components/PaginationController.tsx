@@ -1,11 +1,10 @@
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import {
 	Pagination,
 	PaginationContent,
 	PaginationEllipsis,
 	PaginationItem,
 	PaginationLink,
-	PaginationNext,
-	PaginationPrevious,
 } from './ui/pagination';
 
 type PaginationControllerProps = {
@@ -14,6 +13,7 @@ type PaginationControllerProps = {
 	currentPage: number;
 	setPage: (page: number) => void;
 	prefetchFn?: (page: number) => void;
+	size?: 'sm' | 'md' | 'lg';
 };
 
 export default function PaginationController({
@@ -22,27 +22,42 @@ export default function PaginationController({
 	prevPage,
 	setPage,
 	prefetchFn,
+	size = 'md',
 }: PaginationControllerProps) {
-	// prefetch the 2nd page when in 1st page
-	if (currentPage === 1) {
-		if (prefetchFn) prefetchFn(currentPage + 1);
+	// Prefetch page 2 when on page 1
+	if (currentPage === 1 && prefetchFn) {
+		prefetchFn(2);
 	}
+
+	// Apply size classes
+	const sizeClass = {
+		sm: 'text-xs px-2 py-1',
+		md: 'text-sm px-3 py-1.5',
+		lg: 'text-base px-4 py-2',
+	}[size];
+
+	const clickPrev = () => {
+		if (prevPage === 0) return;
+		setPage(currentPage - 1);
+		if (currentPage - 2 > 0 && prefetchFn) prefetchFn(currentPage - 2);
+	};
+
+	const clickNext = () => {
+		if (nextPage === 0) return;
+		setPage(currentPage + 1);
+		if (prefetchFn) prefetchFn(currentPage + 2);
+	};
 
 	return (
 		<Pagination className='select-none'>
-			<PaginationContent>
-				<PaginationItem
-					onClick={() => {
-						if (prevPage === -1) return;
-						setPage(currentPage - 1);
-						if (currentPage - 2 > 0 && prefetchFn) prefetchFn(currentPage - 2);
-					}}
-				>
-					<PaginationPrevious />
+			<PaginationContent className={sizeClass}>
+				<PaginationItem onClick={clickPrev}>
+					<ChevronLeftIcon className='transition-all cursor-pointer hover:bg-accent rounded-md' />
+					{/* <PaginationPrevious /> */}
 				</PaginationItem>
 
 				<PaginationItem>
-					{prevPage === -1 ? (
+					{prevPage === 0 ? (
 						<PaginationEllipsis />
 					) : (
 						<PaginationLink>{prevPage}</PaginationLink>
@@ -54,21 +69,16 @@ export default function PaginationController({
 				</PaginationItem>
 
 				<PaginationItem>
-					{nextPage === -1 ? (
+					{nextPage === 0 ? (
 						<PaginationEllipsis />
 					) : (
 						<PaginationLink>{nextPage}</PaginationLink>
 					)}
 				</PaginationItem>
 
-				<PaginationItem>
-					<PaginationNext
-						onClick={() => {
-							if (nextPage === -1) return;
-							setPage(currentPage + 1);
-							if (prefetchFn) prefetchFn(currentPage + 2);
-						}}
-					/>
+				<PaginationItem onClick={clickNext}>
+					<ChevronRightIcon className='transition-all cursor-pointer hover:bg-accent rounded-md' />
+					{/* <PaginationNext /> */}
 				</PaginationItem>
 			</PaginationContent>
 		</Pagination>

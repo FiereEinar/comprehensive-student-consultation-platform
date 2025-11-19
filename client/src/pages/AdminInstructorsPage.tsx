@@ -42,7 +42,7 @@ export default function AdminInstructorsPage() {
 								data-[state=active]:bg-white rounded-none 
 								data-[state=active]:shadow-none'
 						>
-							Active
+							Active Instructors
 						</TabsTrigger>
 
 						<TabsTrigger

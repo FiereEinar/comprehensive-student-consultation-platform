@@ -34,7 +34,7 @@ export default function UserCard({
 					)}
 
 					<div className='flex flex-col'>
-						<p className='font-semibold'>{startCase(name)}</p>
+						<p className=''>{startCase(name)}</p>
 						<p className='text-sm text-muted-foreground'>{email}</p>
 					</div>
 				</div>
