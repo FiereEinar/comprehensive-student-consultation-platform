@@ -8,6 +8,7 @@ import RightSidebar from '@/components/sidebars/RightSidebar';
 import PaginationController from '@/components/PaginationController';
 import { useConsultationStateStore } from '@/stores/consultation-filter';
 import { Input } from '@/components/ui/input';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function AdminConsultations() {
 	const { getFilters, page, setPage, setSearch, setStatus } =
@@ -102,6 +103,8 @@ export default function AdminConsultations() {
 							error={error}
 						/>
 					)}
+
+					{isLoading && <LoadingSpinner />}
 
 					{consultations?.length !== 0 && (
 						<div className='flex justify-between w-full'>

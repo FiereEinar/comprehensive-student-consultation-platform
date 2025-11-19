@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/constants';
 import { fetchInvitations } from '@/api/instructor';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2 } from 'lucide-react';
 import _ from 'lodash';
 import InviteInstructorForm from '@/components/forms/InviteInstructorForm';
 import Header from '@/components/ui/header';
@@ -12,6 +11,7 @@ import { fetchUsers } from '@/api/user';
 import { useEffect, useState } from 'react';
 import PaginationController from '@/components/PaginationController';
 import { Input } from '@/components/ui/input';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function AdminInstructorsPage() {
 	const [activeTab, setActiveTab] = useState('active');
@@ -95,9 +95,7 @@ export default function AdminInstructorsPage() {
 					{/* === ACTIVE INSTRUCTORS === */}
 					<TabsContent className='space-y-2' value='active'>
 						{isLoadingInstructors ? (
-							<div className='flex justify-center py-8'>
-								<Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
-							</div>
+							<LoadingSpinner />
 						) : instructors?.length === 0 && !isLoadingInstructors ? (
 							<p className='text-center p-5 text-muted-foreground'>
 								No instructors found
@@ -121,9 +119,7 @@ export default function AdminInstructorsPage() {
 					{/* === PENDING INVITATIONS === */}
 					<TabsContent className='space-y-2' value='pending'>
 						{isLoadingInvitations ? (
-							<div className='flex justify-center py-8'>
-								<Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
-							</div>
+							<LoadingSpinner />
 						) : (
 							<>
 								{invitations &&

@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { RESOURCE_TYPES, type ActivityLog } from '@/types/log';
 import { QUERY_KEYS } from '@/constants';
@@ -15,6 +14,7 @@ import {
 	SelectValue,
 } from '@/components/ui/select';
 import { startCase } from 'lodash';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default function Logs() {
 	const [selectedResource, setSelectedResource] = useState<string>(
@@ -32,18 +32,6 @@ export default function Logs() {
 			return data.data as ActivityLog[];
 		},
 	});
-
-	if (isLoading)
-		return (
-			<div className='flex justify-center items-center h-[80vh]'>
-				<Loader2 className='animate-spin w-6 h-6' />
-			</div>
-		);
-
-	if (error)
-		return (
-			<div className='text-center mt-10 text-red-500'>Failed to load logs.</div>
-		);
 
 	return (
 		<div className='space-y-6'>
@@ -80,6 +68,12 @@ export default function Logs() {
 				</CardHeader>
 
 				<CardContent className='divide-y'>
+					{isLoading && <LoadingSpinner />}
+					{error && (
+						<div className='text-center mt-10 text-red-500'>
+							Failed to load logs.
+						</div>
+					)}
 					{data && data.length > 0 ? (
 						data.map((log) => (
 							<div

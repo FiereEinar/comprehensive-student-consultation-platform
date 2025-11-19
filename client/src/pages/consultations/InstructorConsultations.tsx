@@ -1,4 +1,5 @@
 import { fetchConsultations } from '@/api/consultation';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import PaginationController from '@/components/PaginationController';
 import RightSidebar from '@/components/sidebars/RightSidebar';
 import ConsultationTabs from '@/components/tabs/ConsultationTabs';
@@ -111,6 +112,8 @@ export default function InstructorConsultations() {
 							error={error}
 						/>
 					)}
+
+					{isLoading && <LoadingSpinner />}
 
 					{consultations?.length !== 0 && (
 						<div className='flex justify-between w-full'>

@@ -1,5 +1,6 @@
 import { fetchConsultations } from '@/api/consultation';
 import ConsultationForm from '@/components/forms/ConsultationForm';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import PaginationController from '@/components/PaginationController';
 import RightSidebar from '@/components/sidebars/RightSidebar';
 import ConsultationTabs from '@/components/tabs/ConsultationTabs';
@@ -101,6 +102,7 @@ export default function StudentConsultations() {
 							/>
 						</div>
 					</div>
+
 					{consultations && (
 						<ConsultationTabs
 							consultations={consultations}
@@ -108,6 +110,8 @@ export default function StudentConsultations() {
 							error={error}
 						/>
 					)}
+
+					{isLoading && <LoadingSpinner />}
 
 					{consultations?.length !== 0 && (
 						<div className='flex justify-between w-full'>
