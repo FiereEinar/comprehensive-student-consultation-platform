@@ -26,7 +26,6 @@ export default function InstructorConsultations() {
 	});
 
 	useEffect(() => {
-		console.log('fn ran');
 		if (user) {
 			setUserID(user._id);
 		}

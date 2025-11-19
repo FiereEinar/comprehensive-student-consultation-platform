@@ -1,6 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import UserModel from '../models/user.model';
-import CustomResponse from '../utils/response';
+import CustomResponse, { CustomPaginatedResponse } from '../utils/response';
 import appAssert from '../errors/app-assert';
 import { BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } from '../constants/http';
 import { DEFAULT_LIMIT, RESOURCE_TYPES } from '../constants';
@@ -11,24 +11,59 @@ import { logActivity } from '../utils/activity-logger';
 
 /**
  * @route GET /api/v1/user
- * query: role = 'student' | 'instructor' | 'admin'
- * limit: number
+ * @query page=1
+ * @query pageSize=10
+ * @query search=keyword
+ * @query role=admin|student|instructor
  */
 export const getUsers = asyncHandler(async (req, res) => {
-	const { role, limit } = req.query;
+	const {
+		page = 1,
+		pageSize = 10,
+		search = '',
+		role = '',
+	} = req.query as Record<string, string>;
 
-	const filter: any = {};
+	const numericPage = Number(page);
+	const limit = Number(pageSize);
+	const skip = (numericPage - 1) * limit;
 
-	if (role) {
+	/** ---------------------
+	 *        FILTERS
+	 *  --------------------*/
+	const filter: Record<string, any> = {};
+
+	// filter by role (optional)
+	if (role.trim() !== '') {
 		filter.role = role;
 	}
 
-	const data = await UserModel.find(filter)
-		.limit(Number(limit) ?? DEFAULT_LIMIT)
-		.exec();
-	const users = data.map((user) => user.omitPassword());
+	// search: name, email, institutionalID
+	if (search.trim() !== '') {
+		const regex = { $regex: search, $options: 'i' };
+		filter.$or = [
+			{ name: regex },
+			{ email: regex },
+			{ institutionalID: regex },
+		];
+	}
 
-	res.json(new CustomResponse(true, users, 'Users fetched'));
+	/** ---------------------
+	 *     FETCH DATA
+	 *  --------------------*/
+	const usersRaw = await UserModel.find(filter).skip(skip).limit(limit).exec();
+
+	const users = usersRaw.map((u) => u.omitPassword());
+
+	const total = await UserModel.countDocuments(filter);
+
+	// calculate pagination
+	const next = skip + limit < total ? numericPage + 1 : -1;
+	const prev = numericPage > 1 ? numericPage - 1 : -1;
+
+	res.json(
+		new CustomPaginatedResponse(true, users, 'Users fetched', next, prev)
+	);
 });
 
 /**

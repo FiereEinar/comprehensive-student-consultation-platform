@@ -1,18 +1,32 @@
 import { useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/constants';
-import { fetchInstructors, fetchInvitations } from '@/api/instructor';
+import { fetchInvitations } from '@/api/instructor';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2 } from 'lucide-react';
 import _ from 'lodash';
 import InviteInstructorForm from '@/components/forms/InviteInstructorForm';
 import Header from '@/components/ui/header';
 import UserCard from '@/components/UserCard';
+import { useUserFilterStore } from '@/stores/user-filter';
+import { fetchUsers } from '@/api/user';
+import { useEffect, useState } from 'react';
+import PaginationController from '@/components/PaginationController';
+import { Input } from '@/components/ui/input';
 
 export default function AdminInstructorsPage() {
+	const [activeTab, setActiveTab] = useState('active');
+	const { getFilters, page, setPage, setSearch, setRole } = useUserFilterStore(
+		(state) => state
+	);
+
 	const { data: instructors, isLoading: isLoadingInstructors } = useQuery({
-		queryKey: [QUERY_KEYS.INSTRUCTORS],
-		queryFn: fetchInstructors,
+		queryKey: [QUERY_KEYS.INSTRUCTORS, getFilters()],
+		queryFn: () => fetchUsers(getFilters()),
 	});
+
+	useEffect(() => {
+		setRole('instructor');
+	}, []);
 
 	const { data: invitations, isLoading: isLoadingInvitations } = useQuery({
 		queryKey: [QUERY_KEYS.INVITATIONS],
@@ -33,28 +47,50 @@ export default function AdminInstructorsPage() {
 					defaultValue='active'
 					className='w-full border-2 p-3 bg-white rounded-2xl'
 				>
-					{/* TAB TRIGGERS INSIDE CARD */}
-					<TabsList className='mb-4 bg-white'>
-						<TabsTrigger
-							value='active'
-							className='cursor-pointer data-[state=active]:text-custom-primary 
+					<div className='flex justify-between w-full'>
+						<TabsList className='mb-4 bg-white'>
+							<TabsTrigger
+								onClick={() => setActiveTab('active')}
+								value='active'
+								className='cursor-pointer data-[state=active]:text-custom-primary 
 								data-[state=active]:border-b-custom-primary border-2 
 								data-[state=active]:bg-white rounded-none 
 								data-[state=active]:shadow-none'
-						>
-							Active Instructors
-						</TabsTrigger>
+							>
+								Active Instructors
+							</TabsTrigger>
 
-						<TabsTrigger
-							value='pending'
-							className='cursor-pointer data-[state=active]:text-custom-primary 
+							<TabsTrigger
+								onClick={() => setActiveTab('pending')}
+								value='pending'
+								className='cursor-pointer data-[state=active]:text-custom-primary 
 								data-[state=active]:border-b-custom-primary border-2 
 								data-[state=active]:bg-white rounded-none 
 								data-[state=active]:shadow-none'
-						>
-							Pending Invitations
-						</TabsTrigger>
-					</TabsList>
+							>
+								Pending Invitations
+							</TabsTrigger>
+						</TabsList>
+
+						{activeTab === 'active' && (
+							<div className='flex gap-2 items-center'>
+								<Input
+									placeholder='Search'
+									onChange={(e) => {
+										setSearch(e.target.value);
+										setPage(1);
+									}}
+								/>
+								<PaginationController
+									currentPage={page}
+									nextPage={page + 1}
+									prevPage={page - 1}
+									setPage={setPage}
+									size='sm'
+								/>
+							</div>
+						)}
+					</div>
 
 					{/* === ACTIVE INSTRUCTORS === */}
 					<TabsContent className='space-y-2' value='active'>
@@ -62,6 +98,10 @@ export default function AdminInstructorsPage() {
 							<div className='flex justify-center py-8'>
 								<Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
 							</div>
+						) : instructors?.length === 0 && !isLoadingInstructors ? (
+							<p className='text-center p-5 text-muted-foreground'>
+								No instructors found
+							</p>
 						) : (
 							<>
 								{instructors &&

@@ -8,10 +8,10 @@ function App() {
 	setNavigate(navigate);
 
 	return (
-		<main className='flex w-full min-h-screen bg-[#FAF2F7]'>
+		<main className='flex w-full h-screen bg-[#FAF2F7]'>
 			<AppSidebar />
 
-			<div className='h-screen flex flex-col w-full'>
+			<div className='h-screen overflow-hidden flex flex-col w-full'>
 				<TopBar />
 				<div className='flex flex-col p-8 overflow-y-auto'>
 					<Outlet />

@@ -19,14 +19,14 @@ export default function ConsultationTabs({
 	return (
 		<div className='space-y-3'>
 			{!consultations ? (
-				<div className='text-muted-foreground italic p-3'>
+				<div className='text-muted-foreground italic p-3 text-center'>
 					{isLoading && <p>Loading...</p>}
 					{error && <p>Error loading consultations</p>}
 				</div>
 			) : (
 				<>
 					{!consultations.length && !isLoading && (
-						<div className='text-muted-foreground italic p-3'>
+						<div className='text-muted-foreground italic p-3 text-center'>
 							<p>No consultations found</p>
 						</div>
 					)}
