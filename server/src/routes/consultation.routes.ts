@@ -8,15 +8,32 @@ import {
 	getTodayOverview,
 	updateConsultationStatus,
 } from '../controllers/consultation.controller';
+import { authorizeRoles } from '../middlewares/auth';
 
 const router = express.Router();
 
 router.get('/', getConsultations);
-router.get('/dashboard-data', getAdminDashboardData);
+
+router.get(
+	'/dashboard-data',
+	authorizeRoles('instructor', 'admin'),
+	getAdminDashboardData
+);
+
 router.get('/today-overview', getTodayOverview);
 router.get('/status-breakdown', getStatusBreakdown);
-router.post('/', createConsultation);
-router.post('/create-meeting', createConsultationMeeting);
-router.patch('/:consultationID', updateConsultationStatus);
+router.post('/', authorizeRoles('instructor'), createConsultation);
+
+router.post(
+	'/create-meeting',
+	authorizeRoles('instructor'),
+	createConsultationMeeting
+);
+
+router.patch(
+	'/:consultationID',
+	authorizeRoles('instructor'),
+	updateConsultationStatus
+);
 
 export default router;

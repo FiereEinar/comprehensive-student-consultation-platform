@@ -25,7 +25,7 @@ export default function AdminConsultations() {
 			<div className='flex w-full justify-between'>
 				<Header size='md'>All Consultations</Header>
 				{/* Admin shouldn't create consultations — remove if not needed */}
-				<ConsultationForm />
+				{/* <ConsultationForm /> */}
 			</div>
 
 			<div className='flex gap-3'>

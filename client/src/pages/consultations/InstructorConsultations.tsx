@@ -23,7 +23,7 @@ export default function InstructorConsultations() {
 		<section className='space-y-5'>
 			<div className='flex w-full justify-between'>
 				<Header size='md'>My Consultations</Header>
-				<ConsultationForm />
+				{/* <ConsultationForm /> */}
 			</div>
 			<div className='flex gap-3'>
 				<Tabs

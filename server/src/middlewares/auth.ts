@@ -1,10 +1,10 @@
 import asyncHandler from 'express-async-handler';
-import { NextFunction, Response } from 'express';
+import { NextFunction, RequestHandler, Response } from 'express';
 import { getAccessToken, verifyToken } from '../utils/jwts';
 import appAssert from '../errors/app-assert';
-import { UNAUTHORIZED } from '../constants/http';
+import { FORBIDDEN, UNAUTHORIZED } from '../constants/http';
 import { AppErrorCodes } from '../constants';
-import UserModel from '../models/user.model';
+import UserModel, { UserTypes } from '../models/user.model';
 import SessionModel from '../models/session.model';
 import { getUserRequestInfo } from '../utils/utils';
 
@@ -65,3 +65,21 @@ export const auth = asyncHandler(
 		next();
 	}
 );
+
+export const authorizeRoles =
+	(...roles: UserTypes[]): RequestHandler =>
+	(req, res, next) => {
+		const user = req.user;
+
+		if (!user) {
+			res.sendStatus(UNAUTHORIZED);
+			return;
+		}
+
+		if (!roles.includes(user.role as UserTypes)) {
+			res.sendStatus(FORBIDDEN);
+			return;
+		}
+
+		next();
+	};
