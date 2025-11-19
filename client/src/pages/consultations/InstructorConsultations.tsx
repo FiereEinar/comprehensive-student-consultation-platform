@@ -1,22 +1,36 @@
-import { fetchUserConsultations } from '@/api/consultation';
+import { fetchConsultations } from '@/api/consultation';
+import PaginationController from '@/components/PaginationController';
 import RightSidebar from '@/components/sidebars/RightSidebar';
 import ConsultationTabs from '@/components/tabs/ConsultationTabs';
 import Header from '@/components/ui/header';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { QUERY_KEYS } from '@/constants';
+import { useConsultationStateStore } from '@/stores/consultation-filter';
 import { useUserStore } from '@/stores/user';
 import { useQuery } from '@tanstack/react-query';
+import { useEffect } from 'react';
 
 export default function InstructorConsultations() {
 	const user = useUserStore((state) => state.user);
+	const { getFilters, page, setPage, setSearch, setStatus, setUserID } =
+		useConsultationStateStore((state) => state);
+
 	const {
 		data: consultations,
 		isLoading,
 		error,
 	} = useQuery({
-		queryKey: [QUERY_KEYS.CONSULTATIONS, user?._id],
-		queryFn: () => fetchUserConsultations(user?._id ?? ''),
+		queryKey: [QUERY_KEYS.CONSULTATIONS, getFilters()],
+		queryFn: () => fetchConsultations(getFilters()),
 	});
+
+	useEffect(() => {
+		console.log('fn ran');
+		if (user) {
+			setUserID(user._id);
+		}
+	}, [user]);
 
 	return (
 		<section className='space-y-5'>
@@ -29,71 +43,90 @@ export default function InstructorConsultations() {
 					defaultValue='All'
 					className='border-2 p-3 bg-white rounded-2xl w-[70%]'
 				>
-					<TabsList className='self-start bg-white'>
-						<TabsTrigger
-							className='cursor-pointer data-[state=active]:text-custom-primary 
+					<div className='flex justify-between w-full'>
+						<TabsList className='self-start bg-white'>
+							<TabsTrigger
+								onClick={() => {
+									setStatus([]);
+									setPage(1);
+								}}
+								className='cursor-pointer data-[state=active]:text-custom-primary 
 							data-[state=active]:border-b-custom-primary border-2 
 							data-[state=active]:bg-white rounded-none 
 							data-[state=active]:shadow-none'
-							value='All'
-						>
-							All
-						</TabsTrigger>
-						<TabsTrigger
-							className='cursor-pointer data-[state=active]:text-custom-primary 
+								value='All'
+							>
+								All
+							</TabsTrigger>
+							<TabsTrigger
+								onClick={() => {
+									setStatus(['accepted', 'completed']);
+									setPage(1);
+								}}
+								className='cursor-pointer data-[state=active]:text-custom-primary 
 							data-[state=active]:border-b-custom-primary border-2 
 							data-[state=active]:bg-white rounded-none 
 							data-[state=active]:shadow-none'
-							value='Upcoming'
-						>
-							Upcoming
-						</TabsTrigger>
+								value='Upcoming'
+							>
+								Upcoming
+							</TabsTrigger>
 
-						<TabsTrigger
-							className='cursor-pointer data-[state=active]:text-custom-primary 
+							<TabsTrigger
+								onClick={() => {
+									setStatus(['declined', 'pending']);
+									setPage(1);
+								}}
+								className='cursor-pointer data-[state=active]:text-custom-primary 
 							data-[state=active]:border-b-custom-primary border-2 
 							data-[state=active]:bg-white rounded-none 
 							data-[state=active]:shadow-none'
-							value='Requests'
-						>
-							Requests
-						</TabsTrigger>
-					</TabsList>
+								value='Requests'
+							>
+								Requests
+							</TabsTrigger>
+						</TabsList>
 
-					<TabsContent value='Upcoming'>
-						{consultations && (
-							<ConsultationTabs
-								consultations={consultations.filter((c) =>
-									['accepted', 'completed'].includes(c.status)
-								)}
-								isLoading={isLoading}
-								error={error}
+						<div className='flex gap-2 items-center'>
+							<Input
+								placeholder='Search'
+								onChange={(e) => {
+									setSearch(e.target.value);
+									setPage(1);
+								}}
 							/>
-						)}
-					</TabsContent>
+							<PaginationController
+								currentPage={page}
+								nextPage={page + 1}
+								prevPage={page - 1}
+								setPage={setPage}
+								size='sm'
+							/>
+						</div>
+					</div>
 
-					<TabsContent value='Requests'>
-						{consultations && (
-							<ConsultationTabs
-								consultations={consultations.filter((c) =>
-									['pending', 'declined'].includes(c.status)
-								)}
-								isLoading={isLoading}
-								error={error}
-							/>
-						)}
-					</TabsContent>
+					{consultations && (
+						<ConsultationTabs
+							consultations={consultations}
+							isLoading={isLoading}
+							error={error}
+						/>
+					)}
 
-					{/* === All Consultations === */}
-					<TabsContent value='All'>
-						{consultations && (
-							<ConsultationTabs
-								consultations={consultations}
-								isLoading={isLoading}
-								error={error}
-							/>
-						)}
-					</TabsContent>
+					{consultations?.length !== 0 && (
+						<div className='flex justify-between w-full'>
+							<div></div>
+							<div>
+								<PaginationController
+									currentPage={page}
+									nextPage={page + 1}
+									prevPage={page - 1}
+									setPage={setPage}
+									size='sm'
+								/>
+							</div>
+						</div>
+					)}
 				</Tabs>
 
 				<RightSidebar />

@@ -119,7 +119,6 @@ export default function AdminConsultations() {
 					)}
 				</Tabs>
 
-				{/* Right sidebar */}
 				<RightSidebar />
 			</div>
 		</section>
