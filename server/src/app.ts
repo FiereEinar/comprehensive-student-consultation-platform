@@ -13,7 +13,7 @@ import { healthcheck } from './middlewares/healthcheck';
 import { corsOptions } from './utils/cors';
 import { PORT } from './constants/env';
 import { auth } from './middlewares/auth';
-import { limiter } from './utils/rate-limiter';
+// import { limiter } from './utils/rate-limiter';
 
 import authRoutes from './routes/auth.route';
 import userRoutes from './routes/user.route';
@@ -40,7 +40,7 @@ app.use(helmet());
 app.get('/', healthcheck);
 
 // Routes
-app.use('/api/v1/auth', limiter, authRoutes);
+app.use('/api/v1/auth', authRoutes);
 app.use(auth);
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/consultation', consultationRoutes);

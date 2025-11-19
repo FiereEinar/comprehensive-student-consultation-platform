@@ -12,7 +12,6 @@ export default function ProtectedRoute({ children }: PropsWithChildren) {
 	useEffect(() => {
 		(async () => {
 			try {
-				setTimeout(() => {}, 2000);
 				const { data } = await axiosInstance.post<User>('/auth/token/verify');
 				setUser(data);
 				setIsAuthenticated(true);
@@ -21,7 +20,7 @@ export default function ProtectedRoute({ children }: PropsWithChildren) {
 				navigate('/login', { replace: true });
 			}
 		})();
-	}, [navigate]);
+	}, []);
 
 	if (!isAuthenticated) {
 		return (

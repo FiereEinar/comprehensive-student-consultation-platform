@@ -18,10 +18,12 @@ import axiosInstance from '@/api/axios';
 import { Plus } from 'lucide-react';
 import type z from 'zod';
 import { inviteInstructorSchema } from '@/lib/schemas/auth.schema';
+import { useState } from 'react';
 
 type InviteInstructorValues = z.infer<typeof inviteInstructorSchema>;
 
 export default function InviteInstructorForm() {
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const { control, handleSubmit, reset } = useForm<InviteInstructorValues>({
 		resolver: zodResolver(inviteInstructorSchema),
 		defaultValues: {
@@ -32,6 +34,7 @@ export default function InviteInstructorForm() {
 
 	const onSubmit = async (formData: InviteInstructorValues) => {
 		try {
+			setIsLoading(true);
 			const { data } = await axiosInstance.post(
 				'/auth/invite/instructor',
 				formData
@@ -41,6 +44,8 @@ export default function InviteInstructorForm() {
 		} catch (error: any) {
 			console.error('Failed to send invite', error);
 			toast.error(error.message ?? 'Failed to send invitation');
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -109,7 +114,11 @@ export default function InviteInstructorForm() {
 					<DialogClose asChild>
 						<Button variant='outline'>Cancel</Button>
 					</DialogClose>
-					<Button type='submit' form='invite-instructor-form'>
+					<Button
+						type='submit'
+						disabled={isLoading}
+						form='invite-instructor-form'
+					>
 						Send Invitation
 					</Button>
 				</DialogFooter>

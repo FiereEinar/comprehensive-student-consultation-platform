@@ -1,7 +1,6 @@
 import ConsultationTabs from '@/components/tabs/ConsultationTabs';
 import Header from '@/components/ui/header';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ConsultationForm from '@/components/forms/ConsultationForm';
 import { QUERY_KEYS } from '@/constants';
 import { useQuery } from '@tanstack/react-query';
 import { fetchAllConsultations } from '@/api/consultation';

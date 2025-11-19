@@ -11,3 +11,5 @@ export const RESOURCE_TYPES = {
 	SUBJECT: 'Subject',
 	SECTION: 'Section',
 };
+
+export const WHITELISTED_DOMAINS = ['student.buksu.edu.ph'];

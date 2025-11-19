@@ -1,5 +1,4 @@
 import { fetchUserConsultations } from '@/api/consultation';
-import ConsultationForm from '@/components/forms/ConsultationForm';
 import RightSidebar from '@/components/sidebars/RightSidebar';
 import ConsultationTabs from '@/components/tabs/ConsultationTabs';
 import Header from '@/components/ui/header';

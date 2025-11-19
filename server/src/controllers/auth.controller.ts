@@ -48,7 +48,11 @@ import {
 	setAuthCookie,
 } from '../utils/cookie';
 import CustomResponse from '../utils/response';
-import { AppErrorCodes, RESOURCE_TYPES } from '../constants';
+import {
+	AppErrorCodes,
+	RESOURCE_TYPES,
+	WHITELISTED_DOMAINS,
+} from '../constants';
 import { verifyRecaptcha } from '../utils/recaptcha';
 import { googleClient } from '../utils/google';
 import axios from 'axios';
@@ -360,11 +364,17 @@ export const googleLoginHandlerV2 = asyncHandler(async (req, res) => {
 		}
 	);
 
-	const { email, name, id: googleID } = googleUser;
+	const { email, name, id: googleID, picture, hd } = googleUser;
 
 	// Check if user exists
 	let user = await UserModel.findOne({ email });
 	if (!user) {
+		appAssert(
+			WHITELISTED_DOMAINS.includes(hd),
+			UNAUTHORIZED,
+			'User is not from a whitelisted domain'
+		);
+
 		const randomPassword = await bcrypt.hash(crypto.randomUUID(), 10);
 		user = await UserModel.create({
 			name,
@@ -372,6 +382,7 @@ export const googleLoginHandlerV2 = asyncHandler(async (req, res) => {
 			googleID,
 			institutionalID: email?.split('@')[0],
 			password: randomPassword,
+			profilePicture: picture,
 		});
 	}
 

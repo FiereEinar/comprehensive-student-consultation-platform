@@ -20,8 +20,21 @@ import AcceptInstructorInvitation from './pages/AcceptInstructorInvitation';
 import AdminInstructorsPage from './pages/AdminInstructorsPage';
 import Logs from './pages/Logs';
 import InstructorAvailability from './pages/InstructorAvailability';
+import { useUserStore } from './stores/user';
 
 export default function Route() {
+	const { user } = useUserStore((state) => state);
+
+	let redirectTo = '/';
+
+	user?.role === 'instructor'
+		? (redirectTo = '/instructor/dashboard')
+		: user?.role === 'student'
+		? (redirectTo = '/student/dashboard')
+		: user?.role === 'admin'
+		? (redirectTo = '/admin/dashboard')
+		: (redirectTo = '/');
+
 	const route = createBrowserRouter([
 		{
 			path: '/',
@@ -33,7 +46,7 @@ export default function Route() {
 			children: [
 				{
 					index: true,
-					element: <Navigate to='/student/consultation' />,
+					element: <Navigate to={redirectTo} />,
 				},
 				{
 					path: '/admin/dashboard',

@@ -1,22 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/constants';
 import { fetchInstructors, fetchInvitations } from '@/api/instructor';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
 import { Loader2 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
 import _ from 'lodash';
 import InviteInstructorForm from '@/components/forms/InviteInstructorForm';
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from '@/components/ui/table';
 import Header from '@/components/ui/header';
+import UserCard from '@/components/UserCard';
 
 export default function AdminInstructorsPage() {
 	const { data: instructors, isLoading: isLoadingInstructors } = useQuery({
@@ -30,153 +20,87 @@ export default function AdminInstructorsPage() {
 	});
 
 	return (
-		<div className='space-y-6'>
+		<div className='space-y-5'>
 			<div className='flex justify-between items-center'>
-				<div>
-					<Header size='md'>Instructors</Header>
-					{/* <p className='text-muted-foreground'>
-						Manage existing instructors and view pending invitations.
-					</p> */}
-				</div>
+				<Header size='md'>Manage Instructors</Header>
 				<InviteInstructorForm />
 			</div>
 
-			<Tabs defaultValue='active' className='w-full'>
-				<TabsList>
-					<TabsTrigger
-						className='bg-custom-secondary data-[state=active]:bg-custom-secondary data-[state=active]:shadow-none data-[state=active]:text-custom-primary data-[state=active]:border-b-custom-primary border-b-2 rounded-none'
-						value='active'
-					>
-						Active
-					</TabsTrigger>
-					<TabsTrigger
-						className='bg-custom-secondary data-[state=active]:bg-custom-secondary data-[state=active]:shadow-none data-[state=active]:text-custom-primary data-[state=active]:border-b-custom-primary border-b-2 rounded-none'
-						value='pending'
-					>
-						Pending Invitations
-					</TabsTrigger>
-					{/* <TabsTrigger value='all'>All Instructors</TabsTrigger> */}
-				</TabsList>
+			{/* MAIN CARD WRAPPER */}
 
-				{/* ACTIVE INSTRUCTORS */}
-				<TabsContent value='active'>
-					<Card>
-						<CardHeader>
-							<CardTitle>Active Instructors</CardTitle>
-						</CardHeader>
-						<CardContent>
-							{isLoadingInstructors ? (
-								<div className='flex justify-center py-8'>
-									<Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
-								</div>
-							) : (
-								<Table>
-									<TableHeader>
-										<TableRow>
-											<TableHead>Name</TableHead>
-											<TableHead>Email</TableHead>
-											<TableHead>Status</TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{instructors?.length ? (
-											instructors.map((ins) => (
-												<TableRow key={ins._id}>
-													<TableCell className='font-medium'>
-														{_.startCase(ins.name)}
-													</TableCell>
-													<TableCell>{ins.email}</TableCell>
-													<TableCell>
-														<Badge variant='default'>Active</Badge>
-													</TableCell>
-												</TableRow>
-											))
-										) : (
-											<TableRow>
-												<TableCell
-													colSpan={4}
-													className='text-center text-muted-foreground py-4'
-												>
-													No active instructors found.
-												</TableCell>
-											</TableRow>
-										)}
-									</TableBody>
-								</Table>
-							)}
-						</CardContent>
-					</Card>
-				</TabsContent>
+			<div>
+				<Tabs
+					defaultValue='active'
+					className='w-full border-2 p-3 bg-white rounded-2xl'
+				>
+					{/* TAB TRIGGERS INSIDE CARD */}
+					<TabsList className='mb-4 bg-white'>
+						<TabsTrigger
+							value='active'
+							className='cursor-pointer data-[state=active]:text-custom-primary 
+								data-[state=active]:border-b-custom-primary border-2 
+								data-[state=active]:bg-white rounded-none 
+								data-[state=active]:shadow-none'
+						>
+							Active
+						</TabsTrigger>
 
-				{/* PENDING INVITATIONS */}
-				<TabsContent value='pending'>
-					<Card>
-						<CardHeader>
-							<CardTitle>Pending Invitations</CardTitle>
-						</CardHeader>
-						<CardContent>
-							{isLoadingInvitations ? (
-								<div className='flex justify-center py-8'>
-									<Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
-								</div>
-							) : (
-								<Table>
-									<TableHeader>
-										<TableRow>
-											<TableHead>Name</TableHead>
-											<TableHead>Email</TableHead>
-											<TableHead>Sent</TableHead>
-											<TableHead>Status</TableHead>
-										</TableRow>
-									</TableHeader>
-									<TableBody>
-										{invitations?.length ? (
-											invitations.map((inv) => (
-												<TableRow key={inv._id}>
-													<TableCell>{_.startCase(inv.name)}</TableCell>
-													<TableCell>{inv.email}</TableCell>
-													<TableCell>
-														{formatDistanceToNow(new Date(inv.createdAt), {
-															addSuffix: true,
-														})}
-													</TableCell>
-													<TableCell>
-														<Badge variant='outline'>Pending</Badge>
-													</TableCell>
-												</TableRow>
-											))
-										) : (
-											<TableRow>
-												<TableCell
-													colSpan={5}
-													className='text-center text-muted-foreground py-4'
-												>
-													No pending invitations.
-												</TableCell>
-											</TableRow>
-										)}
-									</TableBody>
-								</Table>
-							)}
-						</CardContent>
-					</Card>
-				</TabsContent>
+						<TabsTrigger
+							value='pending'
+							className='cursor-pointer data-[state=active]:text-custom-primary 
+								data-[state=active]:border-b-custom-primary border-2 
+								data-[state=active]:bg-white rounded-none 
+								data-[state=active]:shadow-none'
+						>
+							Pending Invitations
+						</TabsTrigger>
+					</TabsList>
 
-				{/* ALL */}
-				{/* <TabsContent value='all'>
-					<Card>
-						<CardHeader>
-							<CardTitle>All Instructors</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<p className='text-muted-foreground text-sm'>
-								This tab can show both active and pending users if you wish to
-								merge views later.
-							</p>
-						</CardContent>
-					</Card>
-				</TabsContent> */}
-			</Tabs>
+					{/* === ACTIVE INSTRUCTORS === */}
+					<TabsContent className='space-y-2' value='active'>
+						{isLoadingInstructors ? (
+							<div className='flex justify-center py-8'>
+								<Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
+							</div>
+						) : (
+							<>
+								{instructors &&
+									instructors.map((instructor) => (
+										<UserCard
+											key={instructor._id}
+											name={instructor.name}
+											email={instructor.email}
+											profilePicture={instructor.profilePicture}
+											status='active'
+										/>
+									))}
+							</>
+						)}
+					</TabsContent>
+
+					{/* === PENDING INVITATIONS === */}
+					<TabsContent className='space-y-2' value='pending'>
+						{isLoadingInvitations ? (
+							<div className='flex justify-center py-8'>
+								<Loader2 className='h-6 w-6 animate-spin text-muted-foreground' />
+							</div>
+						) : (
+							<>
+								{invitations &&
+									invitations.map((invitation) => (
+										<UserCard
+											key={invitation._id}
+											name={invitation.name}
+											email={invitation.email}
+											status={invitation.status}
+											createdAt={invitation.createdAt}
+										/>
+									))}
+							</>
+						)}
+					</TabsContent>
+				</Tabs>
+			</div>
 		</div>
 	);
 }

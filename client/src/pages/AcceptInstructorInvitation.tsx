@@ -15,6 +15,7 @@ import type z from 'zod';
 import { completeInstructorAccountSchema } from '@/lib/schemas/auth.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 type AcceptInstructorInvitationFormValues = z.infer<
 	typeof completeInstructorAccountSchema
@@ -22,6 +23,7 @@ type AcceptInstructorInvitationFormValues = z.infer<
 
 export default function AcceptInstructorInvitation() {
 	const navigate = useNavigate();
+	const [isLoading, setIsLoading] = useState(false);
 	const token = new URLSearchParams(location.search).get('token');
 	const { register, handleSubmit } = useForm({
 		resolver: zodResolver(completeInstructorAccountSchema),
@@ -29,6 +31,7 @@ export default function AcceptInstructorInvitation() {
 
 	const onSubmit = async (data: AcceptInstructorInvitationFormValues) => {
 		try {
+			setIsLoading(true);
 			await axiosInstance.post('/auth/invite/instructor/accept', {
 				...data,
 				token,
@@ -38,6 +41,8 @@ export default function AcceptInstructorInvitation() {
 		} catch (error: any) {
 			console.error('Failed to create account', error);
 			toast.error(error.message);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
@@ -79,7 +84,9 @@ export default function AcceptInstructorInvitation() {
 											type='password'
 											required
 										/>
-										<Button type='submit'>Accept Invitation</Button>
+										<Button disabled={isLoading} type='submit'>
+											Accept Invitation
+										</Button>
 									</form>
 								</CardContent>
 							</Card>

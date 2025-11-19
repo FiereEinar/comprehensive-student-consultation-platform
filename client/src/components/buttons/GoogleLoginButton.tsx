@@ -20,7 +20,7 @@ export default function GoogleLoginButton() {
 				navigate('/');
 			} catch (error: any) {
 				console.error('Login failed', error);
-				toast.error('Failed to login', error);
+				toast.error(error.message);
 			}
 		},
 		onError: () =>
@@ -29,6 +29,7 @@ export default function GoogleLoginButton() {
 
 	return (
 		<Button
+			type='button'
 			onClick={() => login()}
 			variant='outline'
 			className='form-button-google w-full'

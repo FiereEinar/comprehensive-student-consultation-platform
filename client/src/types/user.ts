@@ -10,6 +10,7 @@ export type User = {
 	email: string;
 	password: string;
 	role: UserTypes;
+	profilePicture?: string;
 	createdAt: Date;
 	updatedAt: Date;
 };

@@ -25,7 +25,20 @@ export default function ConsultationCard({
 			<CardContent className='flex flex-col gap-3 px-4'>
 				<div className='flex items-center justify-between w-full'>
 					<div className='flex gap-3 items-center'>
-						<UserRound className='w-8 h-8' />
+						{info === 'student' && consultation.student?.profilePicture ? (
+							<img
+								src={consultation.student?.profilePicture}
+								className='w-8 h-8 object-cover rounded-full'
+							/>
+						) : info === 'instructor' &&
+						  consultation.instructor?.profilePicture ? (
+							<img
+								src={consultation.instructor?.profilePicture}
+								className='w-8 h-8 object-cover rounded-full'
+							/>
+						) : (
+							<UserRound />
+						)}
 						<ItemContent className='gap-0'>
 							<ItemTitle>{startCase(consultation.title)}</ItemTitle>
 							<ItemDescription className='text-left'>
