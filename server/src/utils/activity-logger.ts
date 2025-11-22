@@ -21,10 +21,12 @@ export async function logActivity(
 ) {
 	try {
 		const user = req.user?._id || null;
+		const url = req.originalUrl;
 
 		await ActivityLogModel.create({
 			user,
 			action,
+			url,
 			description,
 			resourceType,
 			resourceId,

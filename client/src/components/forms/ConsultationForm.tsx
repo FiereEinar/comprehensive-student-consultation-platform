@@ -41,6 +41,7 @@ import InstructorAvailabilities from '../InstructorAvailabilities';
 import { useUserStore } from '@/stores/user';
 import _ from 'lodash';
 import { Plus } from 'lucide-react';
+import { Separator } from '@radix-ui/react-separator';
 
 export type ConsultationFormValues = z.infer<typeof createConsultationSchema>;
 
@@ -53,6 +54,7 @@ type ConsultationFormProps = {
 export default function ConsultationForm({ title }: ConsultationFormProps) {
 	const { user } = useUserStore((state) => state);
 	const [selectedInstructor, setSelectedInstructor] = useState<string>('');
+	const [selectedPurpose, setSelectedPurpose] = useState<string>('');
 	const { control, handleSubmit } = useForm<ConsultationFormValues>({
 		resolver: zodResolver(createConsultationSchema),
 		defaultValues: {
@@ -94,7 +96,7 @@ export default function ConsultationForm({ title }: ConsultationFormProps) {
 					{title ?? 'Add Consultation'}
 				</Button>
 			</DialogTrigger>
-			<DialogContent className='sm:max-w-[425px]'>
+			<DialogContent className='sm:max-w-[550px]'>
 				<DialogHeader>
 					<DialogTitle>Request Consultation</DialogTitle>
 					<DialogDescription></DialogDescription>
@@ -102,81 +104,21 @@ export default function ConsultationForm({ title }: ConsultationFormProps) {
 				<form
 					id='consultation-form'
 					onSubmit={handleSubmit(onSubmit)}
-					className='grid gap-4'
+					className='flex gap-4 justify-between'
 				>
-					{/* TITLE */}
-					<Controller
-						name='title'
-						control={control}
-						render={({ field, fieldState }) => (
-							<Field data-invalid={fieldState.invalid}>
-								<FieldLabel htmlFor={field.name}>Title</FieldLabel>
-								<Input
-									{...field}
-									id={field.name}
-									aria-invalid={fieldState.invalid}
-									placeholder='Grade consultation'
-								/>
-								{fieldState.invalid && (
-									<FieldError errors={[fieldState.error]} />
-								)}
-							</Field>
-						)}
-					/>
-					{/* END TITLE */}
-
-					{/* Select purpose field */}
-					<Controller
-						name='purpose'
-						control={control}
-						render={({ field, fieldState }) => (
-							<Select
-								onValueChange={(value) => {
-									field.onChange(value);
-								}}
-								value={field.value}
-							>
-								<SelectTrigger
-									className='w-full cursor-pointer'
-									data-invalid={fieldState.invalid}
-								>
-									<SelectValue placeholder='Select Purpose' />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectGroup>
-										<SelectLabel>Available Purpose</SelectLabel>
-										{purposes.map((purpose) => (
-											<SelectItem
-												key={purpose}
-												value={purpose}
-												className='cursor-pointer'
-											>
-												{purpose}
-											</SelectItem>
-										))}
-									</SelectGroup>
-								</SelectContent>
-								{fieldState.invalid && (
-									<FieldError errors={[fieldState.error]} />
-								)}
-							</Select>
-						)}
-					/>
-					{/* END */}
-
-					<div className='flex gap-4'>
-						{/* SECTION CODE */}
+					<div className='flex flex-col gap-4 w-full'>
+						{/* TITLE */}
 						<Controller
-							name='subjectCode'
+							name='title'
 							control={control}
 							render={({ field, fieldState }) => (
 								<Field data-invalid={fieldState.invalid}>
-									<FieldLabel htmlFor={field.name}>Subject Code</FieldLabel>
+									<FieldLabel htmlFor={field.name}>Title</FieldLabel>
 									<Input
 										{...field}
 										id={field.name}
 										aria-invalid={fieldState.invalid}
-										placeholder='IT101'
+										placeholder="We'd like to talk about..."
 									/>
 									{fieldState.invalid && (
 										<FieldError errors={[fieldState.error]} />
@@ -184,119 +126,195 @@ export default function ConsultationForm({ title }: ConsultationFormProps) {
 								</Field>
 							)}
 						/>
-						{/* END SECTION CODE */}
+						{/* END TITLE */}
 
-						{/* SECTION CODE */}
+						{/* Select purpose field */}
 						<Controller
-							name='sectonCode'
+							name='purpose'
 							control={control}
 							render={({ field, fieldState }) => (
-								<Field data-invalid={fieldState.invalid}>
-									<FieldLabel htmlFor={field.name}>Section Code</FieldLabel>
-									<Input
-										{...field}
-										id={field.name}
-										aria-invalid={fieldState.invalid}
-										placeholder='T108'
-									/>
-									{fieldState.invalid && (
-										<FieldError errors={[fieldState.error]} />
-									)}
-								</Field>
-							)}
-						/>
-						{/* END SECTION CODE */}
-					</div>
-
-					{/* DESCRIPTION */}
-					<Controller
-						name='description'
-						control={control}
-						render={({ field, fieldState }) => (
-							<Field data-invalid={fieldState.invalid}>
-								<FieldLabel htmlFor={field.name}>Description</FieldLabel>
-								<InputGroup>
-									<InputGroupTextarea
-										{...field}
-										id={field.name}
-										placeholder='I need help with my grade...'
-										rows={6}
-										className='min-h-24 resize-none'
-										aria-invalid={fieldState.invalid}
-									/>
-									<InputGroupAddon align='block-end'>
-										<InputGroupText className='tabular-nums'>
-											{field.value?.length ?? 0}/100 characters
-										</InputGroupText>
-									</InputGroupAddon>
-								</InputGroup>
-								{fieldState.invalid && (
-									<FieldError errors={[fieldState.error]} />
-								)}
-							</Field>
-						)}
-					/>
-					{/* END DESCRIPTION */}
-
-					{/* Select instructor field */}
-					<Controller
-						name='instructor'
-						control={control}
-						render={({ field, fieldState }) => (
-							<Select
-								onValueChange={(value) => {
-									setSelectedInstructor(value);
-									field.onChange(value);
-								}}
-								value={field.value}
-							>
-								<SelectTrigger
-									className='w-full cursor-pointer'
-									data-invalid={fieldState.invalid}
+								<Select
+									onValueChange={(value) => {
+										field.onChange(value);
+										setSelectedPurpose(value);
+									}}
+									value={field.value}
 								>
-									<SelectValue placeholder='Select Instructor' />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectGroup>
-										<SelectLabel>Instructors</SelectLabel>
-										{instructors &&
-											instructors.map((instructor) => (
+									<SelectTrigger
+										className='w-full cursor-pointer'
+										data-invalid={fieldState.invalid}
+									>
+										<SelectValue placeholder='Select Purpose' />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectGroup>
+											<SelectLabel>Available Purpose</SelectLabel>
+											{purposes.map((purpose) => (
 												<SelectItem
-													key={instructor._id}
-													value={instructor._id}
+													key={purpose}
+													value={purpose}
 													className='cursor-pointer'
 												>
-													{_.startCase(instructor.name)}
+													{purpose}
 												</SelectItem>
 											))}
-									</SelectGroup>
-								</SelectContent>
-								{fieldState.invalid && (
-									<FieldError errors={[fieldState.error]} />
-								)}
-							</Select>
-						)}
-					/>
-					{/* END */}
+										</SelectGroup>
+									</SelectContent>
+									{fieldState.invalid && (
+										<FieldError errors={[fieldState.error]} />
+									)}
+								</Select>
+							)}
+						/>
+						{/* END */}
 
-					{selectedInstructor && selectedInstructor !== '' && (
-						<div className='text-xs text-muted-foreground px-2'>
-							<InstructorAvailabilities
-								viewOnly
-								instructorID={selectedInstructor}
-							/>
-						</div>
-					)}
+						{selectedPurpose && selectedPurpose !== 'Capstone Consultation' && (
+							<div className='flex gap-4'>
+								{/* SECTION CODE */}
+								<Controller
+									name='subjectCode'
+									control={control}
+									render={({ field, fieldState }) => (
+										<Field data-invalid={fieldState.invalid}>
+											<FieldLabel htmlFor={field.name}>Subject Code</FieldLabel>
+											<Input
+												{...field}
+												id={field.name}
+												aria-invalid={fieldState.invalid}
+												placeholder='IT101'
+											/>
+											{fieldState.invalid && (
+												<FieldError errors={[fieldState.error]} />
+											)}
+										</Field>
+									)}
+								/>
+								{/* END SECTION CODE */}
 
-					{/* DATE */}
-					<Controller
-						name='scheduledAt'
-						control={control}
-						render={({ field, fieldState }) => (
-							<DatePicker field={field} fieldState={fieldState} />
+								{/* SECTION CODE */}
+								<Controller
+									name='sectonCode'
+									control={control}
+									render={({ field, fieldState }) => (
+										<Field data-invalid={fieldState.invalid}>
+											<FieldLabel htmlFor={field.name}>Section Code</FieldLabel>
+											<Input
+												{...field}
+												id={field.name}
+												aria-invalid={fieldState.invalid}
+												placeholder='T108'
+											/>
+											{fieldState.invalid && (
+												<FieldError errors={[fieldState.error]} />
+											)}
+										</Field>
+									)}
+								/>
+								{/* END SECTION CODE */}
+							</div>
 						)}
+
+						{/* DESCRIPTION */}
+						<Controller
+							name='description'
+							control={control}
+							render={({ field, fieldState }) => (
+								<Field data-invalid={fieldState.invalid}>
+									<FieldLabel htmlFor={field.name}>Description</FieldLabel>
+									<InputGroup>
+										<InputGroupTextarea
+											{...field}
+											id={field.name}
+											placeholder='I need help with my grade...'
+											rows={6}
+											className='min-h-24 resize-none'
+											aria-invalid={fieldState.invalid}
+										/>
+										<InputGroupAddon align='block-end'>
+											<InputGroupText className='tabular-nums'>
+												{field.value?.length ?? 0}/100 characters
+											</InputGroupText>
+										</InputGroupAddon>
+									</InputGroup>
+									{fieldState.invalid && (
+										<FieldError errors={[fieldState.error]} />
+									)}
+								</Field>
+							)}
+						/>
+						{/* END DESCRIPTION */}
+					</div>
+
+					<Separator
+						orientation='vertical'
+						className='h-full w-0.5 bg-border'
 					/>
-					{/* END DATE */}
+
+					<div className='flex flex-col gap-4 w-full'>
+						{/* Select instructor field */}
+						<Controller
+							name='instructor'
+							control={control}
+							render={({ field, fieldState }) => (
+								<Field>
+									<FieldLabel htmlFor={field.name}>Instructor</FieldLabel>
+									<Select
+										onValueChange={(value) => {
+											setSelectedInstructor(value);
+											field.onChange(value);
+										}}
+										value={field.value}
+									>
+										<SelectTrigger
+											id={field.name}
+											className='w-full cursor-pointer'
+											data-invalid={fieldState.invalid}
+										>
+											<SelectValue placeholder='Select Instructor' />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectGroup>
+												<SelectLabel>Instructors</SelectLabel>
+												{instructors &&
+													instructors.map((instructor) => (
+														<SelectItem
+															key={instructor._id}
+															value={instructor._id}
+															className='cursor-pointer'
+														>
+															{_.startCase(instructor.name)}
+														</SelectItem>
+													))}
+											</SelectGroup>
+										</SelectContent>
+										{fieldState.invalid && (
+											<FieldError errors={[fieldState.error]} />
+										)}
+									</Select>
+								</Field>
+							)}
+						/>
+						{/* END */}
+
+						{selectedInstructor && selectedInstructor !== '' && (
+							<div className='text-xs text-muted-foreground px-2'>
+								<InstructorAvailabilities
+									viewOnly
+									instructorID={selectedInstructor}
+								/>
+							</div>
+						)}
+
+						{/* DATE */}
+						<Controller
+							name='scheduledAt'
+							control={control}
+							render={({ field, fieldState }) => (
+								<DatePicker field={field} fieldState={fieldState} />
+							)}
+						/>
+						{/* END DATE */}
+					</div>
 				</form>
 				<DialogFooter>
 					<DialogClose asChild>

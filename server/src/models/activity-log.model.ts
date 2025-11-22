@@ -5,6 +5,7 @@ export interface IActivityLog extends Document {
 	user?: IUser;
 	action: string; // "USER_LOGIN", "UPDATE_PASSWORD", "DELETE_SUBJECT"
 	description?: string; // "User John Doe updated their password"
+	url?: string;
 	resourceType?: string;
 	resourceId?: string;
 	ipAddress?: string;
@@ -18,6 +19,7 @@ const ActivityLogSchema = new Schema<IActivityLog>(
 		user: { type: Schema.Types.ObjectId, ref: 'User', required: false },
 		action: { type: String, required: true },
 		description: { type: String },
+		url: { type: String },
 		resourceType: { type: String },
 		resourceId: { type: String },
 		ipAddress: { type: String },

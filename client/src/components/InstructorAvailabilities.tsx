@@ -56,12 +56,9 @@ export default function InstructorAvailabilities({
 			{isLoading && <p>Loading availability...</p>}
 			{error && <p>Error loading availabilities</p>}
 			<p className='mb-3'>Available Times:</p>
-			<ul className='list-disc pl-5'>
+			<ul className={` pl-2 text-sm ${viewOnly && 'text-xs'}`}>
 				{availabilities.map((availability) => (
-					<li
-						key={availability._id}
-						className='flex items-start text-start mb-2 text-sm'
-					>
+					<li key={availability._id} className='flex items-start text-start'>
 						<span>
 							{availability.day}: {formatTime(availability.startTime)} -{' '}
 							{formatTime(availability.endTime)} ({availability.slots} slots)

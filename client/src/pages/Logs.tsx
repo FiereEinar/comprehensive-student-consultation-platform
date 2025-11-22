@@ -2,10 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { RESOURCE_TYPES, type ActivityLog } from '@/types/log';
+import { RESOURCE_TYPES, type LOG_RESOURCES } from '@/types/log';
 import { QUERY_KEYS } from '@/constants';
-import axiosInstance from '@/api/axios';
-import { useState } from 'react';
 import {
 	Select,
 	SelectContent,
@@ -15,22 +13,18 @@ import {
 } from '@/components/ui/select';
 import { startCase } from 'lodash';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { Input } from '@/components/ui/input';
+import PaginationController from '@/components/PaginationController';
+import { useLogFilterStore } from '@/stores/log-filter';
+import { fetchLogs } from '@/api/log';
 
 export default function Logs() {
-	const [selectedResource, setSelectedResource] = useState<string>(
-		RESOURCE_TYPES.ALL
-	);
+	const { page, setPage, getFilters, setSearch, resource, setResource } =
+		useLogFilterStore((state) => state);
 
 	const { data, isLoading, error } = useQuery({
-		queryKey: [QUERY_KEYS.LOGS, selectedResource],
-		queryFn: async () => {
-			const query =
-				selectedResource !== RESOURCE_TYPES.ALL
-					? `/log?resource=${selectedResource}`
-					: '/log';
-			const { data } = await axiosInstance.get(query);
-			return data.data as ActivityLog[];
-		},
+		queryKey: [QUERY_KEYS.LOGS, getFilters()],
+		queryFn: () => fetchLogs(getFilters()),
 	});
 
 	return (
@@ -38,10 +32,22 @@ export default function Logs() {
 			<div className='flex justify-between items-center'>
 				<h1 className='text-2xl font-semibold'>System Logs</h1>
 
-				<div>
+				<div className='flex gap-2'>
+					<Input
+						className='bg-white'
+						placeholder='Search'
+						onChange={(e) => {
+							setSearch(e.target.value);
+							setPage(1);
+						}}
+					/>
+
 					<Select
-						value={selectedResource}
-						onValueChange={(val) => setSelectedResource(val)}
+						value={resource}
+						onValueChange={(val) => {
+							setResource(val as LOG_RESOURCES);
+							setPage(1);
+						}}
 					>
 						<SelectTrigger className='bg-white'>
 							<SelectValue placeholder='Filter by resource' />
@@ -54,6 +60,14 @@ export default function Logs() {
 							))}
 						</SelectContent>
 					</Select>
+
+					<PaginationController
+						currentPage={page}
+						nextPage={page + 1}
+						prevPage={page - 1}
+						setPage={setPage}
+						size='sm'
+					/>
 				</div>
 			</div>
 

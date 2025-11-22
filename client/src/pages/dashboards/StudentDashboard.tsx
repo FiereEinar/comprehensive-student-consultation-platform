@@ -10,7 +10,7 @@ import { useUserStore } from '@/stores/user';
 import { startCase } from 'lodash';
 import ConsultationForm from '@/components/forms/ConsultationForm';
 import Header from '@/components/ui/header';
-import { fetchUserConsultations } from '@/api/consultation';
+import { fetchConsultations } from '@/api/consultation';
 import { fetchInstructors } from '@/api/instructor';
 import type { User } from '@/types/user';
 import DashboardOverviewCard from '@/components/DashboardOverviewCard';
@@ -20,8 +20,8 @@ export default function StudentDashboard() {
 
 	// Fetch consultations
 	const { data: consultations = [] } = useQuery<Consultation[]>({
-		queryKey: [QUERY_KEYS.CONSULTATIONS],
-		queryFn: async () => fetchUserConsultations(user?._id ?? ''),
+		queryKey: [QUERY_KEYS.CONSULTATIONS, { userID: user?._id ?? '' }],
+		queryFn: async () => fetchConsultations({ userID: user?._id ?? '' }),
 	});
 
 	const { data: instructors } = useQuery<User[]>({

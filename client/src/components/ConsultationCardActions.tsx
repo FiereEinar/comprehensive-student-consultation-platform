@@ -35,8 +35,15 @@ export default function ConsultationCardActions({
 				queryKey: [QUERY_KEYS.CONSULTATIONS],
 			});
 		} catch (error: any) {
-			console.error(`Failed to ${newStatus} consultation`, error);
-			toast.error(error.message ?? `Failed to ${newStatus} consultation`);
+			if (error.status === 401) {
+				// User does not have Google Calendar token → redirect to consent screen
+				window.location.href =
+					import.meta.env.VITE_API_URL + '/auth/google-calendar';
+				// await axiosInstance.get('/auth/google-calendar');
+			} else {
+				console.error(`Failed to ${newStatus} consultation`, error);
+				toast.error(error.message ?? `Failed to ${newStatus} consultation`);
+			}
 		}
 	};
 

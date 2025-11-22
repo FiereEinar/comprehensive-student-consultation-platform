@@ -1,7 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Header from '@/components/ui/header';
-import UpdateProfileForm from '@/components/forms/UpdateProfileForm';
-import ResetPasswordForm from '@/components/forms/ResetPasswordForm';
 // import { useState } from 'react';
 // import InstructorAvailabilities from '@/components/InstructorAvailabilities';
 // import UpdateAvailability from '@/components/UpdateAvailability';
@@ -34,7 +31,7 @@ export default function Settings() {
 				<Header size='md'>Settings</Header>
 			</div>
 
-			<Card>
+			{/* <Card>
 				<CardHeader>
 					<CardTitle>Profile Information</CardTitle>
 				</CardHeader>
@@ -50,7 +47,7 @@ export default function Settings() {
 				<CardContent>
 					<ResetPasswordForm />
 				</CardContent>
-			</Card>
+			</Card> */}
 
 			{/* {user && user.role === 'instructor' && (
 				<Card>

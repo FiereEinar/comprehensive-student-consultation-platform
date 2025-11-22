@@ -16,7 +16,7 @@ import type { Consultation } from '@/types/consultation';
 import { QUERY_KEYS } from '@/constants';
 import ConsultationCardActions from '@/components/ConsultationCardActions';
 import Header from '@/components/ui/header';
-import { fetchUserConsultations } from '@/api/consultation';
+import { fetchConsultations } from '@/api/consultation';
 import { useUserStore } from '@/stores/user';
 import DashboardOverviewCard from '@/components/DashboardOverviewCard';
 
@@ -26,8 +26,8 @@ export default function InstructorDashboard() {
 
 	// Fetch consultations assigned to this instructor
 	const { data: consultations = [] } = useQuery<Consultation[]>({
-		queryKey: [QUERY_KEYS.CONSULTATIONS],
-		queryFn: async () => fetchUserConsultations(user?._id ?? ''),
+		queryKey: [QUERY_KEYS.CONSULTATIONS, { userID: user?._id ?? '' }],
+		queryFn: async () => fetchConsultations({ userID: user?._id ?? '' }),
 	});
 
 	const pendingConsultations = consultations.filter(

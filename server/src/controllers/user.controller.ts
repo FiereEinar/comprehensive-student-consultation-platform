@@ -19,7 +19,7 @@ import { logActivity } from '../utils/activity-logger';
 export const getUsers = asyncHandler(async (req, res) => {
 	const {
 		page = 1,
-		pageSize = 10,
+		pageSize = DEFAULT_LIMIT,
 		search = '',
 		role = '',
 	} = req.query as Record<string, string>;

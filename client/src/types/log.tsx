@@ -1,11 +1,15 @@
 import type { User } from './user';
 
-export const RESOURCE_TYPES = {
+export type LOG_RESOURCES = 'All' | 'User' | 'Consultation';
+// | 'Subject'
+// | 'Section';
+
+export const RESOURCE_TYPES: Record<string, LOG_RESOURCES> = {
 	ALL: 'All',
 	USER: 'User',
 	CONSULTATION: 'Consultation',
-	SUBJECT: 'Subject',
-	SECTION: 'Section',
+	// SUBJECT: 'Subject',
+	// SECTION: 'Section',
 };
 
 export type ActivityLog = {

@@ -1,5 +1,4 @@
 import express from 'express';
-import { getUserConsultations } from '../controllers/consultation.controller';
 import {
 	getSingleUser,
 	getUsers,
@@ -21,13 +20,7 @@ router.get('/:userID', getSingleUser);
 router.patch('/:userID/name', updateUserName);
 router.patch('/:userID/password', updateUserPassword);
 
-router.get('/:userID/consultation', getUserConsultations);
-
-router.get(
-	'/:userID/availability',
-	authorizeRoles('instructor'),
-	getInstructorAvailability
-);
+router.get('/:userID/availability', getInstructorAvailability);
 
 router.put(
 	'/availability/:availabilityID',

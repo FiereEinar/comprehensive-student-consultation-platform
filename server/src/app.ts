@@ -25,13 +25,13 @@ import availabilityRoutes from './routes/availability.route';
 
 const app = express();
 app.use(cors(corsOptions));
-app.use(
-	cookieSession({
-		name: 'session',
-		keys: ['secret1', 'secret2'],
-		maxAge: 24 * 60 * 60 * 1000, // 1 day
-	})
-);
+// app.use(
+// 	cookieSession({
+// 		name: 'session',
+// 		keys: ['secret1', 'secret2'],
+// 		maxAge: 24 * 60 * 60 * 1000, // 1 day
+// 	})
+// );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

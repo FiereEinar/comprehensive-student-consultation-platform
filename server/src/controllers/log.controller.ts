@@ -1,21 +1,135 @@
 import asyncHandler from 'express-async-handler';
 import ActivityLogModel from '../models/activity-log.model';
-import CustomResponse from '../utils/response';
-import { RESOURCE_TYPES } from '../constants';
+import CustomResponse, { CustomPaginatedResponse } from '../utils/response';
+import { DEFAULT_LIMIT, RESOURCE_TYPES } from '../constants';
 
 export const getLogsHandler = asyncHandler(async (req, res) => {
-	const { resource, limit = 10 } = req.query;
+	const {
+		search = '',
+		resource = '',
+		startDate = '',
+		endDate = '',
+		page = 1,
+		limit = 20,
+		sort = 'desc',
+	} = req.query;
 
-	const filter: Record<string, any> = {};
+	const numericPage = Number(page);
+	const numericLimit = Number(limit);
+	const skip = (numericPage - 1) * numericLimit;
 
-	if (resource && Object.values(RESOURCE_TYPES).includes(resource as string)) {
-		filter.resourceType = resource;
+	/** -------------------------
+	 * MATCH FILTERS
+	 * --------------------------*/
+	const match: any = {};
+
+	// Filter: resource type (supports multiple)
+	if (resource) {
+		const resources = (resource as string)
+			.split(',')
+			.map((r) => r.trim())
+			.filter((r) => Object.values(RESOURCE_TYPES).includes(r));
+
+		if (resources.length > 0) {
+			match.resourceType = { $in: resources };
+		}
 	}
 
-	const logs = await ActivityLogModel.find(filter)
-		.populate('user')
-		.sort({ timestamp: -1 })
-		.limit(Number(limit));
+	// Filter: date range
+	if (startDate || endDate) {
+		match.timestamp = {};
+		if (startDate) match.timestamp.$gte = new Date(startDate as string);
+		if (endDate) match.timestamp.$lte = new Date(endDate as string);
+	}
 
-	res.json(new CustomResponse(true, logs, 'Logs fetched successfully'));
+	/** -------------------------
+	 * AGGREGATION PIPELINE
+	 * --------------------------*/
+	const pipeline: any[] = [
+		{ $match: match },
+
+		// Join User
+		{
+			$lookup: {
+				from: 'users',
+				localField: 'user',
+				foreignField: '_id',
+				as: 'user',
+			},
+		},
+		{
+			$unwind: {
+				path: '$user',
+				preserveNullAndEmptyArrays: true, // support system logs (no user)
+			},
+		},
+	];
+
+	/** -------------------------
+	 * SEARCH
+	 * --------------------------*/
+	if (String(search).trim() !== '') {
+		const regex = { $regex: search, $options: 'i' };
+
+		pipeline.push({
+			$match: {
+				$or: [
+					{ action: regex },
+					{ description: regex },
+					{ resourceId: regex },
+					{ ipAddress: regex },
+					{ 'user.name': regex },
+					{ 'user.email': regex },
+				],
+			},
+		});
+	}
+
+	/** -------------------------
+	 * SORT
+	 * --------------------------*/
+	pipeline.push({
+		$sort: { timestamp: sort === 'asc' ? 1 : -1 },
+	});
+
+	/** -------------------------
+	 * PAGINATION
+	 * --------------------------*/
+	pipeline.push({ $skip: skip });
+	pipeline.push({ $limit: numericLimit });
+
+	/** -------------------------
+	 * Run paginated query
+	 * --------------------------*/
+	const logs = await ActivityLogModel.aggregate(pipeline);
+
+	/** -------------------------
+	 * Total count
+	 * --------------------------*/
+	const totalPipeline = pipeline.filter(
+		(stage) => !stage.$skip && !stage.$limit
+	);
+
+	const totalDocs = await ActivityLogModel.aggregate([
+		...totalPipeline,
+		{ $count: 'count' },
+	]);
+
+	const total = totalDocs[0]?.count || 0;
+
+	const next = skip + numericLimit < total ? numericPage + 1 : -1;
+	const prev = numericPage > 1 ? numericPage - 1 : -1;
+
+	/** -------------------------
+	 * RESPONSE
+	 * --------------------------*/
+	res.json(
+		new CustomPaginatedResponse(
+			true,
+			logs,
+			'Logs fetched successfully',
+			next,
+			prev
+		)
+	);
 });

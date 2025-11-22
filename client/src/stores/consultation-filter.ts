@@ -2,12 +2,12 @@ import type { ConsultationStatus } from '@/types/consultation';
 import { create } from 'zustand';
 
 export interface ConsultationFilterValues {
-	status: ConsultationStatus[];
-	search: string;
-	page: number;
-	pageSize: number;
-	order: 'asc' | 'desc';
-	userID: string;
+	status?: ConsultationStatus[];
+	search?: string;
+	page?: number;
+	pageSize?: number;
+	order?: 'asc' | 'desc';
+	userID?: string;
 }
 
 export interface ConsultationFilterState extends ConsultationFilterValues {

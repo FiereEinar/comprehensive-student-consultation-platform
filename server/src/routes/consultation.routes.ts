@@ -22,7 +22,7 @@ router.get(
 
 router.get('/today-overview', getTodayOverview);
 router.get('/status-breakdown', getStatusBreakdown);
-router.post('/', authorizeRoles('instructor'), createConsultation);
+router.post('/', createConsultation);
 
 router.post(
 	'/create-meeting',

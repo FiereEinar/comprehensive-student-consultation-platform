@@ -32,7 +32,8 @@ import { sendMail } from '../utils/email';
 import { createGoogleMeetLink } from '../utils/google-meet';
 import { createCalendarEvent } from '../utils/google-calendar';
 import { sendConsultationEmail } from '../utils/consultation-email';
-import { custom } from 'zod';
+import { custom, json } from 'zod';
+import { Types } from 'mongoose';
 
 /**
  * @route GET /api/v1/consultation - get all recent consultations
@@ -48,64 +49,105 @@ export const getConsultations = asynchandler(async (req, res) => {
 		page = 1,
 		pageSize = 10,
 		search = '',
-		order = 'desc',
-		userID = '',
+		sort = 'desc',
 		status = '',
-	} = req.query as Record<string, string>;
+		userID = '',
+	} = req.query;
 
 	const numericPage = Number(page);
 	const limit = Number(pageSize);
 	const skip = (numericPage - 1) * limit;
 
-	/** ---------------------
-	 *   BUILD QUERY FILTER
-	 *  --------------------*/
-	const filter: Record<string, any> = {};
+	const match: any = {};
 
-	// FILTER: specific user (either student or instructor)
-	if (userID.trim() !== '') {
-		filter.$or = [{ student: userID }, { instructor: userID }];
+	// filter by status (can be 'pending,accepted')
+	if (status) {
+		const statuses = (status as string).split(',').map((s) => s.trim());
+		match.status = { $in: statuses };
 	}
 
-	// FILTER: status (supports multiple: "accepted,completed")
-	if (status.trim() !== '') {
-		const statuses = status.split(',').map((s) => s.trim());
-		filter.status = { $in: statuses };
+	// filter by specific student/instructor
+	if (userID) {
+		const objectID = new Types.ObjectId(userID as string);
+		match.$or = [{ student: objectID }, { instructor: objectID }];
 	}
 
-	// FILTER: search (search student/instructor name)
-	if (search.trim() !== '') {
-		filter.$or = [
-			{ title: { $regex: search, $options: 'i' } },
-			{ description: { $regex: search, $options: 'i' } },
-			{ purpose: { $regex: search, $options: 'i' } },
-			{ sectionCode: { $regex: search, $options: 'i' } },
-			{ subjectCode: { $regex: search, $options: 'i' } },
-			// { 'student.name': { $regex: search, $options: 'i' } },
-			// { 'instructor.name': { $regex: search, $options: 'i' } },
-		];
+	// AGGREGATION PIPELINE
+	const pipeline: any[] = [
+		{ $match: match },
+
+		// JOIN student collection
+		{
+			$lookup: {
+				from: 'users',
+				localField: 'student',
+				foreignField: '_id',
+				as: 'student',
+			},
+		},
+		{ $unwind: '$student' },
+
+		// JOIN instructor collection
+		{
+			$lookup: {
+				from: 'users',
+				localField: 'instructor',
+				foreignField: '_id',
+				as: 'instructor',
+			},
+		},
+		{ $unwind: '$instructor' },
+	];
+
+	/** -------------------------------
+	 * SEARCH LOGIC
+	 * --------------------------------*/
+	if (String(search).trim() !== '') {
+		const regex = { $regex: search, $options: 'i' };
+
+		pipeline.push({
+			$match: {
+				$or: [
+					{ title: regex },
+					{ description: regex },
+					{ purpose: regex },
+					{ sectionCode: regex },
+					{ subjectCode: regex },
+					{ 'student.name': regex },
+					{ 'student.email': regex },
+					{ 'instructor.name': regex },
+					{ 'instructor.email': regex },
+				],
+			},
+		});
 	}
 
-	/** ---------------------
-	 *   BUILD SORT ORDER
-	 *  --------------------*/
-	const sortOrder = order === 'asc' ? 1 : -1;
+	/** -------------------------------
+	 * SORTING
+	 * --------------------------------*/
+	pipeline.push({
+		$sort: { createdAt: sort === 'asc' ? 1 : -1 },
+	});
 
-	/** ---------------------
-	 *     FETCH DATA
-	 *  --------------------*/
-	const consultations = await ConsultationModel.find(filter)
-		.populate('student')
-		.populate('instructor')
-		.sort({ createdAt: sortOrder })
-		.skip(skip)
-		.limit(limit)
-		.exec();
+	/** -------------------------------
+	 * PAGINATION
+	 * --------------------------------*/
+	pipeline.push({ $skip: skip });
+	pipeline.push({ $limit: limit });
 
-	// Count total for pagination
-	const total = await ConsultationModel.countDocuments(filter);
+	// Get paginated data
+	const consultations = await ConsultationModel.aggregate(pipeline);
 
-	// Calculate next/prev
+	// Get total count (run pipeline without skip/limit)
+	const totalPipeline = pipeline.filter(
+		(stage) => !('$skip' in stage) && !('$limit' in stage)
+	);
+	const totalDocs = await ConsultationModel.aggregate([
+		...totalPipeline,
+		{ $count: 'count' },
+	]);
+	const total = totalDocs[0]?.count || 0;
+
 	const next = skip + limit < total ? numericPage + 1 : -1;
 	const prev = numericPage > 1 ? numericPage - 1 : -1;
 
@@ -119,6 +161,82 @@ export const getConsultations = asynchandler(async (req, res) => {
 		)
 	);
 });
+// export const getConsultations = asynchandler(async (req, res) => {
+// 	const {
+// 		page = 1,
+// 		pageSize = DEFAULT_LIMIT,
+// 		search = '',
+// 		order = 'desc',
+// 		userID = '',
+// 		status = '',
+// 	} = req.query as Record<string, string>;
+
+// 	const numericPage = Number(page);
+// 	const limit = Number(pageSize);
+// 	const skip = (numericPage - 1) * limit;
+
+// 	/** ---------------------
+// 	 *   BUILD QUERY FILTER
+// 	 *  --------------------*/
+// 	const filter: Record<string, any> = {};
+
+// 	// FILTER: specific user (either student or instructor)
+// 	if (userID.trim() !== '') {
+// 		filter.$or = [{ student: userID }, { instructor: userID }];
+// 	}
+
+// 	// FILTER: status (supports multiple: "accepted,completed")
+// 	if (status.trim() !== '') {
+// 		const statuses = status.split(',').map((s) => s.trim());
+// 		filter.status = { $in: statuses };
+// 	}
+
+// 	// FILTER
+// 	if (search.trim() !== '') {
+// 		filter.$or = [
+// 			{ title: { $regex: search, $options: 'i' } },
+// 			{ description: { $regex: search, $options: 'i' } },
+// 			{ purpose: { $regex: search, $options: 'i' } },
+// 			{ sectionCode: { $regex: search, $options: 'i' } },
+// 			{ subjectCode: { $regex: search, $options: 'i' } },
+// 			// { 'student.name': { $regex: search, $options: 'i' } },
+// 			// { 'instructor.name': { $regex: search, $options: 'i' } },
+// 		];
+// 	}
+
+// 	/** ---------------------
+// 	 *   BUILD SORT ORDER
+// 	 *  --------------------*/
+// 	const sortOrder = order === 'asc' ? 1 : -1;
+
+// 	/** ---------------------
+// 	 *     FETCH DATA
+// 	 *  --------------------*/
+// 	const consultations = await ConsultationModel.find(filter)
+// 		.populate('student')
+// 		.populate('instructor')
+// 		.sort({ createdAt: sortOrder })
+// 		.skip(skip)
+// 		.limit(limit)
+// 		.exec();
+
+// 	// Count total for pagination
+// 	const total = await ConsultationModel.countDocuments(filter);
+
+// 	// Calculate next/prev
+// 	const next = skip + limit < total ? numericPage + 1 : -1;
+// 	const prev = numericPage > 1 ? numericPage - 1 : -1;
+
+// 	res.json(
+// 		new CustomPaginatedResponse(
+// 			true,
+// 			consultations,
+// 			'Consultations fetched',
+// 			next,
+// 			prev
+// 		)
+// 	);
+// });
 
 /**
  * @route POST /api/v1/consultation - create a consultation
@@ -196,35 +314,6 @@ export const createConsultation = asynchandler(async (req, res) => {
 });
 
 /**
- * @route GET /api/v1/user/:userID/consultation
- * query: status = 'pending' | 'accepted' | 'declined' | 'completed' - can be joined with comma
- * limit: number
- */
-export const getUserConsultations = asynchandler(async (req, res) => {
-	const { userID } = req.params;
-	const { status, limit } = req.query;
-
-	const filter: any = {
-		$or: [{ student: userID }, { instructor: userID }],
-	};
-
-	if (status) {
-		const statuses = status.toString().split(',');
-		filter.status = status;
-		if (statuses.length > 0) filter.status = { $in: statuses };
-	}
-
-	const consultations = await ConsultationModel.find(filter)
-		.populate('student')
-		.populate('instructor')
-		.limit(Number(limit) ?? DEFAULT_LIMIT)
-		.sort({ createdAt: -1 })
-		.exec();
-
-	res.json(new CustomResponse(true, consultations, 'Consultations fetched'));
-});
-
-/**
  * @route PATCH /api/v1/consultation/:consultationID
  */
 export const updateConsultationStatus = asynchandler(async (req, res) => {
@@ -244,6 +333,12 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 		currentUser.role === 'instructor',
 		BAD_REQUEST,
 		'Only instructors can update consultation status'
+	);
+
+	appAssert(
+		currentUser && currentUser.googleCalendarTokens,
+		UNAUTHORIZED,
+		'Google Calendar not connected'
 	);
 
 	const { student, instructor } = consultation;
@@ -435,7 +530,7 @@ export const getAdminDashboardData = asynchandler(async (req, res) => {
 });
 
 export const createConsultationMeeting = asynchandler(async (req, res) => {
-	const userId = req.session!.userID;
+	const userId = req.user._id;
 	const user = await UserModel.findById(userId);
 	appAssert(
 		user && user.googleCalendarTokens,
@@ -528,16 +623,15 @@ export const getTodayOverview = asynchandler(async (req, res) => {
 	let todayConsultationFilter: any = {
 		scheduledAt: { $gte: start, $lte: end },
 	};
+
 	if (!isAdmin && isInstructor) {
-		todayConsultationFilter = {
-			instructor: userID,
-		};
+		todayConsultationFilter.instructor = userID;
 	}
+
 	if (!isAdmin && isStudent) {
-		todayConsultationFilter = {
-			student: userID,
-		};
+		todayConsultationFilter.student = userID;
 	}
+
 	const todaysConsultations = await ConsultationModel.find(
 		todayConsultationFilter
 	)

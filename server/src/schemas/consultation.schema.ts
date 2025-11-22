@@ -7,8 +7,8 @@ export const createConsultationSchema = z.object({
 	student: z.string().min(1, 'Student is required'),
 	instructor: z.string().min(1, 'Instructor is required'),
 	purpose: z.string().min(1, 'Purpose is required'),
-	sectonCode: z.string().min(1, 'Section code is required'),
-	subjectCode: z.string().min(1, 'Subject code is required'),
+	sectonCode: z.string().optional(),
+	subjectCode: z.string().optional(),
 });
 
 export const consutationStatusSchema = z.enum(
