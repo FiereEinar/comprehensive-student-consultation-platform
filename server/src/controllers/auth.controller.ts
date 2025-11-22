@@ -611,11 +611,7 @@ export const acceptInvitation = asyncHandler(async (req, res) => {
 });
 
 export const googleCalendarHandler = asyncHandler(async (req, res) => {
-	// can get user info via "req.user"
-	// can i store this in session here so that the controller below can access it?
 	const scopes = ['https://www.googleapis.com/auth/calendar.events'];
-
-	// req.session!.userID = req.user._id;
 
 	const url = oAuth2Client.generateAuthUrl({
 		access_type: 'offline', // get refresh token
@@ -626,8 +622,28 @@ export const googleCalendarHandler = asyncHandler(async (req, res) => {
 	res.redirect(url);
 });
 
+export const checkGoogleCalendarStatus = asyncHandler(async (req, res) => {
+	const user = await UserModel.findById(req.user._id);
+
+	const connected = !!(
+		user?.googleCalendarTokens?.access_token ||
+		user?.googleCalendarTokens?.refresh_token
+	);
+
+	res.json(
+		new CustomResponse(
+			true,
+			{
+				connected,
+				accessToken: user?.googleCalendarTokens?.access_token,
+				refreshToken: user?.googleCalendarTokens?.refresh_token,
+			},
+			'Google Calendar connection status'
+		)
+	);
+});
+
 export const googleCalendarCallbackHandler = asyncHandler(async (req, res) => {
-	// can not get user info via "req.user"
 	const code = req.query.code as string;
 	appAssert(code, BAD_REQUEST, 'No code provided');
 
