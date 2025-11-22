@@ -8,18 +8,18 @@ import {
 } from './ui/pagination';
 
 type PaginationControllerProps = {
-	prevPage?: number;
-	nextPage?: number;
-	currentPage?: number;
+	prevPage: number;
+	nextPage: number;
+	currentPage: number;
 	setPage: (page: number) => void;
 	prefetchFn?: (page: number) => void;
 	size?: 'sm' | 'md' | 'lg';
 };
 
 export default function PaginationController({
-	currentPage = 1,
-	nextPage = 2,
-	prevPage = 0,
+	currentPage,
+	nextPage,
+	prevPage,
 	setPage,
 	prefetchFn,
 	size = 'md',

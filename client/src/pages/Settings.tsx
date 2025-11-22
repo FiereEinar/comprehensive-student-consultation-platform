@@ -1,3 +1,5 @@
+import GoogleAccountConnection from '@/components/GoogleAccountConnection';
+import NotificationSettings from '@/components/NotificationPreference';
 import Header from '@/components/ui/header';
 // import { useState } from 'react';
 // import InstructorAvailabilities from '@/components/InstructorAvailabilities';
@@ -27,9 +29,13 @@ export default function Settings() {
 
 	return (
 		<div className='max-w-2xl space-y-5'>
-			<div>
+			{/* <div>
 				<Header size='md'>Settings</Header>
-			</div>
+			</div> */}
+
+			<NotificationSettings />
+
+			<GoogleAccountConnection />
 
 			{/* <Card>
 				<CardHeader>

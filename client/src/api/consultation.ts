@@ -3,7 +3,7 @@ import axiosInstance from './axios';
 import type { ConsultationFilterValues } from '@/stores/consultation-filter';
 
 export const fetchConsultations = async (
-	filters: ConsultationFilterValues
+	filters: Partial<ConsultationFilterValues>
 ): Promise<Consultation[]> => {
 	try {
 		let url = `/consultation?`;

@@ -10,4 +10,5 @@ export const QUERY_KEYS = {
 	LOGS: 'logs',
 	TODAYS_OVERVIEW: 'today-overview',
 	STATUS_BREAKDOWN: 'status-breakdown',
+	NOTIFICATION_SETTINGS: 'notification-settings',
 };

@@ -95,8 +95,8 @@ export default function StudentConsultations() {
 							/>
 							<PaginationController
 								currentPage={page}
-								nextPage={page ?? 1 + 1}
-								prevPage={page ?? 1 - 1}
+								nextPage={page + 1}
+								prevPage={page - 1}
 								setPage={setPage}
 								size='sm'
 							/>
@@ -119,8 +119,8 @@ export default function StudentConsultations() {
 							<div>
 								<PaginationController
 									currentPage={page}
-									nextPage={page ?? 1 + 1}
-									prevPage={page ?? 1 - 1}
+									nextPage={page + 1}
+									prevPage={page - 1}
 									setPage={setPage}
 									size='sm'
 								/>
