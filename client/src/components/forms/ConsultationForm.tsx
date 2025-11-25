@@ -42,6 +42,7 @@ import { useUserStore } from '@/stores/user';
 import _ from 'lodash';
 import { Plus } from 'lucide-react';
 import { Separator } from '@radix-ui/react-separator';
+import { queryClient } from '@/main';
 
 export type ConsultationFormValues = z.infer<typeof createConsultationSchema>;
 
@@ -55,7 +56,11 @@ export default function ConsultationForm({ title }: ConsultationFormProps) {
 	const { user } = useUserStore((state) => state);
 	const [selectedInstructor, setSelectedInstructor] = useState<string>('');
 	const [selectedPurpose, setSelectedPurpose] = useState<string>('');
-	const { control, handleSubmit } = useForm<ConsultationFormValues>({
+	const {
+		control,
+		handleSubmit,
+		formState: { isSubmitting },
+	} = useForm<ConsultationFormValues>({
 		resolver: zodResolver(createConsultationSchema),
 		defaultValues: {
 			title: '',
@@ -75,13 +80,15 @@ export default function ConsultationForm({ title }: ConsultationFormProps) {
 
 	const onSubmit = async (formData: ConsultationFormValues) => {
 		try {
-			console.log({ formData });
 			const { data } = await axiosInstance.post('/consultation', {
 				...formData,
 				student: user?._id,
 			});
 
 			toast.success(data.message);
+			await queryClient.invalidateQueries({
+				queryKey: [QUERY_KEYS.CONSULTATIONS],
+			});
 		} catch (error: any) {
 			console.error('Failed to create consultation', error);
 			toast.error(error.message ?? 'Failed to create consultation');
@@ -318,9 +325,15 @@ export default function ConsultationForm({ title }: ConsultationFormProps) {
 				</form>
 				<DialogFooter>
 					<DialogClose asChild>
-						<Button variant='outline'>Cancel</Button>
+						<Button disabled={isSubmitting} variant='outline'>
+							Cancel
+						</Button>
 					</DialogClose>
-					<Button type='submit' form='consultation-form'>
+					<Button
+						disabled={isSubmitting}
+						type='submit'
+						form='consultation-form'
+					>
 						Submit
 					</Button>
 				</DialogFooter>

@@ -2,7 +2,7 @@ import axiosInstance from '@/api/axios';
 import { QUERY_KEYS } from '@/constants';
 import { queryClient } from '@/main';
 import type { ConsultationStatus } from '@/types/consultation';
-import { Check, Ban, Ellipsis } from 'lucide-react';
+import { Check, Ban, Ellipsis, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import {
@@ -13,6 +13,7 @@ import {
 	DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 import ConfirmDeleteDialog from './ConfirmDeleteDialog';
+import { useState } from 'react';
 
 type ConsultationCardActionsProps = {
 	consultationID: string;
@@ -23,8 +24,11 @@ export default function ConsultationCardActions({
 	consultationID,
 	status,
 }: ConsultationCardActionsProps) {
+	const [isLoading, setIsLoading] = useState(false);
+
 	const handleAction = async (newStatus: ConsultationStatus) => {
 		try {
+			setIsLoading(true);
 			const { data } = await axiosInstance.patch(
 				`/consultation/${consultationID}`,
 				{ status: newStatus }
@@ -44,6 +48,20 @@ export default function ConsultationCardActions({
 				console.error(`Failed to ${newStatus} consultation`, error);
 				toast.error(error.message ?? `Failed to ${newStatus} consultation`);
 			}
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	const handleDelete = async (consultationID: string) => {
+		try {
+			await axiosInstance.delete(`/consultation/${consultationID}`);
+			await queryClient.invalidateQueries({
+				queryKey: [QUERY_KEYS.CONSULTATIONS],
+			});
+		} catch (err) {
+			console.error('Failed to delete availability', err);
+			toast.error('Failed to delete availability');
 		}
 	};
 
@@ -53,6 +71,7 @@ export default function ConsultationCardActions({
 			{status === 'pending' && (
 				<>
 					<Button
+						disabled={isLoading}
 						variant='link'
 						size='sm'
 						onClick={() => handleAction('accepted')}
@@ -63,6 +82,7 @@ export default function ConsultationCardActions({
 					<ConfirmDeleteDialog
 						trigger={
 							<Button
+								disabled={isLoading}
 								variant='link'
 								size='sm'
 								className='text-red-500 flex items-center gap-1 text-xs'
@@ -78,15 +98,29 @@ export default function ConsultationCardActions({
 				</>
 			)}
 
-			{/* Dropdown for secondary actions */}
-			<DropdownMenu>
-				<DropdownMenuTrigger asChild>
-					<Button variant='ghost' size='icon'>
-						<Ellipsis className='w-5 h-5' />
-					</Button>
-				</DropdownMenuTrigger>
-				<DropdownMenuContent align='end'>
-					{status === 'accepted' && (
+			{status === 'declined' && (
+				<ConfirmDeleteDialog
+					onConfirm={() => handleDelete(consultationID)}
+					trigger={
+						<Button
+							variant='link'
+							size='sm'
+							className='text-red-500 flex items-center gap-1 text-xs'
+						>
+							<Trash2 className='w-4 h-4' /> Delete
+						</Button>
+					}
+				/>
+			)}
+
+			{status === 'accepted' && (
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<Button variant='ghost' size='icon'>
+							<Ellipsis className='w-5 h-5' />
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align='end'>
 						<DropdownMenuItem
 							onClick={() => handleAction('completed')}
 							className='flex items-center gap-2 cursor-pointer'
@@ -94,21 +128,18 @@ export default function ConsultationCardActions({
 							<Check className='w-4 h-4' />
 							Mark as Done
 						</DropdownMenuItem>
-					)}
 
-					{status !== 'declined' && (
-						<>
-							<DropdownMenuSeparator />
-							<DropdownMenuItem
-								onClick={() => handleAction('declined')}
-								className='flex items-center gap-2 cursor-pointer text-red-500'
-							>
-								<Ban className='w-4 h-4' /> Cancel
-							</DropdownMenuItem>
-						</>
-					)}
-				</DropdownMenuContent>
-			</DropdownMenu>
+						<DropdownMenuSeparator />
+
+						<DropdownMenuItem
+							onClick={() => handleAction('declined')}
+							className='flex items-center gap-2 cursor-pointer text-red-500'
+						>
+							<Ban className='w-4 h-4 text-red-500' /> Cancel
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			)}
 		</div>
 	);
 }

@@ -68,7 +68,7 @@ export default function InstructorDashboard() {
 						<Button
 							variant='outline'
 							size='sm'
-							onClick={() => navigate('/availability')}
+							onClick={() => navigate('/instructor/availability')}
 						>
 							<Settings className='mr-1 h-4 w-4' /> Edit
 						</Button>

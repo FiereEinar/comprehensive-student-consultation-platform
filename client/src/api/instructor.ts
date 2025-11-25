@@ -24,7 +24,7 @@ export const fetchInstructors = async (): Promise<User[]> => {
 export const fetchAvailabilities = async (
 	instructorID: string
 ): Promise<AvailabilityType[]> => {
-	const res = await axiosInstance.get(`/user/${instructorID}/availability`);
+	const res = await axiosInstance.get(`/availability?userID=${instructorID}`);
 	// If your API may return InstructorAvailability shaped objects, fix here:
 	return (res.data?.data || []).map((a: any) => ({
 		_id: a._id,

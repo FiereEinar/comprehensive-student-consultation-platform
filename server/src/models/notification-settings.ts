@@ -15,6 +15,7 @@ export interface INotificationSettings {
 		newConsultation: boolean;
 		statusUpdates: boolean;
 		reminders: boolean;
+		systemAnnouncements: boolean;
 	};
 	quietHours: {
 		enabled: boolean;
@@ -35,6 +36,7 @@ const NotificationSettingsSchema = new Schema({
 		newConsultation: { type: Boolean, default: true },
 		statusUpdates: { type: Boolean, default: true },
 		reminders: { type: Boolean, default: true },
+		systemAnnouncements: { type: Boolean, default: true },
 	},
 	quietHours: {
 		enabled: { type: Boolean, default: false },

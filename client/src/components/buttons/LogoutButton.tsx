@@ -1,5 +1,6 @@
 import axiosInstance from '@/api/axios';
 import { useNavigate } from 'react-router-dom';
+import ConfirmDeleteDialog from '../ConfirmDeleteDialog';
 
 type LogoutButtonProps = {
 	children?: React.ReactNode;
@@ -18,11 +19,16 @@ export default function LogoutButton({ children }: LogoutButtonProps) {
 	};
 
 	return (
-		<button
-			onClick={onLogout}
-			className='transition-all cursor-pointer w-full p-2 hover:bg-black/20 rounded-md'
-		>
-			<div className='flex gap-2'>{children}</div>
-		</button>
+		<ConfirmDeleteDialog
+			title='Confirm Logout'
+			confirmText='Logout'
+			description='Are you sure you want to logout?'
+			onConfirm={onLogout}
+			trigger={
+				<button className='transition-all cursor-pointer w-full p-2 hover:bg-black/20 rounded-md'>
+					<div className='flex gap-2'>{children}</div>
+				</button>
+			}
+		/>
 	);
 }

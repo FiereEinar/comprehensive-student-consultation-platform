@@ -19,21 +19,17 @@ export default function ConsultationCard({
 	info = 'student',
 }: ConsultationCardProps) {
 	const { user } = useUserStore((state) => state);
+	const userData =
+		info === 'student' ? consultation.student : consultation.instructor;
 
 	return (
 		<Card className='py-3'>
 			<CardContent className='flex flex-col gap-3 px-4'>
 				<div className='flex items-center justify-between w-full'>
 					<div className='flex gap-3 items-center'>
-						{info === 'student' && consultation.student?.profilePicture ? (
+						{userData?.profilePicture ? (
 							<img
-								src={consultation.student?.profilePicture}
-								className='w-8 h-8 object-cover rounded-full'
-							/>
-						) : info === 'instructor' &&
-						  consultation.instructor?.profilePicture ? (
-							<img
-								src={consultation.instructor?.profilePicture}
+								src={userData.profilePicture}
 								className='w-8 h-8 object-cover rounded-full'
 							/>
 						) : (
@@ -42,9 +38,9 @@ export default function ConsultationCard({
 						<ItemContent className='gap-0'>
 							<ItemTitle>{startCase(consultation.title)}</ItemTitle>
 							<ItemDescription className='text-left'>
-								{info === 'student'
-									? startCase(consultation.student.name)
-									: startCase(consultation.instructor.name)}
+								{startCase(userData.name)}
+								{' • '}
+								<span className='text-xs'>{userData.role}</span>
 							</ItemDescription>
 						</ItemContent>
 					</div>

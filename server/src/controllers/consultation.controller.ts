@@ -30,10 +30,19 @@ import {
 } from '../constants/env';
 import { sendMail } from '../utils/email';
 import { createGoogleMeetLink } from '../utils/google-meet';
-import { createCalendarEvent } from '../utils/google-calendar';
-import { sendConsultationEmail } from '../utils/consultation-email';
+import {
+	createCalendarEvent,
+	createGoogleCalendarOnStatusUpdate,
+} from '../utils/google-calendar';
+import {
+	sendConsultationEmail,
+	sendConsultationStatusUpdateEmail,
+	sendPendingConsultationEmail,
+} from '../utils/consultation-email';
 import { custom, json } from 'zod';
 import { Types } from 'mongoose';
+import { notifyUser } from '../utils/notification';
+import AppNotificationModel from '../models/app-notification';
 
 /**
  * @route GET /api/v1/consultation - get all recent consultations
@@ -161,82 +170,6 @@ export const getConsultations = asynchandler(async (req, res) => {
 		)
 	);
 });
-// export const getConsultations = asynchandler(async (req, res) => {
-// 	const {
-// 		page = 1,
-// 		pageSize = DEFAULT_LIMIT,
-// 		search = '',
-// 		order = 'desc',
-// 		userID = '',
-// 		status = '',
-// 	} = req.query as Record<string, string>;
-
-// 	const numericPage = Number(page);
-// 	const limit = Number(pageSize);
-// 	const skip = (numericPage - 1) * limit;
-
-// 	/** ---------------------
-// 	 *   BUILD QUERY FILTER
-// 	 *  --------------------*/
-// 	const filter: Record<string, any> = {};
-
-// 	// FILTER: specific user (either student or instructor)
-// 	if (userID.trim() !== '') {
-// 		filter.$or = [{ student: userID }, { instructor: userID }];
-// 	}
-
-// 	// FILTER: status (supports multiple: "accepted,completed")
-// 	if (status.trim() !== '') {
-// 		const statuses = status.split(',').map((s) => s.trim());
-// 		filter.status = { $in: statuses };
-// 	}
-
-// 	// FILTER
-// 	if (search.trim() !== '') {
-// 		filter.$or = [
-// 			{ title: { $regex: search, $options: 'i' } },
-// 			{ description: { $regex: search, $options: 'i' } },
-// 			{ purpose: { $regex: search, $options: 'i' } },
-// 			{ sectionCode: { $regex: search, $options: 'i' } },
-// 			{ subjectCode: { $regex: search, $options: 'i' } },
-// 			// { 'student.name': { $regex: search, $options: 'i' } },
-// 			// { 'instructor.name': { $regex: search, $options: 'i' } },
-// 		];
-// 	}
-
-// 	/** ---------------------
-// 	 *   BUILD SORT ORDER
-// 	 *  --------------------*/
-// 	const sortOrder = order === 'asc' ? 1 : -1;
-
-// 	/** ---------------------
-// 	 *     FETCH DATA
-// 	 *  --------------------*/
-// 	const consultations = await ConsultationModel.find(filter)
-// 		.populate('student')
-// 		.populate('instructor')
-// 		.sort({ createdAt: sortOrder })
-// 		.skip(skip)
-// 		.limit(limit)
-// 		.exec();
-
-// 	// Count total for pagination
-// 	const total = await ConsultationModel.countDocuments(filter);
-
-// 	// Calculate next/prev
-// 	const next = skip + limit < total ? numericPage + 1 : -1;
-// 	const prev = numericPage > 1 ? numericPage - 1 : -1;
-
-// 	res.json(
-// 		new CustomPaginatedResponse(
-// 			true,
-// 			consultations,
-// 			'Consultations fetched',
-// 			next,
-// 			prev
-// 		)
-// 	);
-// });
 
 /**
  * @route POST /api/v1/consultation - create a consultation
@@ -300,7 +233,30 @@ export const createConsultation = asynchandler(async (req, res) => {
 		BAD_REQUEST,
 		'Student already has a consultation for this day'
 	);
+
+	// create consultation
 	const consultation = await ConsultationModel.create(body);
+
+	// send email to the instructor
+	const instructorId = String(instructor._id);
+	notifyUser(instructorId, 'newConsultation', {
+		emailNotification: async () => {
+			await sendPendingConsultationEmail({
+				instructorEmail: instructor.email,
+				instructorName: instructor.name,
+				studentName: student.name,
+				scheduledAt: consultationDate,
+			});
+		},
+		inAppNotification: async () => {
+			await AppNotificationModel.create({
+				user: instructorId,
+				title: `A new consultation request from ${student.name}.`,
+				message: 'Check your dashboard for more details.',
+				isRead: false,
+			});
+		},
+	});
 
 	await logActivity(req, {
 		action: 'CREATE_CONSULTATION',
@@ -346,108 +302,36 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 	consultation.status = status;
 	await consultation.save();
 
-	try {
-		const message = {
-			from: `"Consultation Admin" <${EMAIL_USER}>`,
-			to: student.email,
-			subject: `Consultation ${
-				status === 'accepted'
-					? 'Accepted'
-					: status === 'declined'
-					? 'Declined'
-					: status === 'completed'
-					? 'Completed'
-					: 'Updated'
-			}`,
-			html: `
-        <div style="font-family:sans-serif;padding:1rem;border-radius:8px;background:#f9fafb;">
-          <h2 style="color:#111;">Consultation Status Update</h2>
-          <p>Hello ${student.name},</p>
-          <p>Your consultation with <b>${
-						instructor.name
-					}</b> has been <b>${status}</b>.</p>
-          ${
-						status === 'accepted' && consultation.meetLink
-							? `<p>You can join using this link:</p>
-               <a href="${consultation.meetLink}" 
-                  style="display:inline-block;margin-top:1rem;padding:.6rem 1rem;background:#111;color:#fff;border-radius:6px;text-decoration:none;">
-                  Join Google Meet
-               </a>`
-							: ''
-					}
-          <p style="margin-top:1rem;font-size:12px;color:#555;">
-            This is an automated notification from the Consultation System.
-          </p>
-        </div>
-      `,
-		};
-		await sendMail(message);
-	} catch (error) {
-		console.error('Failed to send consultation status email:', error);
+	if (status === 'completed') {
+		consultation.completedAt = new Date();
+		await consultation.save();
 	}
 
+	// Send email
+	await sendConsultationStatusUpdateEmail(
+		consultation,
+		student,
+		instructor,
+		status
+	);
+
 	// Manage Google Calendar event based on status
-	try {
-		const instructorUser = await UserModel.findById(instructor._id);
-		if (instructorUser?.googleCalendarTokens) {
-			const oAuth2Client = new google.auth.OAuth2(
-				GOOGLE_CLIENT_ID,
-				GOOGLE_CLIENT_SECRET,
-				GOOGLE_REDIRECT_URI
-			);
-			oAuth2Client.setCredentials(instructorUser.googleCalendarTokens);
-			const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
-
-			if (status === 'accepted') {
-				// Create event if accepted
-				const event = {
-					summary: `Consultation with ${student.name}`,
-					description: consultation.description || 'Consultation meeting',
-					start: {
-						dateTime: consultation.scheduledAt.toISOString(),
-						timeZone: 'Asia/Manila',
-					},
-					end: {
-						dateTime: new Date(
-							new Date(consultation.scheduledAt).getTime() + 60 * 60 * 1000
-						).toISOString(),
-						timeZone: 'Asia/Manila',
-					},
-					conferenceData: {
-						createRequest: {
-							requestId: Math.random().toString(36).substring(2, 15),
-							conferenceSolutionKey: { type: 'hangoutsMeet' },
-						},
-					},
-					attendees: [{ email: instructor.email }, { email: student.email }],
-				};
-
-				const response = await calendar.events.insert({
-					calendarId: 'primary',
-					requestBody: event,
-					conferenceDataVersion: 1,
-				});
-
-				const eventId = response.data.id;
-				const meetLink = response.data?.conferenceData?.entryPoints?.[0]?.uri;
-
-				if (eventId) consultation.googleCalendarEventId = eventId;
-				if (meetLink) consultation.meetLink = meetLink;
-				await consultation.save();
-			}
-
-			if (status === 'completed' && consultation.googleCalendarEventId) {
-				// Remove event if completed
-				await calendar.events.delete({
-					calendarId: 'primary',
-					eventId: consultation.googleCalendarEventId,
-				});
-				consultation.googleCalendarEventId = null;
-				await consultation.save();
-			}
-		}
-	} catch (error) {
-		console.error('Failed to manage Google Calendar event:', error);
+	const instructorUser = await UserModel.findById(instructor._id);
+	if (instructorUser?.googleCalendarTokens) {
+		const oAuth2Client = new google.auth.OAuth2(
+			GOOGLE_CLIENT_ID,
+			GOOGLE_CLIENT_SECRET,
+			GOOGLE_REDIRECT_URI
+		);
+		oAuth2Client.setCredentials(instructorUser.googleCalendarTokens);
+		const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
+		await createGoogleCalendarOnStatusUpdate(
+			consultation,
+			calendar,
+			student,
+			instructor,
+			status
+		);
 	}
 
 	await logActivity(req, {
@@ -566,28 +450,6 @@ export const createConsultationMeeting = asynchandler(async (req, res) => {
 	consultation.meetLink = meetLink;
 	await consultation.save();
 
-	// disabled this because creating a meeting link already creates a calendar event
-	// Add to instructor’s calendar if connected
-	// const instructorUser = await UserModel.findById(instructor._id);
-	// if (instructorUser?.googleCalendarTokens) {
-	// 	const instructorAuth = new google.auth.OAuth2(
-	// 		GOOGLE_CLIENT_ID,
-	// 		GOOGLE_CLIENT_SECRET,
-	// 		GOOGLE_REDIRECT_URI
-	// 	);
-	// 	instructorAuth.setCredentials(instructorUser.googleCalendarTokens);
-
-	// 	await createCalendarEvent(instructorAuth, {
-	// 		summary: req.body.summary,
-	// 		description: `Consultation meeting with student ${student.name}`,
-	// 		startTime: req.body.startTime,
-	// 		endTime: req.body.endTime,
-	// 		attendees: [{ email: instructor.email }, { email: student.email }],
-	// 	});
-	// } else {
-	// 	console.warn('Instructor does not have Google Calendar connected.');
-	// }
-
 	// Send emails
 	const recipients = [
 		{ name: instructor.name, email: instructor.email },
@@ -608,6 +470,9 @@ export const createConsultationMeeting = asynchandler(async (req, res) => {
 	res.json({ meetLink });
 });
 
+/**
+ * @route GET /api/v1/consultation/today-overview
+ */
 export const getTodayOverview = asynchandler(async (req, res) => {
 	const userID = req.user._id;
 	const isAdmin = req.user.role === 'admin';
@@ -666,6 +531,9 @@ export const getTodayOverview = asynchandler(async (req, res) => {
 	);
 });
 
+/**
+ * @route GET /api/v1/consultation/status-breakdown
+ */
 export const getStatusBreakdown = asynchandler(async (req, res) => {
 	const userID = req.user._id;
 	const isAdmin = req.user.role === 'admin';
@@ -703,4 +571,25 @@ export const getStatusBreakdown = asynchandler(async (req, res) => {
 			'Status breakdown fetched'
 		)
 	);
+});
+
+/**
+ * @route DELETE /api/v1/consultation/:consultationID
+ */
+export const deleteConsultation = asynchandler(async (req, res) => {
+	const currentUser = req.user;
+	const { consultationID } = req.params;
+
+	const consultation = await ConsultationModel.findById(consultationID);
+	appAssert(consultation, NOT_FOUND, 'Consultation not found');
+
+	appAssert(
+		consultation.instructor.toString() === currentUser._id.toString(),
+		UNAUTHORIZED,
+		'You are not authorized to delete this consultation'
+	);
+
+	await ConsultationModel.findByIdAndDelete(consultationID);
+
+	res.json(new CustomResponse(true, null, 'Consultation deleted'));
 });

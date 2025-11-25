@@ -22,13 +22,11 @@ export const updateNotificationSettings = asyncHandler(async (req, res) => {
 	const body = createNotificationSettingsSchema.parse(req.body);
 	const userID = body.user;
 
-	let notifSettings = await NotificationSettingsModel.findOne({ userID });
-
-	if (!notifSettings) {
-		notifSettings = await NotificationSettingsModel.create(body);
-	} else {
-		await NotificationSettingsModel.findOneAndUpdate({ userID }, body);
-	}
+	const notifSettings = await NotificationSettingsModel.findOneAndUpdate(
+		{ user: userID },
+		body,
+		{ new: true, upsert: true }
+	);
 
 	res.json(
 		new CustomResponse(true, notifSettings, 'Notification settings updated')

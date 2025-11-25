@@ -610,6 +610,18 @@ export const acceptInvitation = asyncHandler(async (req, res) => {
 	);
 });
 
+export const deleteGoogleCalendarTokensHandler = asyncHandler(
+	async (req, res) => {
+		const user = await UserModel.findById(req.user._id);
+		appAssert(user, UNAUTHORIZED, 'User not found');
+
+		user.googleCalendarTokens = null;
+		await user.save();
+
+		res.json(new CustomResponse(true, null, 'Google Calendar tokens deleted'));
+	}
+);
+
 export const googleCalendarHandler = asyncHandler(async (req, res) => {
 	const scopes = ['https://www.googleapis.com/auth/calendar.events'];
 

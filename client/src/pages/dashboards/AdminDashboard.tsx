@@ -1,18 +1,9 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import {
-	Users,
-	GraduationCap,
-	CalendarDays,
-	Clock,
-	Settings,
-} from 'lucide-react';
+import { Users, GraduationCap, CalendarDays, Clock } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '@/api/axios';
 import { format } from 'date-fns';
-import { useNavigate } from 'react-router-dom';
 import StatusBadge from '@/components/StatusBadge';
 import type { Consultation } from '@/types/consultation';
 import type { User } from '@/types/user';
@@ -21,8 +12,6 @@ import Header from '@/components/ui/header';
 import DashboardOverviewCard from '@/components/DashboardOverviewCard';
 
 export default function AdminDashboard() {
-	const navigate = useNavigate();
-
 	const { data: dashboardData } = useQuery({
 		queryKey: [QUERY_KEYS.ADMIN_DASHBOARD],
 		queryFn: async () => {
@@ -155,30 +144,6 @@ export default function AdminDashboard() {
 						)}
 					</CardContent>
 				</Card>
-			</section>
-
-			<Separator className='my-6' />
-
-			{/* === System Management === */}
-			<section>
-				<h2 className='text-lg font-medium mb-3'>System Management</h2>
-				<div className='flex gap-3 flex-wrap'>
-					<Button onClick={() => navigate('/admin/users')}>
-						<Users className='mr-2 h-4 w-4' /> Manage Users
-					</Button>
-					<Button
-						onClick={() => navigate('/admin/consultations')}
-						variant='outline'
-					>
-						<CalendarDays className='mr-2 h-4 w-4' /> Consultation Logs
-					</Button>
-					<Button
-						onClick={() => navigate('/admin/settings')}
-						variant='secondary'
-					>
-						<Settings className='mr-2 h-4 w-4' /> System Settings
-					</Button>
-				</div>
 			</section>
 		</div>
 	);

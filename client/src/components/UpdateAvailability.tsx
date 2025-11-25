@@ -48,13 +48,10 @@ export default function UpdateAvailability({ user }: UpdateAvailabilityProps) {
 					startTime: formData.startTime,
 					endTime: formData.endTime,
 					slots: formData.slots, // string!
-					user: user._id,
+					userID: user._id,
 				};
 
-				await axiosInstance.post(
-					`/user/${user._id}/availability`,
-					availability
-				);
+				await axiosInstance.post(`/availability`, availability);
 			}
 
 			toast.success('Availabilities created for all selected days!');
@@ -70,7 +67,7 @@ export default function UpdateAvailability({ user }: UpdateAvailabilityProps) {
 		<form
 			id='create-availability-form'
 			onSubmit={handleSubmit(onSubmit)}
-			className='bg-white rounded-2xl  w-[400px] space-y-3'
+			className='bg-white rounded-2xl space-y-3'
 		>
 			{/* <h1>Update Availability</h1> */}
 			{/* Multi-day checkboxes (horizontal, 3-letter/2-letter labels at bottom) */}

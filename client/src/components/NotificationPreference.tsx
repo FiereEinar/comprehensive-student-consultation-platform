@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
@@ -21,6 +21,7 @@ type NotificationSettings = {
 		newConsultation: boolean;
 		statusUpdates: boolean;
 		reminders: boolean;
+		systemAnnouncements: boolean;
 	};
 	quietHours: {
 		enabled: boolean;
@@ -40,6 +41,7 @@ const defaultNotificationSettings: NotificationSettings = {
 		newConsultation: true,
 		statusUpdates: true,
 		reminders: true,
+		systemAnnouncements: true,
 	},
 	quietHours: {
 		enabled: false,
@@ -50,6 +52,8 @@ const defaultNotificationSettings: NotificationSettings = {
 
 export default function NotificationSettings() {
 	const { user } = useUserStore((state) => state);
+	const [settings, setSettings] = useState<NotificationSettings | null>(null);
+
 	const { data, isLoading } = useQuery({
 		queryKey: [QUERY_KEYS.NOTIFICATION_SETTINGS, user?._id],
 		queryFn: async () => {
@@ -69,6 +73,7 @@ export default function NotificationSettings() {
 							}
 						);
 						console.log(response);
+						return response.data.data as NotificationSettings;
 					} catch (error: any) {
 						toast.error(error.message);
 						console.error('Failed to auto create notification settings', error);
@@ -81,20 +86,10 @@ export default function NotificationSettings() {
 		},
 	});
 
-	const updateMutation = useMutation({
-		mutationFn: async (updated: NotificationSettings) => {
-			const res = await axiosInstance.post(`/settings/notification`, {
-				user: user?._id,
-				...updated,
-			});
-			return res.data;
-		},
-	});
-
-	const [settings, setSettings] = useState<NotificationSettings | null>(null);
-
 	// Sync fetched data into local state
-	if (!settings && data) setSettings(data);
+	useEffect(() => {
+		if (data) setSettings(data);
+	}, [data]);
 
 	if (!settings || isLoading)
 		return (
@@ -120,9 +115,21 @@ export default function NotificationSettings() {
 		});
 	};
 
-	const handleSave = () => {
-		if (!settings) return;
-		updateMutation.mutate(settings);
+	const saveSettings = async () => {
+		try {
+			const res = await axiosInstance.post(`/settings/notification`, {
+				user: user?._id,
+				...settings,
+			});
+
+			// Update local state with updated values from backend
+			setSettings(res.data.data);
+
+			toast.success('Notification settings saved!');
+		} catch (error: any) {
+			console.error(error);
+			toast.error('Failed to save settings');
+		}
 	};
 
 	return (
@@ -215,14 +222,8 @@ export default function NotificationSettings() {
 			</Card>
 
 			{/* SAVE BUTTON */}
-			<div className='flex justify-end'>
-				<Button onClick={handleSave} disabled={updateMutation.isPending}>
-					{updateMutation.isPending ? (
-						<Loader2 className='size-4 animate-spin' />
-					) : (
-						'Save Changes'
-					)}
-				</Button>
+			<div className='flex'>
+				<Button onClick={saveSettings}>Save Changes</Button>
 			</div>
 		</div>
 	);

@@ -2,6 +2,7 @@ import express from 'express';
 import {
 	createConsultation,
 	createConsultationMeeting,
+	deleteConsultation,
 	getAdminDashboardData,
 	getConsultations,
 	getStatusBreakdown,
@@ -13,6 +14,7 @@ import { authorizeRoles } from '../middlewares/auth';
 const router = express.Router();
 
 router.get('/', getConsultations);
+router.post('/', createConsultation);
 
 router.get(
 	'/dashboard-data',
@@ -22,7 +24,6 @@ router.get(
 
 router.get('/today-overview', getTodayOverview);
 router.get('/status-breakdown', getStatusBreakdown);
-router.post('/', createConsultation);
 
 router.post(
 	'/create-meeting',
@@ -34,6 +35,12 @@ router.patch(
 	'/:consultationID',
 	authorizeRoles('instructor'),
 	updateConsultationStatus
+);
+
+router.delete(
+	'/:consultationID',
+	authorizeRoles('instructor'),
+	deleteConsultation
 );
 
 export default router;

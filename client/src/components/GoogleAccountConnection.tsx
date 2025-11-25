@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import axiosInstance from '@/api/axios';
+import { queryClient } from '@/main';
 
 type GoogleConnectionData = {
 	connected: boolean;
@@ -14,9 +15,6 @@ export default function GoogleAccountConnection() {
 	const { data, isLoading } = useQuery({
 		queryKey: ['google-calendar-connection'],
 		queryFn: async () => {
-			// Your backend should expose a small endpoint:
-			// GET /settings/google-calendar/status
-			// This returns { connected: boolean, refreshToken?, accessToken? }
 			const res = await axiosInstance.get('/auth/google-calendar/status');
 			return res.data.data as GoogleConnectionData;
 		},
@@ -34,6 +32,13 @@ export default function GoogleAccountConnection() {
 		window.location.href = `${
 			import.meta.env.VITE_API_URL
 		}/auth/google-calendar`;
+	};
+
+	const handleClearTokens = async () => {
+		await axiosInstance.delete('/auth/google-calendar');
+		await queryClient.invalidateQueries({
+			queryKey: ['google-calendar-connection'],
+		});
 	};
 
 	return (
@@ -82,11 +87,18 @@ export default function GoogleAccountConnection() {
 				)}
 
 				{/* CONNECT / RECONNECT */}
-				<Button onClick={handleConnect} variant='default'>
-					{data?.connected
-						? 'Reconnect Google Calendar'
-						: 'Connect Google Calendar'}
-				</Button>
+				<div className='flex gap-2'>
+					<Button onClick={handleConnect} variant='default'>
+						{data?.connected
+							? 'Reconnect Google Calendar'
+							: 'Connect Google Calendar'}
+					</Button>
+					{data?.connected && (
+						<Button onClick={handleClearTokens} variant='secondary'>
+							Clear Tokens
+						</Button>
+					)}
+				</div>
 			</CardContent>
 		</Card>
 	);

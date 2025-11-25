@@ -7,6 +7,7 @@ export const createAvilabilitySchema = z
 		startTime: z.string().min(1, 'Start time is required'),
 		endTime: z.string().min(1, 'End time is required'),
 		slots: z.string().min(1, 'Slots is required'),
+		userID: z.string().min(1, 'User ID is required'),
 	})
 	.refine(
 		(data) => {

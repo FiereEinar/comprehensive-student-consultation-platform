@@ -68,7 +68,9 @@ export default function ConsultationSheet({
 
 	return (
 		<Sheet>
-			<SheetTrigger asChild>{trigger}</SheetTrigger>
+			<SheetTrigger asChild className='cursor-pointer'>
+				{trigger}
+			</SheetTrigger>
 			<SheetContent>
 				<SheetHeader>
 					<SheetTitle className='text-2xl font-semibold'>

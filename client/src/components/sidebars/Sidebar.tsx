@@ -1,9 +1,9 @@
 import { Clock, LayoutDashboard, Power, Settings } from 'lucide-react';
 import type { JSX } from 'react';
-import SidebarLink from './SidebarLink';
-import SidebarHeader from './SidebarHeader';
-import LogoutButton from './buttons/LogoutButton';
 import { useUserStore } from '@/stores/user';
+import SidebarHeader from './SidebarHeader';
+import SidebarLink from './SidebarLink';
+import LogoutButton from '../buttons/LogoutButton';
 
 export type SidebarNavLink = {
 	name: string;
@@ -36,44 +36,6 @@ const studentSidebarLinks: SidebarNavLink[] = [
 		icon: <Clock />,
 	},
 ];
-
-// const studentSidebarLinks: SidebarNavLink[] = [
-// 	{
-// 		name: '[A] Dashboard',
-// 		href: '/admin/dashboard',
-// 		icon: <LayoutDashboard />,
-// 	},
-// 	{
-// 		name: '[A] Consultations',
-// 		href: '/admin/consultation',
-// 		icon: <Clock />,
-// 	},
-// 	{
-// 		name: '[S] Dashboard',
-// 		href: '/student/dashboard',
-// 		icon: <LayoutDashboard />,
-// 	},
-// 	{
-// 		name: '[S] Consultations',
-// 		href: '/student/consultation',
-// 		icon: <Clock />,
-// 	},
-// 	{
-// 		name: '[I] Dashboard',
-// 		href: '/instructor/dashboard',
-// 		icon: <LayoutDashboard />,
-// 	},
-// 	{
-// 		name: '[I] Consultations',
-// 		href: '/instructor/consultation',
-// 		icon: <Clock />,
-// 	},
-// 	{
-// 		name: '[I] Consultations2',
-// 		href: '/instructor/consultation2',
-// 		icon: <Clock />,
-// 	},
-// ];
 
 export default function Sidebar() {
 	const { user } = useUserStore((state) => state);

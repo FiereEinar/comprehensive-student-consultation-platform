@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/sidebar';
 import { useUserStore } from '@/stores/user';
 import { NavLink } from 'react-router-dom';
-import LogoutButton from './buttons/LogoutButton';
+import LogoutButton from '../buttons/LogoutButton';
 
 type SidebarNavLink = {
 	title: string;
@@ -193,15 +193,13 @@ function SidebarNavLink({ item }: { item: SidebarNavLink }) {
 	return (
 		<NavLink
 			className={({ isActive }) =>
-				`rounded-md hover:bg-custom-primary/20 ${
-					isActive ? 'bg-custom-primary/20' : ''
-				}`
+				`rounded-md ${isActive ? 'bg-custom-primary/20' : ''}`
 			}
 			to={item.url}
 		>
 			<SidebarMenuItem>
-				<SidebarMenuButton>
-					<div className='flex items-center gap-2'>
+				<SidebarMenuButton className='transition-all hover:bg-custom-primary/20'>
+					<div className='cursor-pointer flex items-center gap-2'>
 						<item.icon className='size-5' />
 						<span>{item.title}</span>
 					</div>

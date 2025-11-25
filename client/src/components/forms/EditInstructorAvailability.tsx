@@ -21,6 +21,7 @@ import {
 import { Input } from '../ui/input';
 import { queryClient } from '@/main';
 import { QUERY_KEYS } from '@/constants';
+import { DialogDescription } from '@radix-ui/react-dialog';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
@@ -86,6 +87,7 @@ export default function EditAvailabilityModal({
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Edit Availability</DialogTitle>
+					<DialogDescription></DialogDescription>
 				</DialogHeader>
 				<form onSubmit={handleSubmit} className='space-y-4'>
 					{/* Day Selection */}

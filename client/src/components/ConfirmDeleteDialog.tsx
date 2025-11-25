@@ -84,7 +84,7 @@ export default function ConfirmDeleteDialog({
 						onClick={handleConfirm}
 						disabled={loading}
 					>
-						{loading ? 'Deleting...' : confirmText}
+						{confirmText}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
