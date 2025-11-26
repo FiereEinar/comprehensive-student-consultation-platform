@@ -660,7 +660,6 @@ export const googleCalendarCallbackHandler = asyncHandler(async (req, res) => {
 	appAssert(code, BAD_REQUEST, 'No code provided');
 
 	const { tokens } = await oAuth2Client.getToken(code);
-	console.log({ tokens });
 	oAuth2Client.setCredentials(tokens);
 
 	// Save tokens in user document

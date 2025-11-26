@@ -72,7 +72,6 @@ export default function NotificationSettings() {
 								...defaultNotificationSettings,
 							}
 						);
-						console.log(response);
 						return response.data.data as NotificationSettings;
 					} catch (error: any) {
 						toast.error(error.message);

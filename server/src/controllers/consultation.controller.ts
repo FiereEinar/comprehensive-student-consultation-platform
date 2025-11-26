@@ -4,6 +4,7 @@ import {
 	createConsultationSchema,
 } from '../schemas/consultation.schema';
 import ConsultationModel, {
+	consultatioModelEncryptedFields,
 	IConsultation,
 } from '../models/consultation.models';
 import CustomResponse, { CustomPaginatedResponse } from '../utils/response';
@@ -44,6 +45,7 @@ import { Types } from 'mongoose';
 import { notifyUser } from '../utils/notification';
 import AppNotificationModel from '../models/app-notification';
 import { startCase } from 'lodash';
+import { decryptFields } from '../utils/encryption';
 
 /**
  * @route GET /api/v1/consultation - get all recent consultations
@@ -146,7 +148,10 @@ export const getConsultations = asynchandler(async (req, res) => {
 	pipeline.push({ $limit: limit });
 
 	// Get paginated data
-	const consultations = await ConsultationModel.aggregate(pipeline);
+	let consultations = await ConsultationModel.aggregate(pipeline);
+	consultations = consultations.map((c) =>
+		decryptFields(c, consultatioModelEncryptedFields)
+	);
 
 	// Get total count (run pipeline without skip/limit)
 	const totalPipeline = pipeline.filter(
@@ -285,6 +290,8 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 		.populate('student')
 		.populate('instructor')
 		.exec();
+
+	console.log('consultation: ', consultation);
 	appAssert(consultation, NOT_FOUND, 'Consultation not found');
 
 	appAssert(
@@ -329,8 +336,6 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 			});
 		},
 	});
-
-	console.log({ withGMeet });
 
 	// Manage Google Calendar event based on status
 	const instructorUser = await UserModel.findById(instructor._id);

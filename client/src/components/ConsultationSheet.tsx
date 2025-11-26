@@ -95,12 +95,22 @@ export default function ConsultationSheet({
 					</div>
 
 					<div className='flex gap-2'>
-						<Badge variant='outline' className='text-muted-foreground bg-muted'>
-							{consultation.sectonCode || 'T106'}
-						</Badge>
-						<Badge variant='outline' className='text-muted-foreground bg-muted'>
-							{consultation.subjectCode || 'IT137'}
-						</Badge>
+						{consultation.sectonCode && (
+							<Badge
+								variant='outline'
+								className='text-muted-foreground bg-muted'
+							>
+								{consultation.sectonCode}
+							</Badge>
+						)}
+						{consultation.subjectCode && (
+							<Badge
+								variant='outline'
+								className='text-muted-foreground bg-muted'
+							>
+								{consultation.subjectCode}
+							</Badge>
+						)}
 						{consultation.purpose && (
 							<Badge
 								variant='outline'
@@ -207,10 +217,9 @@ export default function ConsultationSheet({
 					<Separator />
 
 					{/* Generate Meeting Link */}
-					{user &&
-						user.role === 'instructor' &&
-						consultation.status === 'accepted' && (
-							<div className='flex flex-col gap-2'>
+					{user && consultation.status === 'accepted' && (
+						<div className='flex flex-col gap-2'>
+							{user.role === 'instructor' && (
 								<Button
 									onClick={handleGenerateMeeting}
 									disabled={loading || !!consultation.meetLink}
@@ -218,20 +227,21 @@ export default function ConsultationSheet({
 								>
 									{loading ? 'Generating...' : 'Generate Meeting Link'}
 								</Button>
+							)}
 
-								{consultation.meetLink && (
-									<p className='text-sm text-blue-600 text-center'>
-										<a
-											href={consultation.meetLink}
-											target='_blank'
-											rel='noopener noreferrer'
-										>
-											Join Google Meet
-										</a>
-									</p>
-								)}
-							</div>
-						)}
+							{consultation.meetLink && (
+								<p className='text-sm text-blue-600 text-center'>
+									<a
+										href={consultation.meetLink}
+										target='_blank'
+										rel='noopener noreferrer'
+									>
+										Join Google Meet
+									</a>
+								</p>
+							)}
+						</div>
+					)}
 				</div>
 			</SheetContent>
 		</Sheet>

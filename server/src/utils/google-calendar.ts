@@ -96,11 +96,15 @@ export const createGoogleCalendarOnStatusUpdate = async (
 
 	if (status === 'completed' && consultation.googleCalendarEventId) {
 		// Remove event if completed
-		await calendar.events.delete({
-			calendarId: 'primary',
-			eventId: consultation.googleCalendarEventId,
-		});
-		consultation.googleCalendarEventId = null;
-		await consultation.save();
+		try {
+			await calendar.events.delete({
+				calendarId: 'primary',
+				eventId: consultation.googleCalendarEventId,
+			});
+			consultation.googleCalendarEventId = null;
+			await consultation.save();
+		} catch (error: any) {
+			console.log('Error deleting google calendar event', error);
+		}
 	}
 };

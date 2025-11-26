@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
 import { IUser } from './user.model';
+import { decrypt, encrypt } from '../utils/encryption';
+import { EncryptPlugin } from '../utils/mongoose-encryption-plugin';
 
 const Schema = mongoose.Schema;
 
@@ -25,6 +27,7 @@ export interface IConsultation extends mongoose.Document {
 	instructorNotes?: string;
 	createdAt: Date;
 	updatedAt: Date;
+	toJSON(): IConsultation;
 }
 
 const ConsultationSchema = new Schema(
@@ -52,6 +55,19 @@ const ConsultationSchema = new Schema(
 		timestamps: true,
 	}
 );
+
+export const consultatioModelEncryptedFields = [
+	'title',
+	'description',
+	'purpose',
+	'googleCalendarEventId',
+	'sectonCode',
+	'subjectCode',
+];
+
+ConsultationSchema.plugin(EncryptPlugin, {
+	fields: consultatioModelEncryptedFields,
+});
 
 const ConsultationModel = mongoose.model('Consultation', ConsultationSchema);
 export default ConsultationModel;

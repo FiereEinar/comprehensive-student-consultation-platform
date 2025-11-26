@@ -1,6 +1,7 @@
 import axios, { type CreateAxiosDefaults } from 'axios';
 import { queryClient } from '../main';
 import { navigate } from '@/lib/navigate';
+import { decryptResponseData } from '@/lib/utils';
 
 const UNAUTHORIZED = 401;
 
@@ -16,7 +17,12 @@ const axiosInstance = axios.create(options);
 const TokenRefreshClient = axios.create(options);
 
 axiosInstance.interceptors.response.use(
-	(response) => response,
+	async (response) => {
+		if (response?.data?.data) {
+			response.data.data = await decryptResponseData(response.data.data);
+		}
+		return response;
+	},
 	async (error) => {
 		const { config, response } = error;
 		const { status, data } = response || {};
@@ -41,14 +47,5 @@ axiosInstance.interceptors.response.use(
 		return Promise.reject({ status, ...data });
 	}
 );
-
-// attach the access token to the request headers
-// axiosInstance.interceptors.request.use((config) => {
-// 	const token = localStorage.getItem('accessToken');
-// 	if (token) {
-// 		config.headers.Authorization = `Bearer ${token}`;
-// 	}
-// 	return config;
-// });
 
 export default axiosInstance;
