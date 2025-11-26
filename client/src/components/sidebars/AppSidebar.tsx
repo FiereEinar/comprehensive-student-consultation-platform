@@ -99,7 +99,7 @@ export function AppSidebar() {
 			<SidebarHeader>
 				<div className='flex gap-2 items-center'>
 					<img
-						src='/images/logo.png'
+						src='/images/academease.png'
 						alt='Logo'
 						className='size-10 bg-black/90 rounded-md'
 					/>

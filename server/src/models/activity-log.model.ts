@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { IUser } from './user.model';
+import { THIRTY_DAYS } from '../utils/date';
 
 export interface IActivityLog extends Document {
 	user?: IUser;
@@ -25,7 +26,11 @@ const ActivityLogSchema = new Schema<IActivityLog>(
 		ipAddress: { type: String },
 		userAgent: { type: String },
 		status: { type: String, enum: ['success', 'failure'], default: 'success' },
-		timestamp: { type: Date, default: Date.now },
+		timestamp: {
+			type: Date,
+			default: Date.now,
+			expires: THIRTY_DAYS, // AUTO DELETE AFTER 30 DAYS
+		},
 	},
 	{ versionKey: false }
 );
