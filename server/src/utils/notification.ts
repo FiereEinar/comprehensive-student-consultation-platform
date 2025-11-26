@@ -41,7 +41,12 @@ export const notifyUser = async (
 		const [startH, startM] = settings.quietHours.start.split(':').map(Number);
 		const [endH, endM] = settings.quietHours.end.split(':').map(Number);
 
-		if (startH && startM && endH && endM) {
+		if (
+			startH !== undefined &&
+			startM !== undefined &&
+			endH !== undefined &&
+			endM !== undefined
+		) {
 			const quietStart = startH * 60 + startM;
 			const quietEnd = endH * 60 + endM;
 

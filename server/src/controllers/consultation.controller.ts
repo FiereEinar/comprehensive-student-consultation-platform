@@ -7,7 +7,7 @@ import ConsultationModel, {
 	IConsultation,
 } from '../models/consultation.models';
 import CustomResponse, { CustomPaginatedResponse } from '../utils/response';
-import UserModel from '../models/user.model';
+import UserModel, { IUser } from '../models/user.model';
 import appAssert from '../errors/app-assert';
 import {
 	BAD_REQUEST,
@@ -43,6 +43,7 @@ import { custom, json } from 'zod';
 import { Types } from 'mongoose';
 import { notifyUser } from '../utils/notification';
 import AppNotificationModel from '../models/app-notification';
+import { startCase } from 'lodash';
 
 /**
  * @route GET /api/v1/consultation - get all recent consultations
@@ -251,7 +252,7 @@ export const createConsultation = asynchandler(async (req, res) => {
 		inAppNotification: async () => {
 			await AppNotificationModel.create({
 				user: instructorId,
-				title: `A new consultation request from ${student.name}.`,
+				title: `A new consultation request from ${startCase(student.name)}.`,
 				message: 'Check your dashboard for more details.',
 				isRead: false,
 			});
@@ -297,8 +298,6 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 		'Google Calendar not connected'
 	);
 
-	const { student, instructor } = consultation;
-
 	consultation.status = status;
 	await consultation.save();
 
@@ -307,13 +306,28 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 		await consultation.save();
 	}
 
-	// Send email
-	await sendConsultationStatusUpdateEmail(
-		consultation,
-		student,
-		instructor,
-		status
-	);
+	const { student, instructor } = consultation;
+
+	notifyUser(String(student._id), 'statusUpdates', {
+		emailNotification: async () => {
+			await sendConsultationStatusUpdateEmail(
+				consultation,
+				student,
+				instructor,
+				status
+			);
+		},
+		inAppNotification: async () => {
+			await AppNotificationModel.create({
+				user: student._id,
+				title: `Your consultation with ${startCase(
+					instructor.name
+				)} is ${startCase(status)}.`,
+				message: 'Check your dashboard for more details.',
+				isRead: false,
+			});
+		},
+	});
 
 	// Manage Google Calendar event based on status
 	const instructorUser = await UserModel.findById(instructor._id);
@@ -450,22 +464,28 @@ export const createConsultationMeeting = asynchandler(async (req, res) => {
 	consultation.meetLink = meetLink;
 	await consultation.save();
 
-	// Send emails
-	const recipients = [
-		{ name: instructor.name, email: instructor.email },
-		{ name: student.name, email: student.email },
-	];
-
-	for (const recipient of recipients) {
-		await sendConsultationEmail(recipient, {
-			student,
-			instructor,
-			summary: req.body.summary,
-			startTime: req.body.startTime,
-			endTime: req.body.endTime,
-			meetLink,
-		});
-	}
+	notifyUser(String(student._id), 'statusUpdates', {
+		emailNotification: async () => {
+			await sendConsultationEmail(student, {
+				student,
+				instructor,
+				summary: req.body.summary,
+				startTime: req.body.startTime,
+				endTime: req.body.endTime,
+				meetLink,
+			});
+		},
+		inAppNotification: async () => {
+			await AppNotificationModel.create({
+				user: student._id,
+				title: `${startCase(
+					instructor.name
+				)} has scheduled an online consultation with you.`,
+				message: 'Check your dashboard for more details.',
+				isRead: false,
+			});
+		},
+	});
 
 	res.json({ meetLink });
 });

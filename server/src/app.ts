@@ -14,6 +14,7 @@ import { corsOptions } from './utils/cors';
 import { PORT } from './constants/env';
 import { auth } from './middlewares/auth';
 // import { limiter } from './utils/rate-limiter';
+// import { requestLogger } from './middlewares/logger';
 
 import authRoutes from './routes/auth.route';
 import userRoutes from './routes/user.route';
@@ -21,8 +22,8 @@ import consultationRoutes from './routes/consultation.routes';
 import instructorRoutes from './routes/instructor.routes';
 import logRoutes from './routes/log.route';
 import settingsRoutes from './routes/settings.routes';
-// import { requestLogger } from './middlewares/logger';
 import availabilityRoutes from './routes/availability.route';
+import notificationRoutes from './routes/notification.routes';
 
 const app = express();
 app.use(cors(corsOptions));
@@ -49,6 +50,7 @@ app.use('/api/v1/instructor', instructorRoutes);
 app.use('/api/v1/log', logRoutes);
 app.use('/api/v1/settings', settingsRoutes);
 app.use('/api/v1/availability', availabilityRoutes);
+app.use('/api/v1/notification', notificationRoutes);
 
 // Error handlers
 app.use(notFoundHandler);

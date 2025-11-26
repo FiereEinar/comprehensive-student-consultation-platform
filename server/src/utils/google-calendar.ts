@@ -40,6 +40,10 @@ export const createCalendarEvent = async (
 	});
 };
 
+/**
+ * will only create an event on calendar if the status is accepted, will not create an event if the status is declined
+ * will delete the event if the status is completed
+ */
 export const createGoogleCalendarOnStatusUpdate = async (
 	consultation: IConsultation,
 	calendar: calendar_v3.Calendar,
