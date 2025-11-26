@@ -43,12 +43,12 @@ axiosInstance.interceptors.response.use(
 );
 
 // attach the access token to the request headers
-axiosInstance.interceptors.request.use((config) => {
-	const token = localStorage.getItem('accessToken');
-	if (token) {
-		config.headers.Authorization = `Bearer ${token}`;
-	}
-	return config;
-});
+// axiosInstance.interceptors.request.use((config) => {
+// 	const token = localStorage.getItem('accessToken');
+// 	if (token) {
+// 		config.headers.Authorization = `Bearer ${token}`;
+// 	}
+// 	return config;
+// });
 
 export default axiosInstance;

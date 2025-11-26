@@ -7,6 +7,7 @@ import {
 	getConsultations,
 	getStatusBreakdown,
 	getTodayOverview,
+	updateConsultationInstructorNotes,
 	updateConsultationStatus,
 } from '../controllers/consultation.controller';
 import { authorizeRoles } from '../middlewares/auth';
@@ -35,6 +36,12 @@ router.patch(
 	'/:consultationID',
 	authorizeRoles('instructor'),
 	updateConsultationStatus
+);
+
+router.patch(
+	'/:consultationID/instructor-notes',
+	authorizeRoles('instructor'),
+	updateConsultationInstructorNotes
 );
 
 router.delete(

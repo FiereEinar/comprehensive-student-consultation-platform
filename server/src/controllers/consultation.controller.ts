@@ -639,3 +639,28 @@ export const deleteConsultation = asynchandler(async (req, res) => {
 
 	res.json(new CustomResponse(true, null, 'Consultation deleted'));
 });
+
+export const updateConsultationInstructorNotes = asynchandler(
+	async (req, res) => {
+		const { consultationID } = req.params;
+		const { instructorNotes } = req.body;
+
+		const consultation = await ConsultationModel.findById<IConsultation>(
+			consultationID
+		)
+			.populate('instructor')
+			.exec();
+		appAssert(consultation, NOT_FOUND, 'Consultation not found');
+
+		appAssert(
+			consultation.instructor._id.toString() === req.user._id.toString(),
+			UNAUTHORIZED,
+			'You are not authorized to update this consultation'
+		);
+
+		consultation.instructorNotes = instructorNotes;
+		await consultation.save();
+
+		res.json(new CustomResponse(true, null, 'Instructor notes updated'));
+	}
+);

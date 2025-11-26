@@ -22,6 +22,7 @@ export interface IConsultation extends mongoose.Document {
 	sectonCode?: string;
 	subjectCode?: string;
 	completedAt?: Date;
+	instructorNotes?: string;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -45,6 +46,7 @@ const ConsultationSchema = new Schema(
 		sectonCode: { type: String, required: false },
 		subjectCode: { type: String, required: false },
 		completedAt: { type: Date, required: false },
+		instructorNotes: { type: String, required: false },
 	},
 	{
 		timestamps: true,

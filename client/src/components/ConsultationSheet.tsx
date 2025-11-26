@@ -20,6 +20,7 @@ import { useUserStore } from '@/stores/user';
 import { queryClient } from '@/main';
 import { QUERY_KEYS } from '@/constants';
 import { Badge } from './ui/badge';
+import InstructorNotesForm from './forms/InstructorNotesForm';
 
 type ConsultationSheetProps = {
 	consultation: Consultation;
@@ -176,6 +177,30 @@ export default function ConsultationSheet({
 									</div>
 								</CardContent>
 							</Card>
+						</div>
+					</div>
+
+					<Separator />
+
+					{/* Instructor Notes */}
+					<div className='space-y-2'>
+						<div className='flex justify-between items-center'>
+							<p className='font-medium text-sm text-muted-foreground'>
+								Instructor Notes
+							</p>
+							{user?.role === 'instructor' &&
+								user._id === consultation.instructor._id && (
+									<InstructorNotesForm
+										consultationID={consultation._id}
+										currentNotes={consultation.instructorNotes}
+									/>
+								)}
+						</div>
+
+						<div className='flex items-center'>
+							<p className='text-sm text-muted-foreground'>
+								{consultation.instructorNotes || 'No notes yet'}
+							</p>
 						</div>
 					</div>
 

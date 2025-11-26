@@ -21,4 +21,6 @@ export type Consultation = {
 	purpose: string;
 	sectonCode: string;
 	subjectCode: string;
+	completedAt?: Date;
+	instructorNotes?: string;
 };
