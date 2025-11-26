@@ -17,6 +17,15 @@ import { Input } from '@/components/ui/input';
 import PaginationController from '@/components/PaginationController';
 import { useLogFilterStore } from '@/stores/log-filter';
 import { fetchLogs } from '@/api/log';
+import {
+	Sheet,
+	SheetTrigger,
+	SheetContent,
+	SheetHeader,
+	SheetTitle,
+	SheetDescription,
+} from '@/components/ui/sheet';
+import { Separator } from '@/components/ui/separator';
 
 export default function Logs() {
 	const { page, setPage, getFilters, setSearch, resource, setResource } =
@@ -88,37 +97,103 @@ export default function Logs() {
 							Failed to load logs.
 						</div>
 					)}
-					{data && data.length > 0 ? (
+
+					{data &&
+						data.length > 0 &&
 						data.map((log) => (
-							<div
-								key={log._id}
-								className='grid grid-cols-6 py-3 text-sm items-center'
-							>
-								<span>{startCase(log.user?.name || 'System')}</span>
-								<span className='font-medium'>{log.action}</span>
-								<span className='truncate'>{log.description || '—'}</span>
-								<span>
-									<Badge
-										variant={
-											log.status === 'success' ? 'default' : 'destructive'
-										}
-									>
-										{log.status}
-									</Badge>
-								</span>
-								<span>{log.ipAddress || '—'}</span>
-								<span className='text-muted-foreground text-xs'>
-									{format(new Date(log.timestamp), 'PPpp')}
-								</span>
-							</div>
-						))
-					) : (
-						<div className='py-6 text-center text-muted-foreground'>
-							No logs found.
-						</div>
-					)}
+							<Sheet key={log._id}>
+								<SheetTrigger asChild>
+									<div className='grid grid-cols-6 py-3 text-sm items-center cursor-pointer hover:bg-muted/50 transition'>
+										<span>{startCase(log.user?.name || 'System')}</span>
+										<span className='truncate font-medium'>{log.action}</span>
+										<span className='truncate'>{log.description || '—'}</span>
+										<span>
+											<Badge
+												variant={
+													log.status === 'success' ? 'default' : 'destructive'
+												}
+											>
+												{log.status}
+											</Badge>
+										</span>
+										<span>{log.ipAddress || '—'}</span>
+										<span className='text-muted-foreground text-xs'>
+											{format(new Date(log.timestamp), 'PPpp')}
+										</span>
+									</div>
+								</SheetTrigger>
+
+								{/* LOG DETAILS SHEET */}
+								<SheetContent side='right' className='w-[420px]'>
+									<SheetHeader>
+										<SheetTitle>Log Details</SheetTitle>
+										<SheetDescription>
+											Full details of the selected activity log.
+										</SheetDescription>
+									</SheetHeader>
+
+									<div className='p-4 space-y-4 text-sm overflow-auto'>
+										<DetailItem
+											label='User'
+											value={startCase(log.user?.name || 'System')}
+										/>
+										<DetailItem label='Action' value={log.action} />
+										<DetailItem
+											label='Description'
+											value={log.description || '—'}
+											multiline
+										/>
+										<DetailItem label='Status' value={log.status} />
+
+										<Separator />
+
+										<DetailItem
+											label='IP Address'
+											value={log.ipAddress || '—'}
+										/>
+										<DetailItem
+											label='User Agent'
+											value={log.userAgent || '—'}
+										/>
+										<DetailItem label='URL' value={log.url || '—'} />
+										<DetailItem
+											label='Resource Type'
+											value={log.resourceType || '—'}
+										/>
+										<DetailItem
+											label='Resource ID'
+											value={log.resourceId || '—'}
+										/>
+
+										<Separator />
+
+										<DetailItem
+											label='Timestamp'
+											value={format(new Date(log.timestamp), 'PPpp')}
+										/>
+									</div>
+								</SheetContent>
+							</Sheet>
+						))}
 				</CardContent>
 			</Card>
+		</div>
+	);
+}
+
+function DetailItem({
+	label,
+	value,
+	multiline,
+}: {
+	label: string;
+	value: string;
+	multiline?: boolean;
+}) {
+	return (
+		<div>
+			<p className='text-xs font-semibold text-muted-foreground'>{label}</p>
+			<p className={multiline ? 'whitespace-pre-wrap mt-1' : 'mt-1'}>{value}</p>
 		</div>
 	);
 }

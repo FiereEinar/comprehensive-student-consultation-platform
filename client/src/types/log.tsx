@@ -15,10 +15,13 @@ export const RESOURCE_TYPES: Record<string, LOG_RESOURCES> = {
 export type ActivityLog = {
 	_id: string;
 	user?: User;
-	action: string;
-	description?: string;
+	action: string; // "USER_LOGIN", "UPDATE_PASSWORD", "DELETE_SUBJECT"
+	description?: string; // "User John Doe updated their password"
+	url?: string;
 	resourceType?: string;
+	resourceId?: string;
 	ipAddress?: string;
+	userAgent?: string;
 	status: 'success' | 'failure';
-	timestamp: string;
+	timestamp: Date;
 };

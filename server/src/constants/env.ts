@@ -24,3 +24,5 @@ export const GOOGLE_CLIENT_SECRET = getEnv('GOOGLE_CLIENT_SECRET');
 export const GOOGLE_REDIRECT_URI = getEnv('GOOGLE_REDIRECT_URI');
 export const EMAIL_USER = getEnv('EMAIL_USER');
 export const EMAIL_PASS = getEnv('EMAIL_PASS');
+export const ADMIN_EMAIL = getEnv('ADMIN_EMAIL');
+export const ADMIN_PASSWORD = getEnv('ADMIN_PASSWORD');

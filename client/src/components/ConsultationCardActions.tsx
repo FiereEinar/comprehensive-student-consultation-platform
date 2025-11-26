@@ -2,7 +2,7 @@ import axiosInstance from '@/api/axios';
 import { QUERY_KEYS } from '@/constants';
 import { queryClient } from '@/main';
 import type { ConsultationStatus } from '@/types/consultation';
-import { Check, Ban, Ellipsis, Trash2 } from 'lucide-react';
+import { Check, Ban, Ellipsis, Trash2, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import {
@@ -26,12 +26,15 @@ export default function ConsultationCardActions({
 }: ConsultationCardActionsProps) {
 	const [isLoading, setIsLoading] = useState(false);
 
-	const handleAction = async (newStatus: ConsultationStatus) => {
+	const handleAction = async (
+		newStatus: ConsultationStatus,
+		withGMeet: boolean = false
+	) => {
 		try {
 			setIsLoading(true);
 			const { data } = await axiosInstance.patch(
 				`/consultation/${consultationID}`,
-				{ status: newStatus }
+				{ status: newStatus, withGMeet }
 			);
 
 			toast.success(data.message);
@@ -59,9 +62,10 @@ export default function ConsultationCardActions({
 			await queryClient.invalidateQueries({
 				queryKey: [QUERY_KEYS.CONSULTATIONS],
 			});
+			toast.success('Consultation deleted successfully!');
 		} catch (err) {
-			console.error('Failed to delete availability', err);
-			toast.error('Failed to delete availability');
+			console.error('Failed to delete consultation', err);
+			toast.error('Failed to delete consultation');
 		}
 	};
 
@@ -70,15 +74,25 @@ export default function ConsultationCardActions({
 			{/* Inline primary actions */}
 			{status === 'pending' && (
 				<>
-					<Button
-						disabled={isLoading}
-						variant='link'
-						size='sm'
-						onClick={() => handleAction('accepted')}
-						className='text-green-500 flex items-center gap-1 text-xs'
-					>
-						<Check className='w-4 h-4' /> Accept
-					</Button>
+					<ConfirmDeleteDialog
+						icon={<Info className='size-5 text-blue-500' />}
+						title='Create Google Meet Link?'
+						description='Would you like to generate google meet link'
+						onConfirm={() => handleAction('accepted', true)}
+						confirmText='Create'
+						onCancel={() => handleAction('accepted')}
+						cancelText='Skip'
+						trigger={
+							<Button
+								disabled={isLoading}
+								variant='link'
+								size='sm'
+								className='text-green-500 flex items-center gap-1 text-xs'
+							>
+								<Check className='w-4 h-4' /> Accept
+							</Button>
+						}
+					/>
 					<ConfirmDeleteDialog
 						trigger={
 							<Button
@@ -98,7 +112,7 @@ export default function ConsultationCardActions({
 				</>
 			)}
 
-			{status === 'declined' && (
+			{(status === 'declined' || status === 'completed') && (
 				<ConfirmDeleteDialog
 					onConfirm={() => handleDelete(consultationID)}
 					trigger={

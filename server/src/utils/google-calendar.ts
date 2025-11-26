@@ -49,11 +49,12 @@ export const createGoogleCalendarOnStatusUpdate = async (
 	calendar: calendar_v3.Calendar,
 	student: IUser,
 	instructor: IUser,
-	status: string
+	status: string,
+	withGMeet?: boolean
 ): Promise<void> => {
 	if (status === 'accepted') {
 		// Create event if accepted
-		const event = {
+		const event: any = {
 			summary: `Consultation with ${student.name}`,
 			description: consultation.description || 'Consultation meeting',
 			start: {
@@ -66,14 +67,18 @@ export const createGoogleCalendarOnStatusUpdate = async (
 				).toISOString(),
 				timeZone: 'Asia/Manila',
 			},
-			conferenceData: {
+
+			attendees: [{ email: instructor.email }, { email: student.email }],
+		};
+
+		if (withGMeet) {
+			event.conferenceData = {
 				createRequest: {
 					requestId: Math.random().toString(36).substring(2, 15),
 					conferenceSolutionKey: { type: 'hangoutsMeet' },
 				},
-			},
-			attendees: [{ email: instructor.email }, { email: student.email }],
-		};
+			};
+		}
 
 		const response = await calendar.events.insert({
 			calendarId: 'primary',

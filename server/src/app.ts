@@ -1,4 +1,3 @@
-import cookieSession from 'cookie-session';
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import dotenv from 'dotenv';
@@ -11,7 +10,7 @@ import { notFoundHandler } from './middlewares/not-found';
 import { errorHandler } from './middlewares/error';
 import { healthcheck } from './middlewares/healthcheck';
 import { corsOptions } from './utils/cors';
-import { PORT } from './constants/env';
+import { ADMIN_EMAIL, ADMIN_PASSWORD, PORT } from './constants/env';
 import { auth } from './middlewares/auth';
 // import { limiter } from './utils/rate-limiter';
 // import { requestLogger } from './middlewares/logger';
@@ -24,6 +23,7 @@ import logRoutes from './routes/log.route';
 import settingsRoutes from './routes/settings.routes';
 import availabilityRoutes from './routes/availability.route';
 import notificationRoutes from './routes/notification.routes';
+import { seedAdmin } from './database/adminSeed';
 
 const app = express();
 app.use(cors(corsOptions));
@@ -58,5 +58,11 @@ app.use(errorHandler);
 
 app.listen(PORT, async () => {
 	await connectToMongoDB();
+	seedAdmin({
+		name: 'Admin User',
+		email: ADMIN_EMAIL,
+		institutionalID: 'admin001',
+		password: ADMIN_PASSWORD,
+	});
 	console.log(`Server is running on http://localhost:${PORT}`);
 });

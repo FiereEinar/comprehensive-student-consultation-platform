@@ -10,13 +10,13 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
-import { toast } from 'sonner';
 
 type ConfirmDeleteDialogProps = {
 	title?: string;
 	description?: string;
 	trigger: ReactNode;
 	onConfirm: () => Promise<void> | void;
+	onCancel?: () => Promise<void> | void;
 	confirmText?: string;
 	cancelText?: string;
 	successMessage?: string;
@@ -38,11 +38,10 @@ export default function ConfirmDeleteDialog({
 	description = 'Are you sure you want to delete this item? This action cannot be undone.',
 	trigger,
 	onConfirm,
+	onCancel,
 	confirmText = 'Delete',
 	cancelText = 'Cancel',
 	icon,
-	successMessage = 'Item deleted successfully.',
-	errorMessage = 'Failed to delete item.',
 }: ConfirmDeleteDialogProps) {
 	const [loading, setLoading] = useState(false);
 
@@ -54,10 +53,20 @@ export default function ConfirmDeleteDialog({
 		try {
 			setLoading(true);
 			await onConfirm();
-			// toast.success(successMessage);
 		} catch (error: any) {
 			console.error(error);
-			// toast.error(errorMessage);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	const handleCancel = async () => {
+		if (!onCancel) return;
+		try {
+			setLoading(true);
+			await onCancel();
+		} catch (error: any) {
+			console.error(error);
 		} finally {
 			setLoading(false);
 		}
@@ -78,12 +87,10 @@ export default function ConfirmDeleteDialog({
 				</DialogHeader>
 
 				<DialogFooter className='flex justify-end gap-2 mt-4'>
-					<Button variant='outline'>{cancelText}</Button>
-					<Button
-						variant='destructive'
-						onClick={handleConfirm}
-						disabled={loading}
-					>
+					<Button onClick={handleCancel} variant='outline'>
+						{cancelText}
+					</Button>
+					<Button variant='default' onClick={handleConfirm} disabled={loading}>
 						{confirmText}
 					</Button>
 				</DialogFooter>

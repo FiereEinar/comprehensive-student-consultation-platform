@@ -277,6 +277,7 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 	const currentUser = req.user;
 	const { consultationID } = req.params;
 	const status = consutationStatusSchema.parse(req.body.status);
+	const withGMeet = Boolean(req.body.withGMeet);
 
 	const consultation = await ConsultationModel.findById<IConsultation>(
 		consultationID
@@ -329,6 +330,8 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 		},
 	});
 
+	console.log({ withGMeet });
+
 	// Manage Google Calendar event based on status
 	const instructorUser = await UserModel.findById(instructor._id);
 	if (instructorUser?.googleCalendarTokens) {
@@ -344,7 +347,8 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 			calendar,
 			student,
 			instructor,
-			status
+			status,
+			withGMeet
 		);
 	}
 
@@ -600,14 +604,36 @@ export const deleteConsultation = asynchandler(async (req, res) => {
 	const currentUser = req.user;
 	const { consultationID } = req.params;
 
-	const consultation = await ConsultationModel.findById(consultationID);
+	const consultation = await ConsultationModel.findById<IConsultation>(
+		consultationID
+	)
+		.populate('instructor')
+		.exec();
 	appAssert(consultation, NOT_FOUND, 'Consultation not found');
 
 	appAssert(
-		consultation.instructor.toString() === currentUser._id.toString(),
+		consultation.instructor._id.toString() === currentUser._id.toString(),
 		UNAUTHORIZED,
 		'You are not authorized to delete this consultation'
 	);
+
+	if (consultation.instructor.googleCalendarTokens) {
+		const oAuth2Client = new google.auth.OAuth2(
+			GOOGLE_CLIENT_ID,
+			GOOGLE_CLIENT_SECRET,
+			GOOGLE_REDIRECT_URI
+		);
+		oAuth2Client.setCredentials(consultation.instructor.googleCalendarTokens);
+		const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
+
+		// Remove event if completed
+		await calendar.events.delete({
+			calendarId: 'primary',
+			eventId: consultation.googleCalendarEventId as string,
+		});
+		consultation.googleCalendarEventId = null;
+		await consultation.save();
+	}
 
 	await ConsultationModel.findByIdAndDelete(consultationID);
 
