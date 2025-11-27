@@ -1,8 +1,8 @@
 import axiosInstance from '@/api/axios';
 import { QUERY_KEYS } from '@/constants';
 import { queryClient } from '@/main';
-import type { ConsultationStatus } from '@/types/consultation';
-import { Check, Ban, Ellipsis, Trash2, Info } from 'lucide-react';
+import type { Consultation, ConsultationStatus } from '@/types/consultation';
+import { Check, Ban, Ellipsis, Trash2, Info, Pencil } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import {
@@ -14,17 +14,21 @@ import {
 } from './ui/dropdown-menu';
 import ConfirmDeleteDialog from './ConfirmDeleteDialog';
 import { useState } from 'react';
+import EditConsultationForm from './forms/EditConsultationForm';
+import { useUserStore } from '@/stores/user';
 
 type ConsultationCardActionsProps = {
-	consultationID: string;
+	consultation: Consultation;
 	status: ConsultationStatus;
 };
 
 export default function ConsultationCardActions({
-	consultationID,
+	consultation,
 	status,
 }: ConsultationCardActionsProps) {
+	const consultationID = consultation._id;
 	const [isLoading, setIsLoading] = useState(false);
+	const { user } = useUserStore((state) => state);
 
 	const handleAction = async (
 		newStatus: ConsultationStatus,
@@ -33,7 +37,7 @@ export default function ConsultationCardActions({
 		try {
 			setIsLoading(true);
 			const { data } = await axiosInstance.patch(
-				`/consultation/${consultationID}`,
+				`/consultation/${consultationID}/status`,
 				{ status: newStatus, withGMeet }
 			);
 
@@ -72,7 +76,7 @@ export default function ConsultationCardActions({
 	return (
 		<div className='flex items-center gap-2 ml-auto'>
 			{/* Inline primary actions */}
-			{status === 'pending' && (
+			{status === 'pending' && user?.role === 'instructor' && (
 				<>
 					<ConfirmDeleteDialog
 						icon={<Info className='size-5 text-blue-500' />}
@@ -112,48 +116,64 @@ export default function ConsultationCardActions({
 				</>
 			)}
 
-			{(status === 'declined' || status === 'completed') && (
-				<ConfirmDeleteDialog
-					onConfirm={() => handleDelete(consultationID)}
-					trigger={
-						<Button
-							variant='link'
-							size='sm'
-							className='text-red-500 flex items-center gap-1 text-xs'
-						>
-							<Trash2 className='w-4 h-4' /> Delete
-						</Button>
-					}
-				/>
-			)}
+			{(status === 'declined' || status === 'completed') &&
+				user?.role !== 'student' && (
+					<ConfirmDeleteDialog
+						onConfirm={() => handleDelete(consultationID)}
+						trigger={
+							<Button
+								variant='link'
+								size='sm'
+								className='text-red-500 flex items-center gap-1 text-xs'
+							>
+								<Trash2 className='w-4 h-4' /> Delete
+							</Button>
+						}
+					/>
+				)}
 
-			{status === 'accepted' && (
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button variant='ghost' size='icon'>
-							<Ellipsis className='w-5 h-5' />
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align='end'>
-						<DropdownMenuItem
-							onClick={() => handleAction('completed')}
-							className='flex items-center gap-2 cursor-pointer'
-						>
+			{/* {status === 'accepted' && ( */}
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild>
+					<Button variant='ghost' size='icon'>
+						<Ellipsis className='w-5 h-5' />
+					</Button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent align='end'>
+					{user?.role === 'instructor' && (
+						<DropdownMenuItem className='flex items-center gap-2 cursor-pointer'>
 							<Check className='w-4 h-4' />
 							Mark as Done
 						</DropdownMenuItem>
+					)}
 
-						<DropdownMenuSeparator />
-
-						<DropdownMenuItem
-							onClick={() => handleAction('declined')}
-							className='flex items-center gap-2 cursor-pointer text-red-500'
+					{/* <DropdownMenuItem>
+						<div
+							className='flex items-center gap-2 cursor-pointer w-full'
+							// onClick={(e) => e.stopPropagation()}
 						>
-							<Ban className='w-4 h-4 text-red-500' /> Cancel
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
-			)}
+							<EditConsultationForm
+								consultation={consultation}
+								trigger={
+									<div className='flex items-center w-full gap-2'>
+										<Pencil /> Edit
+									</div>
+								}
+							/>
+						</div>
+					</DropdownMenuItem> */}
+
+					<DropdownMenuSeparator />
+
+					<DropdownMenuItem
+						onClick={() => handleAction('declined')}
+						className='flex items-center gap-2 cursor-pointer text-red-500'
+					>
+						<Ban className='w-4 h-4 text-red-500' /> Cancel
+					</DropdownMenuItem>
+				</DropdownMenuContent>
+			</DropdownMenu>
+			{/* )} */}
 		</div>
 	);
 }

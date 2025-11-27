@@ -12,7 +12,7 @@ import {
 } from './ui/sheet';
 import { Separator } from './ui/separator';
 import { Card, CardContent } from './ui/card';
-import { Calendar, Clock, UserRound } from 'lucide-react';
+import { Calendar, Clock, Pencil, UserRound } from 'lucide-react';
 import axiosInstance from '@/api/axios';
 import { Button } from './ui/button';
 import { useState } from 'react';
@@ -21,6 +21,7 @@ import { queryClient } from '@/main';
 import { QUERY_KEYS } from '@/constants';
 import { Badge } from './ui/badge';
 import InstructorNotesForm from './forms/InstructorNotesForm';
+import EditConsultationForm from './forms/EditConsultationForm';
 
 type ConsultationSheetProps = {
 	consultation: Consultation;
@@ -84,10 +85,25 @@ export default function ConsultationSheet({
 
 				<Separator />
 
-				<div className='flex flex-col gap-4 p-5 overflow-y-auto'>
+				<div className='flex flex-col gap-4 p-5 overflow-y-auto w-full'>
 					{/* Title and Description */}
-					<div className='space-y-1'>
-						<p className='text-xl font-semibold'>{startCase(title)}</p>
+					<div className='space-y-1 w-full'>
+						<div className='flex gap-2 justify-between w-full'>
+							<p className='text-xl font-semibold w-full'>{startCase(title)}</p>
+							<EditConsultationForm
+								consultation={consultation}
+								trigger={
+									<Button
+										disabled={loading}
+										variant='link'
+										size='sm'
+										className=' flex items-center gap-1 text-xs'
+									>
+										<Pencil className='w-4 h-4' /> Edit
+									</Button>
+								}
+							/>
+						</div>
 						<p className='text-sm text-muted-foreground'>{description}</p>
 						<p className='text-sm text-muted-foreground'>
 							Requested at: {format(consultation.createdAt, 'MMM dd, yyyy')}

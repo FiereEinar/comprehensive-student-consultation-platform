@@ -10,5 +10,7 @@ export const QUERY_KEYS = {
 	LOGS: 'logs',
 	TODAYS_OVERVIEW: 'today-overview',
 	STATUS_BREAKDOWN: 'status-breakdown',
+	NOTIFICATIONS: 'notifications',
 	NOTIFICATION_SETTINGS: 'notification-settings',
+	GOOGLE_CALENDAR_CONNECTION: 'google-calendar-connection',
 };

@@ -14,9 +14,14 @@ import { FieldError } from './ui/field';
 type DatePickerProps<T> = {
 	field: ControllerRenderProps<FieldValues & T>;
 	fieldState: ControllerFieldState;
+	isDisabled?: boolean;
 };
 
-export function DatePicker<T>({ field, fieldState }: DatePickerProps<T>) {
+export function DatePicker<T>({
+	field,
+	fieldState,
+	isDisabled,
+}: DatePickerProps<T>) {
 	const [open, setOpen] = useState(false);
 
 	const handleSelect = (selectedDate?: Date) => {
@@ -36,6 +41,7 @@ export function DatePicker<T>({ field, fieldState }: DatePickerProps<T>) {
 			<Popover open={open} onOpenChange={setOpen}>
 				<PopoverTrigger asChild>
 					<Button
+						disabled={isDisabled}
 						variant='outline'
 						id={field.name}
 						className={cn(
@@ -50,6 +56,7 @@ export function DatePicker<T>({ field, fieldState }: DatePickerProps<T>) {
 				</PopoverTrigger>
 				<PopoverContent className='w-auto overflow-hidden p-0' align='start'>
 					<Calendar
+						disabled={isDisabled}
 						mode='single'
 						selected={selectedDate}
 						captionLayout='dropdown'

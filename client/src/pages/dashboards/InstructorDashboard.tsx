@@ -95,10 +95,7 @@ export default function InstructorDashboard() {
 											Requested by {c.student.name}
 										</p>
 									</div>
-									<ConsultationCardActions
-										consultationID={c._id}
-										status={c.status}
-									/>
+									<ConsultationCardActions consultation={c} status={c.status} />
 								</div>
 							))
 						) : (

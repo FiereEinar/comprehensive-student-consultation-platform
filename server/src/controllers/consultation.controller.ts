@@ -2,6 +2,7 @@ import asynchandler from 'express-async-handler';
 import {
 	consutationStatusSchema,
 	createConsultationSchema,
+	updateConsultationSchema,
 } from '../schemas/consultation.schema';
 import ConsultationModel, {
 	consultatioModelEncryptedFields,
@@ -644,6 +645,9 @@ export const deleteConsultation = asynchandler(async (req, res) => {
 	res.json(new CustomResponse(true, null, 'Consultation deleted'));
 });
 
+/**
+ * @route PATCH /api/v1/consultation/:consultationID/instructor-notes
+ */
 export const updateConsultationInstructorNotes = asynchandler(
 	async (req, res) => {
 		const { consultationID } = req.params;
@@ -668,3 +672,42 @@ export const updateConsultationInstructorNotes = asynchandler(
 		res.json(new CustomResponse(true, null, 'Instructor notes updated'));
 	}
 );
+
+/**
+ * @route PATCH /api/v1/consultation/:consultationID
+ */
+export const updateConsultation = asynchandler(async (req, res) => {
+	const { consultationID } = req.params;
+
+	const consultation = await ConsultationModel.findById<IConsultation>(
+		consultationID
+	)
+		.populate('instructor')
+		.populate('student')
+		.exec();
+
+	appAssert(consultation, NOT_FOUND, 'Consultation not found');
+
+	const userId = req.user._id.toString();
+	const instructorId = consultation.instructor?._id?.toString();
+	const studentId = consultation.student?._id?.toString();
+	const isAdmin = req.user.role === 'admin';
+
+	appAssert(
+		isAdmin || userId === instructorId || userId === studentId,
+		UNAUTHORIZED,
+		'You are not authorized to update this consultation'
+	);
+
+	const body = updateConsultationSchema.parse(req.body);
+
+	const updated = await ConsultationModel.findByIdAndUpdate<IConsultation>(
+		consultationID,
+		body,
+		{ new: true }
+	);
+
+	appAssert(updated, NOT_FOUND, 'Failed to update consultation');
+
+	res.json(new CustomResponse(true, updated, 'Consultation updated'));
+});

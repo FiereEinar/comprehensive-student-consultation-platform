@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { Bell, Check, Trash2, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
+import { QUERY_KEYS } from '@/constants';
 
 type AppNotification = {
 	_id: string;
@@ -25,7 +26,7 @@ type AppNotification = {
 
 export default function NotificationButton() {
 	const { data = [], isLoading } = useQuery({
-		queryKey: ['notifications'],
+		queryKey: [QUERY_KEYS.NOTIFICATIONS],
 		queryFn: async (): Promise<AppNotification[]> => {
 			const res = await axiosInstance.get('/notification');
 			return res.data.data;
@@ -37,14 +38,14 @@ export default function NotificationButton() {
 	const markRead = useMutation({
 		mutationFn: (id: string) => axiosInstance.patch(`/notification/${id}/read`),
 		onSuccess: () =>
-			queryClient.invalidateQueries({ queryKey: ['notifications'] }),
+			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.NOTIFICATIONS] }),
 		onError: () => toast.error('Failed to mark notification'),
 	});
 
 	const deleteOne = useMutation({
 		mutationFn: (id: string) => axiosInstance.delete(`/notification/${id}`),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['notifications'] });
+			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.NOTIFICATIONS] });
 			toast.success('Notification deleted');
 		},
 		onError: () => toast.error('Failed to delete'),
@@ -53,7 +54,7 @@ export default function NotificationButton() {
 	const markAll = async () => {
 		try {
 			await axiosInstance.patch('/notification/mark-all-read');
-			queryClient.invalidateQueries({ queryKey: ['notifications'] });
+			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.NOTIFICATIONS] });
 		} catch {
 			toast.error('Failed to mark all as read');
 		}
@@ -62,7 +63,7 @@ export default function NotificationButton() {
 	const clearRead = async () => {
 		try {
 			await axiosInstance.delete('/notification/clear-read');
-			queryClient.invalidateQueries({ queryKey: ['notifications'] });
+			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.NOTIFICATIONS] });
 		} catch {
 			toast.error('Failed to clear notifications');
 		}

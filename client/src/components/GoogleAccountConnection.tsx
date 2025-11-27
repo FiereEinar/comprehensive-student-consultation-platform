@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import axiosInstance from '@/api/axios';
 import { queryClient } from '@/main';
+import { QUERY_KEYS } from '@/constants';
 
 type GoogleConnectionData = {
 	connected: boolean;
@@ -13,7 +14,7 @@ type GoogleConnectionData = {
 
 export default function GoogleAccountConnection() {
 	const { data, isLoading } = useQuery({
-		queryKey: ['google-calendar-connection'],
+		queryKey: [QUERY_KEYS.GOOGLE_CALENDAR_CONNECTION],
 		queryFn: async () => {
 			const res = await axiosInstance.get('/auth/google-calendar/status');
 			return res.data.data as GoogleConnectionData;

@@ -86,12 +86,10 @@ export default function ConsultationCard({
 					</div>
 
 					<div className='flex items-center gap-3'>
-						{user?.role === 'instructor' && (
-							<ConsultationCardActions
-								consultationID={consultation._id}
-								status={consultation.status}
-							/>
-						)}
+						<ConsultationCardActions
+							consultation={consultation}
+							status={consultation.status}
+						/>
 					</div>
 				</div>
 			</CardContent>

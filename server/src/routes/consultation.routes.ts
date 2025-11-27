@@ -7,6 +7,7 @@ import {
 	getConsultations,
 	getStatusBreakdown,
 	getTodayOverview,
+	updateConsultation,
 	updateConsultationInstructorNotes,
 	updateConsultationStatus,
 } from '../controllers/consultation.controller';
@@ -32,8 +33,10 @@ router.post(
 	createConsultationMeeting
 );
 
+router.patch('/:consultationID', updateConsultation);
+
 router.patch(
-	'/:consultationID',
+	'/:consultationID/status',
 	authorizeRoles('instructor'),
 	updateConsultationStatus
 );
