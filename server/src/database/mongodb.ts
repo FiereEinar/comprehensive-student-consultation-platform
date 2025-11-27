@@ -2,13 +2,13 @@ import mongoose from 'mongoose';
 import { ADMIN_EMAIL, ADMIN_PASSWORD, MONGO_URI } from '../constants/env';
 import { seedAdmin } from './adminSeed';
 
-let isConnected = false;
+// let isConnected = false;
 
 export default async function connectToMongoDB(): Promise<void> {
 	try {
-		if (isConnected) return;
+		// if (isConnected) return;
 		await mongoose.connect(MONGO_URI);
-		isConnected = true;
+		// isConnected = true;
 		console.log('Connected to database successfully');
 		await seedAdmin({
 			name: 'Admin User',
