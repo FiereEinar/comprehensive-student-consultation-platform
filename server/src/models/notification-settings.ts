@@ -24,6 +24,26 @@ export interface INotificationSettings {
 	};
 }
 
+export const defaultNotificationSettings: Partial<INotificationSettings> = {
+	email: {
+		newConsultation: true,
+		statusUpdates: true,
+		reminders: true,
+		systemAnnouncements: true,
+	},
+	inApp: {
+		newConsultation: true,
+		statusUpdates: true,
+		reminders: true,
+		systemAnnouncements: true,
+	},
+	quietHours: {
+		enabled: false,
+		start: '21:00',
+		end: '07:00',
+	},
+};
+
 const NotificationSettingsSchema = new Schema({
 	user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 	email: {

@@ -37,7 +37,7 @@ router.post('/reset-password/:token', resetPasswordHandler);
 
 // might wanna separate to /api/v1/invitations ???
 router.get('/invite', getInvitations);
-router.post('/invite/instructor', inviteInstructor);
+router.post('/invite/instructor', auth, inviteInstructor);
 router.post('/invite/instructor/accept', acceptInvitation);
 
 export default router;

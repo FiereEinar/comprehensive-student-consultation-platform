@@ -291,7 +291,6 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 		.populate('instructor')
 		.exec();
 
-	console.log('consultation: ', consultation);
 	appAssert(consultation, NOT_FOUND, 'Consultation not found');
 
 	appAssert(
@@ -338,14 +337,14 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 	});
 
 	// Manage Google Calendar event based on status
-	const instructorUser = await UserModel.findById(instructor._id);
-	if (instructorUser?.googleCalendarTokens) {
+	// const instructorUser = await UserModel.findById(instructor._id);
+	if (instructor?.googleCalendarTokens) {
 		const oAuth2Client = new google.auth.OAuth2(
 			GOOGLE_CLIENT_ID,
 			GOOGLE_CLIENT_SECRET,
 			GOOGLE_REDIRECT_URI
 		);
-		oAuth2Client.setCredentials(instructorUser.googleCalendarTokens);
+		oAuth2Client.setCredentials(instructor.googleCalendarTokens);
 		const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
 		await createGoogleCalendarOnStatusUpdate(
 			consultation,

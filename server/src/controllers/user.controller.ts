@@ -1,5 +1,5 @@
 import asyncHandler from 'express-async-handler';
-import UserModel from '../models/user.model';
+import UserModel, { userModelEncryptedFields } from '../models/user.model';
 import CustomResponse, { CustomPaginatedResponse } from '../utils/response';
 import appAssert from '../errors/app-assert';
 import { BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } from '../constants/http';
@@ -8,6 +8,7 @@ import { updateUserPasswordSchema } from '../schemas/user.schema';
 import bcrypt from 'bcryptjs';
 import { BCRYPT_SALT } from '../constants/env';
 import { logActivity } from '../utils/activity-logger';
+import { decryptFields } from '../utils/encryption';
 
 /**
  * @route GET /api/v1/user
@@ -53,7 +54,8 @@ export const getUsers = asyncHandler(async (req, res) => {
 	 *  --------------------*/
 	const usersRaw = await UserModel.find(filter).skip(skip).limit(limit).exec();
 
-	const users = usersRaw.map((u) => u.omitPassword());
+	let users = usersRaw.map((u) => u.omitPassword());
+	users = users.map((u) => decryptFields(u, userModelEncryptedFields));
 
 	const total = await UserModel.countDocuments(filter);
 

@@ -60,6 +60,9 @@ import InvitationModel from '../models/invitation.model';
 import { sendMail } from '../utils/email';
 import { logActivity } from '../utils/activity-logger';
 import { oAuth2Client } from '../utils/google-client';
+import NotificationSettingsModel, {
+	defaultNotificationSettings,
+} from '../models/notification-settings';
 
 /**
  * @route POST /api/v1/auth/login - Login
@@ -134,12 +137,19 @@ export const signupHandler = asyncHandler(async (req, res) => {
 
 	// create user
 	const user = await UserModel.create(body);
+
 	await logActivity(req, {
 		action: 'USER_SIGNUP',
 		description: 'User sign up',
 		resourceId: user._id as string,
 		resourceType: RESOURCE_TYPES.USER,
 	});
+
+	await NotificationSettingsModel.create({
+		user: user._id as string,
+		...defaultNotificationSettings,
+	});
+
 	res.json(new CustomResponse(true, user.omitPassword(), 'Signup successful'));
 });
 
@@ -293,64 +303,6 @@ export const recaptchaVerify = asyncHandler(async (req, res) => {
 /**
  * @route POST /api/v1/auth/google
  */
-export const googleLoginHandler = asyncHandler(async (req, res) => {
-	const { token } = req.body;
-	appAssert(token, UNAUTHORIZED, 'No token found');
-
-	// Verify Google token
-	const ticket = await googleClient.verifyIdToken({
-		idToken: token,
-		audience: GOOGLE_CLIENT_ID,
-	});
-
-	const payload = ticket.getPayload();
-	appAssert(payload, UNAUTHORIZED, 'Invalid Google token');
-
-	const { email, name, sub: googleID } = payload;
-
-	// Check if user exists
-	let user = await UserModel.findOne({ email });
-	if (!user) {
-		const randomPassword = await bcrypt.hash(crypto.randomUUID(), 10);
-		user = await UserModel.create({
-			name,
-			email,
-			googleID,
-			institutionalID: email?.split('@')[0],
-			password: randomPassword,
-		});
-	}
-
-	// Create session
-	const { ip, userAgent } = getUserRequestInfo(req);
-	const userID = user._id as string;
-
-	const session = await SessionModel.create({
-		userID,
-		ip,
-		userAgent,
-		expiresAt: thirtyDaysFromNow(),
-	});
-
-	// Create JWT tokens
-	const sessionID = session._id as string;
-	const accessToken = signToken({ sessionID, userID });
-	const refreshToken = signToken({ sessionID }, refreshTokenSignOptions);
-	setAuthCookie({ res, accessToken, refreshToken });
-
-	await logActivity(req, {
-		action: 'USER_LOGIN',
-		description: 'User logged in via Google',
-		resourceId: userID,
-		resourceType: RESOURCE_TYPES.USER,
-	});
-
-	res.json({ accessToken, user, message: 'Login successful' });
-});
-
-/**
- * @route POST /api/v1/auth/google
- */
 export const googleLoginHandlerV2 = asyncHandler(async (req, res) => {
 	const { token } = req.body;
 	appAssert(token, UNAUTHORIZED, 'No token found');
@@ -383,6 +335,11 @@ export const googleLoginHandlerV2 = asyncHandler(async (req, res) => {
 			institutionalID: email?.split('@')[0],
 			password: randomPassword,
 			profilePicture: picture,
+		});
+
+		await NotificationSettingsModel.create({
+			user: user._id as string,
+			...defaultNotificationSettings,
 		});
 	}
 
@@ -493,7 +450,9 @@ export const resetPasswordHandler = asyncHandler(async (req, res) => {
  * @route GET /api/v1/auth/invite
  */
 export const getInvitations = asyncHandler(async (req, res) => {
-	const invitations = await InvitationModel.find({ status: 'pending' });
+	const invitations = await InvitationModel.find({ status: 'pending' }).sort({
+		createdAt: -1,
+	});
 	res.json(new CustomResponse(true, invitations, 'Invitations found'));
 });
 
@@ -502,13 +461,6 @@ export const getInvitations = asyncHandler(async (req, res) => {
  */
 export const inviteInstructor = asyncHandler(async (req, res) => {
 	const { email, name } = req.body;
-
-	await logActivity(req, {
-		action: 'ADMIN_INVITE',
-		description: 'Admin invited an instructor',
-		resourceId: email,
-		resourceType: RESOURCE_TYPES.USER,
-	});
 
 	// 1. Prevent duplicate invites
 	const existingInvite = await InvitationModel.findOne({
@@ -562,6 +514,13 @@ export const inviteInstructor = asyncHandler(async (req, res) => {
 	};
 
 	await sendMail(message);
+
+	await logActivity(req, {
+		action: 'ADMIN_INVITE',
+		description: 'Admin invited an instructor',
+		resourceId: email,
+		resourceType: RESOURCE_TYPES.USER,
+	});
 
 	res.json(new CustomResponse(true, null, 'Invitation sent successfully.'));
 });

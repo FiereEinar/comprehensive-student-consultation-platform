@@ -109,3 +109,28 @@ export const encryptResponseData = (obj: any): any => {
 	// other primitive types (number, boolean, etc.) → leave as is
 	return obj;
 };
+
+// -----------------------------
+// Recursively decrypt objects/arrays
+// -----------------------------
+export const decryptRequestData = async (obj: any): Promise<any> => {
+	if (obj === null || obj === undefined) return obj;
+
+	if (typeof obj === 'string') return isEncrypted(obj) ? decrypt(obj) : obj;
+
+	if (Array.isArray(obj)) {
+		return Promise.all(obj.map(decryptRequestData));
+	}
+
+	if (typeof obj === 'object') {
+		const decryptedObj: any = {};
+		for (const key in obj) {
+			if (Object.prototype.hasOwnProperty.call(obj, key)) {
+				decryptedObj[key] = await decryptRequestData(obj[key]);
+			}
+		}
+		return decryptedObj;
+	}
+
+	return obj;
+};

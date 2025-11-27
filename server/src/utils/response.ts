@@ -13,6 +13,7 @@ export default class CustomResponse {
 		error?: string | undefined
 	) {
 		this.success = success;
+		// this.data = data;
 		this.data = encryptResponseData(data);
 		this.message = message;
 		this.error = error;

@@ -24,6 +24,8 @@ import settingsRoutes from './routes/settings.routes';
 import availabilityRoutes from './routes/availability.route';
 import notificationRoutes from './routes/notification.routes';
 import { seedAdmin } from './database/adminSeed';
+import { decryptRequestData } from './utils/encryption';
+import { decryptBodyData } from './middlewares/decrypt';
 
 const app = express();
 app.use(cors(corsOptions));
@@ -38,6 +40,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(helmet());
+app.use(decryptBodyData);
 // app.use(requestLogger);
 app.get('/', healthcheck);
 

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { EncryptPlugin } from '../utils/mongoose-encryption-plugin';
 
 const Schema = mongoose.Schema;
 
@@ -10,12 +11,14 @@ export interface IUser extends mongoose.Document {
 	institutionalID: string;
 	email: string;
 	password: string;
-	googleID: string;
 	role: UserTypes;
+	profilePicture?: string;
 	resetPasswordToken?: string;
 	resetPasswordExpires?: Date | undefined;
-	profilePicture?: string;
+	googleID: string;
 	googleCalendarTokens: any;
+	createdAt: Date;
+	updatedAt: Date;
 	omitPassword: () => Omit<IUser, 'password'>;
 }
 
@@ -60,6 +63,17 @@ UserSchema.pre('save', async function (next) {
 	this.name = this.name.toLowerCase();
 	next();
 });
+
+export const userModelEncryptedFields = [
+	'name',
+	'institutionalID',
+	'profilePicture',
+	'resetPasswordToken',
+	'resetPasswordExpires',
+	'googleID',
+];
+
+UserSchema.plugin(EncryptPlugin, { fields: userModelEncryptedFields });
 
 const UserModel = mongoose.model('User', UserSchema);
 export default UserModel;
