@@ -89,7 +89,7 @@ export const loginHandler = asyncHandler(async (req, res) => {
 	});
 
 	const userID = user._id as string;
-	const sessionID = session._id as string;
+	const sessionID = session._id as unknown as string;
 
 	// sign tokens
 	const accessToken = signToken({ sessionID, userID });
@@ -220,11 +220,14 @@ export const refreshTokenHandler = asyncHandler(async (req, res) => {
 
 	// create and set the new access token and refresh token
 	const newRefreshToken = sessionNeedsRefresh
-		? signToken({ sessionID: session._id as string }, refreshTokenSignOptions)
+		? signToken(
+				{ sessionID: session._id as unknown as string },
+				refreshTokenSignOptions
+		  )
 		: undefined;
 
 	const accessToken = signToken({
-		sessionID: session._id as string,
+		sessionID: session._id as unknown as string,
 		userID: session.userID as unknown as string,
 	});
 
@@ -355,7 +358,7 @@ export const googleLoginHandlerV2 = asyncHandler(async (req, res) => {
 	});
 
 	// Create JWT tokens
-	const sessionID = session._id as string;
+	const sessionID = session._id as unknown as string;
 	const accessToken = signToken({ sessionID, userID });
 	const refreshToken = signToken({ sessionID }, refreshTokenSignOptions);
 	setAuthCookie({ res, accessToken, refreshToken });

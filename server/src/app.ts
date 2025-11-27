@@ -18,7 +18,6 @@ import { auth } from './middlewares/auth';
 import authRoutes from './routes/auth.route';
 import userRoutes from './routes/user.route';
 import consultationRoutes from './routes/consultation.routes';
-import instructorRoutes from './routes/instructor.routes';
 import logRoutes from './routes/log.route';
 import settingsRoutes from './routes/settings.routes';
 import availabilityRoutes from './routes/availability.route';
@@ -29,13 +28,6 @@ import { decryptBodyData } from './middlewares/decrypt';
 
 const app = express();
 app.use(cors(corsOptions));
-// app.use(
-// 	cookieSession({
-// 		name: 'session',
-// 		keys: ['secret1', 'secret2'],
-// 		maxAge: 24 * 60 * 60 * 1000, // 1 day
-// 	})
-// );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -49,7 +41,6 @@ app.use('/api/v1/auth', authRoutes);
 app.use(auth);
 app.use('/api/v1/user', userRoutes);
 app.use('/api/v1/consultation', consultationRoutes);
-app.use('/api/v1/instructor', instructorRoutes);
 app.use('/api/v1/log', logRoutes);
 app.use('/api/v1/settings', settingsRoutes);
 app.use('/api/v1/availability', availabilityRoutes);

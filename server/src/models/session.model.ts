@@ -1,8 +1,9 @@
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 
 const Schema = mongoose.Schema;
 
 export interface ISession extends mongoose.Document {
+	_id: Types.ObjectId;
 	userID: mongoose.Types.ObjectId;
 	createdAt: Date;
 	expiresAt: Date;
