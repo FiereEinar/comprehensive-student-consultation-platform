@@ -5,6 +5,7 @@ import { Days } from '../utils/date';
 const Schema = mongoose.Schema;
 
 export interface IAvailability extends mongoose.Document {
+	_id: string;
 	user: IUser;
 	day: Days; // day of the week
 	startTime: string; // in 24 hour format

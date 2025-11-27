@@ -1,6 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IInvitation extends Document {
+	_id: string;
 	email: string;
 	name?: string;
 	role: 'instructor';

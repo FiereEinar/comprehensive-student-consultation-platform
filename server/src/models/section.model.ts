@@ -2,6 +2,7 @@ import { Schema, model, Document, Types } from 'mongoose';
 import { ISubject } from './subject.model';
 
 export interface ISection extends Document {
+	_id: string;
 	name: string;
 	schedule?: string;
 	subject: ISubject;

@@ -3,6 +3,7 @@ import { IUser } from './user.model';
 import { THIRTY_DAYS } from '../utils/date';
 
 export interface IActivityLog extends Document {
+	_id: string;
 	user?: IUser;
 	action: string; // "USER_LOGIN", "UPDATE_PASSWORD", "DELETE_SUBJECT"
 	description?: string; // "User John Doe updated their password"

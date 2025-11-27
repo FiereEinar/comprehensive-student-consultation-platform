@@ -4,6 +4,7 @@ import { IUser } from './user.model';
 const Schema = mongoose.Schema;
 
 export interface IAppNotification extends mongoose.Document {
+	_id: string;
 	user: IUser;
 	title: string;
 	message?: string;
