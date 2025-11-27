@@ -1,5 +1,4 @@
 import { Card, CardContent } from '@/components/ui/card';
-import loginGraphic from '../assets/images/login_image.jpg';
 import ForgotPasswordForm from '@/components/forms/ForgotPasswordForm';
 
 export default function ForgotPassword() {
@@ -11,7 +10,7 @@ export default function ForgotPassword() {
 						<CardContent className='grid p-0 md:grid-cols-2 w-full'>
 							<div className='bg-white relative hidden md:block'>
 								<img
-									src={loginGraphic}
+									src='/images/login_image.jpg'
 									alt='Login Illustration'
 									className='w-full h-full object-contain object-center dark:brightness-[0.2] dark:grayscale'
 								/>

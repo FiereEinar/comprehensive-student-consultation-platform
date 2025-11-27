@@ -5,7 +5,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from '@/components/ui/card';
-import signupGraphic from '../assets/images/signup_image.jpg';
 import axiosInstance from '@/api/axios';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -54,7 +53,7 @@ export default function AcceptInstructorInvitation() {
 						<CardContent className='grid p-0 md:grid-cols-2 w-full'>
 							<div className='bg-white relative hidden md:block'>
 								<img
-									src={signupGraphic}
+									src='/images/signup_image.jpg'
 									alt='Signup Illustration'
 									className='w-full h-full object-contain object-center dark:brightness-[0.2] dark:grayscale'
 								/>

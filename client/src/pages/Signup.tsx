@@ -1,5 +1,4 @@
 import SignupForm from '@/components/forms/SignupForm';
-import signupGraphic from '../assets/images/signup_image.jpg';
 import { Card, CardContent } from '@/components/ui/card';
 import { FieldDescription } from '@/components/ui/field';
 // import '../assets/signup.css';
@@ -13,7 +12,7 @@ export default function Signup() {
 						<CardContent className='grid p-0 md:grid-cols-2 w-full'>
 							<div className='bg-white relative hidden md:block'>
 								<img
-									src={signupGraphic}
+									src='/images/signup_image.jpg'
 									alt='Signup Illustration'
 									className='w-full h-full object-contain object-center dark:brightness-[0.2] dark:grayscale'
 								/>

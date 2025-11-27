@@ -3,7 +3,6 @@ import { useGoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
-import googleIcon from '@/assets/Images/Google_Icon.png';
 
 export default function GoogleLoginButton() {
 	const navigate = useNavigate();
@@ -34,7 +33,7 @@ export default function GoogleLoginButton() {
 			variant='outline'
 			className='form-button-google w-full'
 		>
-			<img src={googleIcon} alt='Google' className='size-4' />
+			<img src='/images/Google_Icon.png' alt='Google' className='size-4' />
 			Continue with Google
 		</Button>
 	);
