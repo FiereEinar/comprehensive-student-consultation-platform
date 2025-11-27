@@ -618,7 +618,7 @@ export const deleteConsultation = asynchandler(async (req, res) => {
 	appAssert(consultation, NOT_FOUND, 'Consultation not found');
 
 	appAssert(
-		consultation.instructor._id.toString() === currentUser._id.toString(),
+		consultation.instructor._id?.toString() === currentUser._id.toString(),
 		UNAUTHORIZED,
 		'You are not authorized to delete this consultation'
 	);
@@ -662,7 +662,7 @@ export const updateConsultationInstructorNotes = asynchandler(
 		appAssert(consultation, NOT_FOUND, 'Consultation not found');
 
 		appAssert(
-			consultation.instructor._id.toString() === req.user._id.toString(),
+			consultation.instructor._id?.toString() === req.user._id.toString(),
 			UNAUTHORIZED,
 			'You are not authorized to update this consultation'
 		);

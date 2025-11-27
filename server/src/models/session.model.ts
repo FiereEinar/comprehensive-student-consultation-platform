@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 export interface ISession extends mongoose.Document {
-	_id: string;
 	userID: mongoose.Types.ObjectId;
 	createdAt: Date;
 	expiresAt: Date;

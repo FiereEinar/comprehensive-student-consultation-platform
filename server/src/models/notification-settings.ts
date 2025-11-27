@@ -4,7 +4,6 @@ import { IUser } from './user.model';
 const Schema = mongoose.Schema;
 
 export interface INotificationSettings extends mongoose.Document {
-	_id: string;
 	user: IUser;
 	email: {
 		newConsultation: boolean;

@@ -12,7 +12,6 @@ export type ConsultationStatus =
 	| 'completed';
 
 export interface IConsultation extends mongoose.Document {
-	_id: string;
 	student: IUser;
 	instructor: IUser;
 	scheduledAt: Date;

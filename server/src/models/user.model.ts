@@ -6,7 +6,6 @@ const Schema = mongoose.Schema;
 export type UserTypes = 'admin' | 'student' | 'instructor';
 
 export interface IUser extends mongoose.Document {
-	_id: string;
 	name: string;
 	institutionalID: string;
 	email: string;
