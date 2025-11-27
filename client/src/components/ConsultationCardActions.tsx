@@ -2,7 +2,7 @@ import axiosInstance from '@/api/axios';
 import { QUERY_KEYS } from '@/constants';
 import { queryClient } from '@/main';
 import type { Consultation, ConsultationStatus } from '@/types/consultation';
-import { Check, Ban, Ellipsis, Trash2, Info, Pencil } from 'lucide-react';
+import { Check, Ban, Ellipsis, Trash2, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import {
@@ -14,7 +14,6 @@ import {
 } from './ui/dropdown-menu';
 import ConfirmDeleteDialog from './ConfirmDeleteDialog';
 import { useState } from 'react';
-import EditConsultationForm from './forms/EditConsultationForm';
 import { useUserStore } from '@/stores/user';
 
 type ConsultationCardActionsProps = {

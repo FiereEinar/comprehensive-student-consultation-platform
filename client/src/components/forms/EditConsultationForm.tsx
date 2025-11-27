@@ -43,7 +43,6 @@ import { createConsultationSchema } from '@/lib/schemas/consultation.schema';
 import _ from 'lodash';
 import type { Consultation } from '@/types/consultation';
 import { Pencil } from 'lucide-react';
-import { useUserStore } from '@/stores/user';
 
 export type ConsultationFormValues = z.infer<typeof createConsultationSchema>;
 
@@ -55,7 +54,6 @@ type EditConsultationFormProps = {
 
 export default function EditConsultationForm({
 	consultation,
-	title,
 	trigger,
 }: EditConsultationFormProps) {
 	const [selectedInstructor] = useState<string>(consultation.instructor._id);

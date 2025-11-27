@@ -18,7 +18,6 @@ export default function ConsultationCard({
 	consultation,
 	info = 'student',
 }: ConsultationCardProps) {
-	const { user } = useUserStore((state) => state);
 	const userData =
 		info === 'student' ? consultation.student : consultation.instructor;
 
