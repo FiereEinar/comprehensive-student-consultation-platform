@@ -4,7 +4,6 @@ import { UserRound } from 'lucide-react';
 import { ItemContent, ItemDescription, ItemTitle } from './ui/item';
 import { format } from 'date-fns';
 import { startCase } from 'lodash';
-import { useUserStore } from '@/stores/user';
 import { Badge } from './ui/badge';
 import StatusBadge from './StatusBadge';
 import ConsultationCardActions from './ConsultationCardActions';
