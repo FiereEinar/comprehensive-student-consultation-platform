@@ -13,6 +13,7 @@ import { getStartAndEndofDay } from '../utils/date';
 import { DEFAULT_LIMIT, RESOURCE_TYPES } from '../constants';
 import { subDays } from 'date-fns';
 import { logActivity } from '../utils/activity-logger';
+import Consultation from '../models/consultation.models';
 
 /**
  * @route GET /api/v1/consultation - get all recent consultations
