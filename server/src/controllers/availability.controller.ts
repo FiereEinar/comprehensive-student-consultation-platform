@@ -69,7 +69,7 @@ export const getInstructorAvailability = asyncHandler(async (req, res) => {
 // 	await logActivity(req, {
 // 		action: 'UPDATE_AVAILABILITY',
 // 		description: 'Updated availability',
-// 		resourceId: instructor._id as string,
+// 		resourceId: instructor._id as unknown as string,
 // 		resourceType: RESOURCE_TYPES.USER,
 // 	});
 
@@ -110,7 +110,7 @@ export const updateSingleAvailability = asyncHandler(async (req, res) => {
 	await logActivity(req, {
 		action: 'UPDATE_AVAILABILITY',
 		description: 'Updated availability',
-		resourceId: instructor._id as string,
+		resourceId: instructor._id as unknown as string,
 		resourceType: RESOURCE_TYPES.USER,
 	});
 
@@ -141,7 +141,7 @@ export const createInstructorAvailability = asyncHandler(async (req, res) => {
 	await logActivity(req, {
 		action: 'CREATE_AVAILABILITY',
 		description: 'Instructor created availability',
-		resourceId: instructor._id as string,
+		resourceId: instructor._id as unknown as string,
 		resourceType: RESOURCE_TYPES.USER,
 	});
 
@@ -167,7 +167,7 @@ export const deleteSingleAvailability = asyncHandler(async (req, res) => {
 	await logActivity(req, {
 		action: 'DELETE_AVAILABILITY',
 		description: 'Instructor deleted availability',
-		resourceId: instructor._id as string,
+		resourceId: instructor._id as unknown as string,
 		resourceType: RESOURCE_TYPES.USER,
 	});
 

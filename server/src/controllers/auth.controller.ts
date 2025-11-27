@@ -88,7 +88,7 @@ export const loginHandler = asyncHandler(async (req, res) => {
 		userAgent,
 	});
 
-	const userID = user._id as string;
+	const userID = user._id as unknown as string;
 	const sessionID = session._id as unknown as string;
 
 	// sign tokens
@@ -141,12 +141,12 @@ export const signupHandler = asyncHandler(async (req, res) => {
 	await logActivity(req, {
 		action: 'USER_SIGNUP',
 		description: 'User sign up',
-		resourceId: user._id as string,
+		resourceId: user._id as unknown as string,
 		resourceType: RESOURCE_TYPES.USER,
 	});
 
 	await NotificationSettingsModel.create({
-		user: user._id as string,
+		user: user._id as unknown as string,
 		...defaultNotificationSettings,
 	});
 
@@ -341,14 +341,14 @@ export const googleLoginHandlerV2 = asyncHandler(async (req, res) => {
 		});
 
 		await NotificationSettingsModel.create({
-			user: user._id as string,
+			user: user._id as unknown as string,
 			...defaultNotificationSettings,
 		});
 	}
 
 	// Create session
 	const { ip, userAgent } = getUserRequestInfo(req);
-	const userID = user._id as string;
+	const userID = user._id as unknown as string;
 
 	const session = await SessionModel.create({
 		userID,
@@ -431,7 +431,7 @@ export const resetPasswordHandler = asyncHandler(async (req, res) => {
 	await logActivity(req, {
 		action: 'USER_RESET_PASSWORD',
 		description: 'User reset password',
-		resourceId: user?._id as string,
+		resourceId: user?._id as unknown as string,
 		resourceType: RESOURCE_TYPES.USER,
 	});
 
@@ -556,7 +556,7 @@ export const acceptInvitation = asyncHandler(async (req, res) => {
 	await logActivity(req, {
 		action: 'USER_ACCEPT_INVITE',
 		description: 'User accepted an invite',
-		resourceId: user._id as string,
+		resourceId: user._id as unknown as string,
 		resourceType: RESOURCE_TYPES.USER,
 	});
 
