@@ -23,6 +23,7 @@ import settingsRoutes from './routes/settings.routes';
 import availabilityRoutes from './routes/availability.route';
 import notificationRoutes from './routes/notification.routes';
 import { decryptBodyData } from './middlewares/decrypt';
+connectToMongoDB();
 
 const app = express();
 app.use(cors(corsOptions));
@@ -48,8 +49,7 @@ app.use('/api/v1/notification', notificationRoutes);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-app.listen(PORT, async () => {
-	await connectToMongoDB();
+app.listen(PORT, () => {
 	console.log(`Server is running on http://localhost:${PORT}`);
 });
 
