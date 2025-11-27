@@ -29,7 +29,7 @@ export default function ConsultationCard({
 					<div className='flex gap-3 items-center'>
 						{userData?.profilePicture ? (
 							<img
-								src={userData.profilePicture}
+								src={userData?.profilePicture}
 								className='w-8 h-8 object-cover rounded-full'
 							/>
 						) : (

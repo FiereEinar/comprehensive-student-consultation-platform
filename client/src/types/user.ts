@@ -11,6 +11,10 @@ export type User = {
 	password: string;
 	role: UserTypes;
 	profilePicture?: string;
+	resetPasswordToken?: string;
+	resetPasswordExpires?: Date | undefined;
+	googleID: string;
+	googleCalendarTokens: any;
 	createdAt: Date;
 	updatedAt: Date;
 };

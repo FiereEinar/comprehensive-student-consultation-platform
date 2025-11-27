@@ -19,6 +19,8 @@ import { Plus } from 'lucide-react';
 import type z from 'zod';
 import { inviteInstructorSchema } from '@/lib/schemas/auth.schema';
 import { useState } from 'react';
+import { queryClient } from '@/main';
+import { QUERY_KEYS } from '@/constants';
 
 type InviteInstructorValues = z.infer<typeof inviteInstructorSchema>;
 
@@ -41,6 +43,9 @@ export default function InviteInstructorForm() {
 			);
 			toast.success(data.message);
 			reset();
+			await queryClient.invalidateQueries({
+				queryKey: [QUERY_KEYS.INVITATIONS],
+			});
 		} catch (error: any) {
 			console.error('Failed to send invite', error);
 			toast.error(error.message ?? 'Failed to send invitation');

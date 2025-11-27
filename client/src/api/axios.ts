@@ -1,7 +1,7 @@
 import axios, { type CreateAxiosDefaults } from 'axios';
 import { queryClient } from '../main';
 import { navigate } from '@/lib/navigate';
-import { decryptResponseData } from '@/lib/utils';
+import { decryptResponseData, encryptRequestData } from '@/lib/encryption';
 
 const UNAUTHORIZED = 401;
 
@@ -19,6 +19,7 @@ const TokenRefreshClient = axios.create(options);
 axiosInstance.interceptors.response.use(
 	async (response) => {
 		if (response?.data?.data) {
+			// console.log('received data: ', response.data.data);
 			response.data.data = await decryptResponseData(response.data.data);
 		}
 		return response;
@@ -47,5 +48,13 @@ axiosInstance.interceptors.response.use(
 		return Promise.reject({ status, ...data });
 	}
 );
+
+axiosInstance.interceptors.request.use((config) => {
+	if (config.data) {
+		config.data = encryptRequestData(config.data);
+		// console.log('data to send: ', config.data);
+	}
+	return config;
+});
 
 export default axiosInstance;

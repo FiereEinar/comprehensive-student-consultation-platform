@@ -98,6 +98,12 @@ export default function Logs() {
 						</div>
 					)}
 
+					{data?.length === 0 && (
+						<div className='text-center mt-10 text-muted-foreground italic'>
+							No logs found.
+						</div>
+					)}
+
 					{data &&
 						data.length > 0 &&
 						data.map((log) => (

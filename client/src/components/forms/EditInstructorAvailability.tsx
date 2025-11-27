@@ -72,7 +72,7 @@ export default function EditAvailabilityModal({
 			onClose();
 			toast.success('Availability updated');
 			await queryClient.invalidateQueries({
-				queryKey: [QUERY_KEYS.INSTRUCTORS_AVAILABILITIES, availability.user],
+				queryKey: [QUERY_KEYS.INSTRUCTORS_AVAILABILITIES],
 			});
 		} catch (err) {
 			toast.error('Failed to update availability');

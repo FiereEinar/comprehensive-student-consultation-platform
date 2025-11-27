@@ -97,7 +97,7 @@ export default function AdminInstructorsPage() {
 						{isLoadingInstructors ? (
 							<LoadingSpinner />
 						) : instructors?.length === 0 && !isLoadingInstructors ? (
-							<p className='text-center p-5 text-muted-foreground'>
+							<p className='text-center p-5 text-muted-foreground italic'>
 								No instructors found
 							</p>
 						) : (
@@ -120,6 +120,10 @@ export default function AdminInstructorsPage() {
 					<TabsContent className='space-y-2' value='pending'>
 						{isLoadingInvitations ? (
 							<LoadingSpinner />
+						) : invitations?.length === 0 && !isLoadingInvitations ? (
+							<p className='text-center p-5 text-muted-foreground italic'>
+								No invitations found
+							</p>
 						) : (
 							<>
 								{invitations &&

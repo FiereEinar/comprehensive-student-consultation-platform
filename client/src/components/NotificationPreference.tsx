@@ -87,7 +87,9 @@ export default function NotificationSettings() {
 
 	// Sync fetched data into local state
 	useEffect(() => {
-		if (data) setSettings(data);
+		if (data) {
+			setSettings(data);
+		}
 	}, [data]);
 
 	if (!settings || isLoading)
@@ -117,8 +119,8 @@ export default function NotificationSettings() {
 	const saveSettings = async () => {
 		try {
 			const res = await axiosInstance.post(`/settings/notification`, {
-				user: user?._id,
 				...settings,
+				user: user?._id,
 			});
 
 			// Update local state with updated values from backend
