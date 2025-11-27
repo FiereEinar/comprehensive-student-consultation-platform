@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+	acquireLock,
 	createConsultation,
 	createConsultationMeeting,
 	deleteConsultation,
@@ -33,6 +34,7 @@ router.post(
 	createConsultationMeeting
 );
 
+router.get('/:consultationID/lock', acquireLock);
 router.patch('/:consultationID', updateConsultation);
 
 router.patch(

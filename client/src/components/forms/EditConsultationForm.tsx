@@ -43,6 +43,7 @@ import { createConsultationSchema } from '@/lib/schemas/consultation.schema';
 import _ from 'lodash';
 import type { Consultation } from '@/types/consultation';
 import { Pencil } from 'lucide-react';
+import { useUserStore } from '@/stores/user';
 
 export type ConsultationFormValues = z.infer<typeof createConsultationSchema>;
 
@@ -100,16 +101,24 @@ export default function EditConsultationForm({
 		}
 	};
 
+	const aquireLock = async () => {
+		try {
+			const { data } = await axiosInstance.get(
+				`/consultation/${consultation._id}/lock`
+			);
+			if (data.locked && !data.owner) {
+				toast.error('Another user is currently editing this consultation.');
+			}
+		} catch (error: any) {
+			console.error('Failed to aquire lock', error);
+			toast.error(error.message ?? 'Failed to aquire lock');
+		}
+	};
+
 	return (
 		<Dialog>
 			<DialogTrigger asChild>
-				<div
-				// onClick={(e) => {
-				// 	e.stopPropagation();
-				// }}
-				>
-					{trigger || <Pencil />}
-				</div>
+				<div onClick={aquireLock}>{trigger || <Pencil />}</div>
 			</DialogTrigger>
 
 			<DialogContent className='sm:max-w-[550px]'>

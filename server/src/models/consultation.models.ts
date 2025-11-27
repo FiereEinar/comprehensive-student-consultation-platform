@@ -25,6 +25,10 @@ export interface IConsultation extends mongoose.Document {
 	subjectCode?: string;
 	completedAt?: Date;
 	instructorNotes?: string;
+	lock: {
+		lockedBy: IUser | null;
+		lockedAt: Date | null;
+	};
 	createdAt: Date;
 	updatedAt: Date;
 	toJSON(): IConsultation;
@@ -50,6 +54,10 @@ const ConsultationSchema = new Schema(
 		subjectCode: { type: String, required: false },
 		completedAt: { type: Date, required: false },
 		instructorNotes: { type: String, required: false },
+		lock: {
+			lockedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+			lockedAt: { type: Date, default: null },
+		},
 	},
 	{
 		timestamps: true,

@@ -13,12 +13,13 @@ import UserModel, { IUser } from '../models/user.model';
 import appAssert from '../errors/app-assert';
 import {
 	BAD_REQUEST,
+	CONFLICT,
 	INTERNAL_SERVER_ERROR,
 	NOT_FOUND,
 	UNAUTHORIZED,
 } from '../constants/http';
 import AvailabilityModel from '../models/availability.model';
-import { getStartAndEndofDay } from '../utils/date';
+import { getStartAndEndofDay, ONE_MINUTE_MS } from '../utils/date';
 import { DEFAULT_LIMIT, RESOURCE_TYPES } from '../constants';
 import { subDays } from 'date-fns';
 import { logActivity } from '../utils/activity-logger';
@@ -688,6 +689,7 @@ export const updateConsultation = asynchandler(async (req, res) => {
 
 	appAssert(consultation, NOT_FOUND, 'Consultation not found');
 
+	// allowed to edit: instructor, student, admin
 	const userId = req.user._id.toString();
 	const instructorId = consultation.instructor?._id?.toString();
 	const studentId = consultation.student?._id?.toString();
@@ -697,6 +699,13 @@ export const updateConsultation = asynchandler(async (req, res) => {
 		isAdmin || userId === instructorId || userId === studentId,
 		UNAUTHORIZED,
 		'You are not authorized to update this consultation'
+	);
+
+	// only lock owner can save
+	appAssert(
+		consultation.lock?.lockedBy?.toString() === req.user._id.toString(),
+		CONFLICT,
+		'Another user is currently editing this consultation.'
 	);
 
 	const body = updateConsultationSchema.parse(req.body);
@@ -709,5 +718,50 @@ export const updateConsultation = asynchandler(async (req, res) => {
 
 	appAssert(updated, NOT_FOUND, 'Failed to update consultation');
 
+	consultation.lock = { lockedBy: null, lockedAt: null };
+	await consultation.save();
+
 	res.json(new CustomResponse(true, updated, 'Consultation updated'));
+});
+
+/**
+ * @route GET /api/v1/consultation/:consultationID/lock
+ */
+export const acquireLock = asynchandler(async (req, res) => {
+	const { consultationID } = req.params;
+
+	const consultation = await ConsultationModel.findById(consultationID);
+	appAssert(consultation, NOT_FOUND, 'Consultation not found');
+
+	// if no lock then grant lock
+	if (!consultation.lock?.lockedBy) {
+		consultation.lock = {
+			lockedBy: req.user._id,
+			lockedAt: new Date(),
+		};
+		await consultation.save();
+		res.json({ locked: true, owner: true });
+		return;
+	}
+
+	// if lock exists and user owns it then still owner
+	if (consultation.lock.lockedBy.toString() === req.user._id.toString()) {
+		res.json({ locked: true, owner: true });
+		return;
+	}
+
+	// expired lock then grant lock
+	if (
+		consultation.lock?.lockedAt &&
+		new Date().getTime() - consultation.lock.lockedAt.getTime() > ONE_MINUTE_MS
+	) {
+		consultation.lock = { lockedBy: req.user._id, lockedAt: new Date() };
+		await consultation.save();
+		res.json({ locked: true, owner: true });
+		return;
+	}
+
+	// Someone else owns lock
+	res.json({ locked: true, owner: false });
+	return;
 });

@@ -4,6 +4,7 @@ export const ONE_DAY = 24 * 60 * 60 * 1000;
 export const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
 export const ONE_DAY_MS = 1000 * 60 * 60 * 24;
 export const ONE_HOUR_MS = 1000 * 60 * 60;
+export const ONE_MINUTE_MS = 1000 * 60;
 
 export const thirtyDaysFromNow = () => new Date(Date.now() + THIRTY_DAYS);
 export const ONE_HOUR_FROM_NOW = new Date(Date.now() + ONE_HOUR_MS);
