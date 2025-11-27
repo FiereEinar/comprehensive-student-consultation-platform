@@ -10,7 +10,7 @@ import { notFoundHandler } from './middlewares/not-found';
 import { errorHandler } from './middlewares/error';
 import { healthcheck } from './middlewares/healthcheck';
 import { corsOptions } from './utils/cors';
-import { ADMIN_EMAIL, ADMIN_PASSWORD, PORT } from './constants/env';
+import { PORT } from './constants/env';
 import { auth } from './middlewares/auth';
 // import { limiter } from './utils/rate-limiter';
 // import { requestLogger } from './middlewares/logger';
@@ -22,8 +22,6 @@ import logRoutes from './routes/log.route';
 import settingsRoutes from './routes/settings.routes';
 import availabilityRoutes from './routes/availability.route';
 import notificationRoutes from './routes/notification.routes';
-import { seedAdmin } from './database/adminSeed';
-import { decryptRequestData } from './utils/encryption';
 import { decryptBodyData } from './middlewares/decrypt';
 
 const app = express();
@@ -52,12 +50,6 @@ app.use(errorHandler);
 
 app.listen(PORT, async () => {
 	await connectToMongoDB();
-	seedAdmin({
-		name: 'Admin User',
-		email: ADMIN_EMAIL,
-		institutionalID: 'admin001',
-		password: ADMIN_PASSWORD,
-	});
 	console.log(`Server is running on http://localhost:${PORT}`);
 });
 
