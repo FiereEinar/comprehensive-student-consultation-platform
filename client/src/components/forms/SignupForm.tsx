@@ -17,13 +17,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import axiosInstance from '@/api/axios';
 import { toast } from 'sonner';
 import GoogleLoginButton from '../buttons/GoogleLoginButton';
-import { useState } from 'react';
-import Recaptcha from '../Recaptcha';
+// import { useState } from 'react';
+// import Recaptcha from '../Recaptcha';
 
 export type SignupFormValues = z.infer<typeof signupSchema>;
 
 export default function SignupForm() {
-	const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+	// const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 	const navigate = useNavigate();
 	const {
 		control,
@@ -43,11 +43,10 @@ export default function SignupForm() {
 
 	const onSubmit = async (formData: SignupFormValues) => {
 		try {
-			if (!recaptchaToken) {
-				setError('root', { message: 'Please complete the reCAPTCHA' });
-				// toast.error('Please complete the reCAPTCHA');
-				return;
-			}
+			// if (!recaptchaToken) {
+			// 	setError('root', { message: 'Please complete the reCAPTCHA' });
+			// 	return;
+			// }
 
 			const { data } = await axiosInstance.post('/auth/signup', formData);
 
@@ -55,7 +54,8 @@ export default function SignupForm() {
 			navigate('/login');
 		} catch (error: any) {
 			console.error('Failed to sign up', error);
-			toast.error(error.message ?? 'Failed to sign up');
+			// toast.error(error.message ?? 'Failed to sign up');
+			setError('root', { message: error.error ?? 'Failed to sign up' });
 		}
 	};
 
@@ -184,8 +184,11 @@ export default function SignupForm() {
 							</Field>
 						)}
 					/>
+					{errors.root && (
+						<FieldError className='text-center' errors={[errors.root]} />
+					)}
 					<div className='space-y-2'>
-						<Recaptcha onVerify={setRecaptchaToken} />
+						{/* <Recaptcha onVerify={setRecaptchaToken} /> */}
 
 						<Button
 							type='submit'
@@ -195,7 +198,6 @@ export default function SignupForm() {
 							Signup
 						</Button>
 						<GoogleLoginButton />
-						{errors.root && <FieldError errors={[errors.root]} />}
 					</div>
 				</form>
 			</CardContent>

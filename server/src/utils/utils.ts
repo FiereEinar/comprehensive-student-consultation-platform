@@ -21,6 +21,21 @@ export const hashCrypto = (data: string) => {
 	return crypto.createHash(HASH_ALGORITHM).update(data).digest(HASH_ENCODING);
 };
 
+export const validatePassword = (password: string) => {
+	const errors: string[] = [];
+
+	if (!/[A-Z]/.test(password))
+		errors.push('Password must contain at least 1 uppercase letter.');
+	if (!/[a-z]/.test(password))
+		errors.push('Password must contain at least 1 lowercase letter.');
+	if (!/[0-9]/.test(password))
+		errors.push('Password must contain at least 1 number.');
+	if (!/[!@#$%^&*()\-_=+\[\]{};:'",.<>/?]/.test(password))
+		errors.push('Password must contain at least 1 special character.');
+
+	return errors;
+};
+
 export const getPasswordResetEmailTemplate = (resetURL: string) => {
 	return `
 		<div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f4f4; padding: 40px 0;">
