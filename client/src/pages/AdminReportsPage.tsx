@@ -4,8 +4,8 @@ import {
   PieChart, Pie, Tooltip, Legend, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell
 } from 'recharts';
-import GenerateReportFormAdmin from '@/components/forms/ConsultationFormAdmin';
 import { logPageView } from '../utils/analytics';
+import GenerateReportFormAdmin from '@/components/forms/GenerateReportFormAdmin';
 
 const PIE_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF6565', '#845EC2'];
 const BAR_COLORS = ['#00C49F', '#FF8042', '#FFBB28', '#0088FE', '#845EC2', '#FFC6FF', '#B2F7EF'];
@@ -58,7 +58,7 @@ function getLastNConsecutiveMonthsData(n: number, monthData: Array<{ name: strin
   return months;
 }
 
-export default function AdminConsultations() {
+export default function AdminReportsPage() {
   const [consultations, setConsultations] = useState<Consultation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

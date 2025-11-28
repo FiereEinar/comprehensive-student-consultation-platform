@@ -37,10 +37,10 @@ import { DatePicker } from '../DatePicker';
 import axiosInstance from '@/api/axios';
 import { toast } from 'sonner';
 
-export type ConsultationFormValues = z.infer<typeof createConsultationSchema>;
+export type GenerateReportFormAdminValues = z.infer<typeof createConsultationSchema>;
 
-export default function ConsultationForm() {
-	const { control, handleSubmit } = useForm<ConsultationFormValues>({
+export default function GenerateReportFormAdmin() {
+	const { control, handleSubmit } = useForm<GenerateReportFormAdminValues>({
 		resolver: zodResolver(createConsultationSchema),
 		defaultValues: {
 			title: '',
@@ -55,7 +55,7 @@ export default function ConsultationForm() {
 		queryFn: fetchInstructors,
 	});
 
-	const onSubmit = async (formData: ConsultationFormValues) => {
+	const onSubmit = async (formData: GenerateReportFormAdminValues) => {
 		try {
 			// temp
 			const { data } = await axiosInstance.post('/consultation', {
