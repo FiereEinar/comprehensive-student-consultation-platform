@@ -1,11 +1,13 @@
+import { useEffect } from 'react'; // added
 import { Outlet, useNavigate } from 'react-router-dom';
+import { initGA, logPageView } from '../../server/src/utils/analytics';
 import TopBar from './components/TopBar';
 import { setNavigate } from './lib/navigate';
 import { AppSidebar } from './components/sidebars/AppSidebar';
 
 function App() {
-	const navigate = useNavigate();
-	setNavigate(navigate);
+ const navigate = useNavigate();
+ setNavigate(navigate);
 
 	return (
 		<main className='flex w-full bg-[#FAF2F7]'>

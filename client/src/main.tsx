@@ -7,12 +7,15 @@ import { ThemeProvider } from './components/providers/ThemeProvider.tsx';
 import { Toaster } from './components/ui/sonner.tsx';
 import { SidebarProvider } from './components/ui/sidebar.tsx';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { initGA } from './utils/analytics';
 
 export const queryClient = new QueryClient();
 const rootElement = document.getElementById('root') as HTMLElement;
 
 let root = (rootElement as any)._reactRoot ?? createRoot(rootElement);
 (rootElement as any)._reactRoot = root;
+
+initGA();
 
 root.render(
 	<StrictMode>
