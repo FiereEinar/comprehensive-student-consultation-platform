@@ -85,10 +85,12 @@ export default function EditConsultationForm({
 
 	const onSubmit = async (formData: ConsultationFormValues) => {
 		try {
+			console.log({ formData });
 			const { data } = await axiosInstance.patch(
 				`/consultation/${consultation._id}`,
 				formData
 			);
+			console.log({ response: data });
 
 			toast.success(data.message);
 			await queryClient.invalidateQueries({
@@ -112,6 +114,8 @@ export default function EditConsultationForm({
 			toast.error(error.message ?? 'Failed to aquire lock');
 		}
 	};
+
+	// console.log({ consultation });
 
 	return (
 		<Dialog>

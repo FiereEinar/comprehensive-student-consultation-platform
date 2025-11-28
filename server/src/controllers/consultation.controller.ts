@@ -718,8 +718,8 @@ export const updateConsultation = asynchandler(async (req, res) => {
 
 	appAssert(updated, NOT_FOUND, 'Failed to update consultation');
 
-	consultation.lock = { lockedBy: null, lockedAt: null };
-	await consultation.save();
+	updated.lock = { lockedBy: null, lockedAt: null };
+	await updated.save();
 
 	res.json(new CustomResponse(true, updated, 'Consultation updated'));
 });
