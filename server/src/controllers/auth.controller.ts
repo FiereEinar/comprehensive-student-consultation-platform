@@ -97,6 +97,8 @@ export const loginHandler = asyncHandler(async (req, res) => {
 	const refreshToken = signToken({ sessionID }, refreshTokenSignOptions);
 	setAuthCookie({ res, accessToken, refreshToken });
 
+	req.user = user;
+
 	await logActivity(req, {
 		action: 'USER_LOGIN',
 		description: 'User logged in',
@@ -139,6 +141,8 @@ export const signupHandler = asyncHandler(async (req, res) => {
 	// create user
 	const user = await UserModel.create(body);
 
+	req.user = user;
+
 	await logActivity(req, {
 		action: 'USER_SIGNUP',
 		description: 'User sign up',
@@ -158,12 +162,6 @@ export const signupHandler = asyncHandler(async (req, res) => {
  * @route GET /api/v1/auth/logout - Logout
  */
 export const logoutHandler = asyncHandler(async (req, res) => {
-	await logActivity(req, {
-		action: 'USER_LOGOUT',
-		description: 'User logged out',
-		resourceType: RESOURCE_TYPES.USER,
-	});
-
 	const accessToken = getAccessToken(req);
 
 	// check if token is present
@@ -180,6 +178,12 @@ export const logoutHandler = asyncHandler(async (req, res) => {
 	res.clearCookie(REFRESH_TOKEN_COOKIE_NAME, {
 		...cookieOptions,
 		path: REFRESH_PATH,
+	});
+
+	await logActivity(req, {
+		action: 'USER_LOGOUT',
+		description: 'User logged out',
+		resourceType: RESOURCE_TYPES.USER,
 	});
 
 	res.sendStatus(OK);

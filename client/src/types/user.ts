@@ -10,6 +10,8 @@ export type User = {
 	email: string;
 	password: string;
 	role: UserTypes;
+	roles?: string[]; // For advanced RBAC
+	archived?: boolean;
 	profilePicture?: string;
 	resetPasswordToken?: string;
 	resetPasswordExpires?: Date | undefined;

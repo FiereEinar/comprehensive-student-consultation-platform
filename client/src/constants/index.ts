@@ -14,4 +14,5 @@ export const QUERY_KEYS = {
 	NOTIFICATIONS: 'notifications',
 	NOTIFICATION_SETTINGS: 'notification-settings',
 	GOOGLE_CALENDAR_CONNECTION: 'google-calendar-connection',
+	USERS_STATS: 'users-stats',
 };

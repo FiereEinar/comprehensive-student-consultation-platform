@@ -13,7 +13,7 @@ export interface UserFilterState extends UserFilterValues {
 	setPage: (page: number) => void;
 	setPageSize: (pageSize: number) => void;
 	setSearch: (search: string) => void;
-	setRole: (role: UserTypes) => void;
+	setRole: (role: UserTypes | null) => void;
 	// setOrder: (order: 'asc' | 'desc') => void
 	getFilters: () => UserFilterValues;
 }

@@ -23,6 +23,7 @@ import InstructorAvailability from './pages/InstructorAvailability';
 import { useUserStore } from './stores/user';
 import AdminReportsPage from './pages/AdminReportsPage';
 import AdminBackupPage from './pages/AdminBackupPage';
+import ManageUsersPage from './pages/ManageUsersPage';
 
 export default function Route() {
 	const { user } = useUserStore((state) => state);
@@ -73,6 +74,10 @@ export default function Route() {
 				{
 					path: '/admin/backups',
 					element: <AdminBackupPage />,
+				},
+				{
+					path: '/admin/users',
+					element: <ManageUsersPage />,
 				},
 				{
 					path: '/student/dashboard',

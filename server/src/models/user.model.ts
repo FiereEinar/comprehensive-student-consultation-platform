@@ -10,12 +10,14 @@ export interface IUser extends mongoose.Document {
 	institutionalID: string;
 	email: string;
 	password: string;
-	role: UserTypes;
+	role: UserTypes; // Keep for backward compatibility
+	roles: mongoose.Types.ObjectId[]; // New RBAC roles
 	profilePicture?: string;
 	resetPasswordToken?: string;
 	resetPasswordExpires?: Date | undefined;
 	googleID: string;
 	googleCalendarTokens: any;
+	archived: boolean;
 	createdAt: Date;
 	updatedAt: Date;
 	omitPassword: () => Omit<IUser, 'password'>;
@@ -39,9 +41,11 @@ const UserSchema = new Schema<IUser>(
 			default: 'student',
 			required: true,
 		},
+		roles: [{ type: Schema.Types.ObjectId, ref: 'Role' }],
 		resetPasswordToken: { type: String, required: false },
 		resetPasswordExpires: { type: Date, required: false },
 		profilePicture: { type: String, required: false },
+		archived: { type: Boolean, required: true, default: false },
 		googleCalendarTokens: {
 			type: Object,
 			default: null,

@@ -8,7 +8,7 @@ type UserCardProps = {
 	name: string;
 	email: string;
 	profilePicture?: string;
-	status?: 'active' | 'pending' | 'expired' | 'accepted';
+	status?: 'active' | 'pending' | 'expired' | 'accepted' | 'archived';
 	createdAt?: Date; // For invitations (sent time)
 };
 

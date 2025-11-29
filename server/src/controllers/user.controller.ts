@@ -1,5 +1,8 @@
 import asyncHandler from 'express-async-handler';
-import UserModel, { userModelEncryptedFields } from '../models/user.model';
+import UserModel, {
+	userModelEncryptedFields,
+	UserTypes,
+} from '../models/user.model';
 import CustomResponse, { CustomPaginatedResponse } from '../utils/response';
 import appAssert from '../errors/app-assert';
 import { BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } from '../constants/http';
@@ -9,6 +12,7 @@ import bcrypt from 'bcryptjs';
 import { BCRYPT_SALT } from '../constants/env';
 import { logActivity } from '../utils/activity-logger';
 import { decryptFields } from '../utils/encryption';
+import RoleModel from '../models/role.model';
 
 /**
  * @route GET /api/v1/user
@@ -232,4 +236,142 @@ export const updateUserPassword = asyncHandler(async (req, res) => {
 	await user.save();
 
 	res.json(new CustomResponse(true, null, 'Password updated successfully'));
+});
+
+/**
+ * @route PATCH /api/v1/user/:userID/admin
+ * @body { name?: string, institutionalID?: string, email?: string, role?: UserTypes, roles?: string[] }
+ */
+export const updateUserByAdmin = asyncHandler(async (req, res) => {
+	const { userID } = req.params;
+	const { name, institutionalID, email, role, roles } = req.body;
+
+	await logActivity(req, {
+		action: 'UPDATE_USER_BY_ADMIN',
+		description: 'Update user by admin',
+		resourceId: userID,
+		resourceType: RESOURCE_TYPES.USER,
+	});
+
+	const user = await UserModel.findById(userID);
+	appAssert(user, NOT_FOUND, 'User not found');
+
+	const updateData: any = {};
+	if (name !== undefined) updateData.name = name;
+	if (institutionalID !== undefined)
+		updateData.institutionalID = institutionalID;
+	if (email !== undefined) updateData.email = email;
+	if (role !== undefined) updateData.role = role;
+	if (roles !== undefined) {
+		// Validate roles exist
+		const roleDocs = await RoleModel.find({ _id: { $in: roles } });
+		appAssert(
+			roleDocs.length === roles.length,
+			BAD_REQUEST,
+			'Invalid roles provided'
+		);
+		updateData.roles = roles;
+	}
+
+	const updatedUser = await UserModel.findByIdAndUpdate(userID, updateData, {
+		new: true,
+	});
+	appAssert(updatedUser, NOT_FOUND, 'User not found after update');
+
+	res.json(
+		new CustomResponse(
+			true,
+			decryptFields(updatedUser.omitPassword(), userModelEncryptedFields),
+			'User updated successfully'
+		)
+	);
+});
+
+/**
+ * @route PATCH /api/v1/user/:userID/admin/password
+ * @body { newPassword: string }
+ */
+export const updateUserPasswordByAdmin = asyncHandler(async (req, res) => {
+	const { userID } = req.params;
+	const { newPassword } = req.body;
+
+	await logActivity(req, {
+		action: 'UPDATE_USER_PASSWORD_BY_ADMIN',
+		description: 'Update user password by admin',
+		resourceId: userID,
+		resourceType: RESOURCE_TYPES.USER,
+	});
+
+	appAssert(newPassword, BAD_REQUEST, 'New password is required');
+
+	const user = await UserModel.findById(userID);
+	appAssert(user, NOT_FOUND, 'User not found');
+
+	user.password = await bcrypt.hash(newPassword, parseInt(BCRYPT_SALT));
+	await user.save();
+
+	res.json(new CustomResponse(true, null, 'Password updated successfully'));
+});
+
+/**
+ * @route PATCH /api/v1/user/:userID/archive
+ * @body { archived: boolean }
+ */
+export const archiveUser = asyncHandler(async (req, res) => {
+	const { userID } = req.params;
+	const { archived } = req.body;
+
+	await logActivity(req, {
+		action: archived ? 'ARCHIVE_USER' : 'UNARCHIVE_USER',
+		description: archived ? 'Archive user' : 'Unarchive user',
+		resourceId: userID,
+		resourceType: RESOURCE_TYPES.USER,
+	});
+
+	const user = await UserModel.findByIdAndUpdate(
+		userID,
+		{ archived },
+		{ new: true }
+	);
+	appAssert(user, NOT_FOUND, 'User not found');
+
+	res.json(
+		new CustomResponse(
+			true,
+			decryptFields(user.omitPassword(), userModelEncryptedFields),
+			`User ${archived ? 'archived' : 'unarchived'} successfully`
+		)
+	);
+});
+
+/**
+ * @route GET /api/v1/user/stats
+ */
+export const getUserStats = asyncHandler(async (req, res) => {
+	const [
+		totalUsers,
+		activeUsers,
+		archivedUsers,
+		students,
+		instructors,
+		admins,
+	] = await Promise.all([
+		UserModel.countDocuments(),
+		UserModel.countDocuments({ archived: { $ne: true } }),
+		UserModel.countDocuments({ archived: true }),
+		UserModel.countDocuments({ role: 'student' }),
+		UserModel.countDocuments({ role: 'instructor' }),
+		UserModel.countDocuments({ role: 'admin' }),
+	]);
+
+	const stats = {
+		totalUsers,
+		activeUsers,
+		archivedUsers,
+		students,
+		instructors,
+		admins,
+	};
+
+	res.json(new CustomResponse(true, stats, 'User statistics fetched'));
 });

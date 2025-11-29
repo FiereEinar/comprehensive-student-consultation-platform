@@ -11,6 +11,8 @@ export const RESOURCE_TYPES = {
 	BACKUP: 'Backup',
 	SUBJECT: 'Subject',
 	SECTION: 'Section',
+	ROLE: 'Role',
+	PERMISSION: 'Permission',
 };
 
 export const WHITELISTED_DOMAINS = ['student.buksu.edu.ph'];

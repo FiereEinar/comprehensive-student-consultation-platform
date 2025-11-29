@@ -8,6 +8,7 @@ import {
 	Power,
 	ReceiptPoundSterling,
 	Settings,
+	Users,
 	type LucideProps,
 } from 'lucide-react';
 
@@ -85,6 +86,11 @@ const adminSidebarLinks: SidebarNavLink[] = [
 		title: 'Instructors',
 		url: '/admin/instructors',
 		icon: GraduationCap,
+	},
+	{
+		title: 'Users',
+		url: '/admin/users',
+		icon: Users,
 	},
 	{
 		title: 'Logs',
