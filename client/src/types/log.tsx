@@ -1,6 +1,6 @@
 import type { User } from './user';
 
-export type LOG_RESOURCES = 'All' | 'User' | 'Consultation';
+export type LOG_RESOURCES = 'All' | 'User' | 'Consultation' | 'Backup';
 // | 'Subject'
 // | 'Section';
 
@@ -8,6 +8,7 @@ export const RESOURCE_TYPES: Record<string, LOG_RESOURCES> = {
 	ALL: 'All',
 	USER: 'User',
 	CONSULTATION: 'Consultation',
+	BACKUP: 'Backup',
 	// SUBJECT: 'Subject',
 	// SECTION: 'Section',
 };

@@ -2,6 +2,7 @@ import {
 	Calendar,
 	ClipboardClock,
 	Clock4,
+	DatabaseBackup,
 	GraduationCap,
 	LayoutDashboard,
 	Power,
@@ -88,6 +89,11 @@ const adminSidebarLinks: SidebarNavLink[] = [
 		title: 'Logs',
 		url: '/admin/logs',
 		icon: ClipboardClock,
+	},
+	{
+		title: 'Backups',
+		url: '/admin/backups',
+		icon: DatabaseBackup,
 	},
 ];
 
