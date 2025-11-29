@@ -45,12 +45,7 @@ export const updateUserSchema = z.object({
 
 export const loginSchema = z.object({
 	email: z.email('Invalid email'),
-	password: z
-		.string()
-		.min(
-			MIN_PASSWORD_LEN,
-			`Password must be at least ${MIN_PASSWORD_LEN} characters`
-		),
+	password: z.string(),
 });
 
 export const updateUserPasswordSchema = z
