@@ -88,6 +88,24 @@ export default function AdminBackupPage() {
 		}
 	};
 
+	const handleRemove = async (item: BackupItem) => {
+		try {
+			setLoading(true);
+			const { data } = await axiosInstance.delete(`/backup/?name=${item.name}`);
+			if (data.success) {
+				toast.success('Backup removed');
+				fetchHistory();
+			} else {
+				toast.error('Failed to remove backup');
+			}
+		} catch (err: any) {
+			console.error(err);
+			toast.error(err?.message || 'Failed to remove backup');
+		} finally {
+			setLoading(false);
+		}
+	};
+
 	return (
 		<div className='space-y-6'>
 			<Header size='md'>Backups</Header>
@@ -120,6 +138,7 @@ export default function AdminBackupPage() {
 							backups={history}
 							onDownload={handleDownload}
 							onRestore={(item) => setConfirm({ open: true, target: item })}
+							onRemove={handleRemove}
 						/>
 					</div>
 

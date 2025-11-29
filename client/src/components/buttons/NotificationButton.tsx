@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import axiosInstance from '@/api/axios';
 import { queryClient } from '@/main';
 import { toast } from 'sonner';
-import { Bell, Check, Trash2, X } from 'lucide-react';
+import { Bell, Check, Trash, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
 import { QUERY_KEYS } from '@/constants';
@@ -113,7 +113,7 @@ export default function NotificationButton() {
 							className='rounded-lg'
 							aria-label='Clear read'
 						>
-							<Trash2 className='w-4 h-4' />
+							<Trash className='w-4 h-4' />
 						</Button>
 					</div>
 				</div>

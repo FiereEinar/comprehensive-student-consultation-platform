@@ -1,6 +1,8 @@
 import { formatDistanceToNow } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from './ui/card';
+import ConfirmDeleteDialog from './ConfirmDeleteDialog';
+import { Download, Edit, Trash } from 'lucide-react';
 
 type BackupItem = {
 	name: string;
@@ -9,15 +11,19 @@ type BackupItem = {
 	createdAt: string;
 };
 
+type BackupListProps = {
+	backups: BackupItem[];
+	onDownload: (name: string) => void;
+	onRestore: (item: BackupItem) => void;
+	onRemove: (item: BackupItem) => void;
+};
+
 export default function BackupList({
 	backups,
 	onDownload,
 	onRestore,
-}: {
-	backups: BackupItem[];
-	onDownload: (name: string) => void;
-	onRestore: (item: BackupItem) => void;
-}) {
+	onRemove,
+}: BackupListProps) {
 	if (!backups.length)
 		return <div className='text-sm text-muted-foreground'>No backups yet.</div>;
 
@@ -40,14 +46,32 @@ export default function BackupList({
 						<div className='flex gap-2'>
 							<Button
 								size='sm'
-								variant='ghost'
+								variant='link'
 								onClick={() => onDownload(b.name)}
+								className='text-xs text-black'
 							>
-								Download
+								<Download className='w-4 h-4' /> Download
 							</Button>
-							<Button size='sm' onClick={() => onRestore(b)}>
-								Restore
+							<Button
+								size='sm'
+								variant='link'
+								onClick={() => onRestore(b)}
+								className='text-xs text-blue-500'
+							>
+								<Edit className='w-4 h-4' /> Restore
 							</Button>
+							<ConfirmDeleteDialog
+								onConfirm={() => onRemove(b)}
+								trigger={
+									<Button
+										size='sm'
+										variant='link'
+										className='text-xs text-red-500'
+									>
+										<Trash className='w-4 h-4' /> Remove
+									</Button>
+								}
+							/>
 						</div>
 					</CardContent>
 				</Card>

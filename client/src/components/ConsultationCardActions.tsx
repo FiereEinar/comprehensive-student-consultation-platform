@@ -2,7 +2,7 @@ import axiosInstance from '@/api/axios';
 import { QUERY_KEYS } from '@/constants';
 import { queryClient } from '@/main';
 import type { Consultation, ConsultationStatus } from '@/types/consultation';
-import { Check, Ban, Ellipsis, Trash2, Info } from 'lucide-react';
+import { Check, Ban, Ellipsis, Info, Trash } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from './ui/button';
 import {
@@ -125,7 +125,7 @@ export default function ConsultationCardActions({
 								size='sm'
 								className='text-red-500 flex items-center gap-1 text-xs'
 							>
-								<Trash2 className='w-4 h-4' /> Delete
+								<Trash className='w-4 h-4' /> Delete
 							</Button>
 						}
 					/>

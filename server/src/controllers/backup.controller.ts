@@ -96,3 +96,16 @@ export const restoreBackup = asyncHandler(async (req, res) => {
 
 	res.json({ success: true, message: 'Restore successful' });
 });
+
+// POST /backup/delete
+export const deleteBackup = asyncHandler(async (req, res) => {
+	const { name } = req.query;
+	appAssert(name && typeof name === 'string', BAD_REQUEST, 'Name required');
+
+	const folder = path.join(BACKUPS_ROOT, name);
+	await fs.access(folder); // throws if folder doesn't exist
+
+	await fs.rm(folder, { recursive: true, force: true });
+
+	res.json({ success: true, message: `Backup ${name} deleted successfully` });
+});

@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { queryClient } from '@/main';
 import ConfirmDeleteDialog from './ConfirmDeleteDialog';
 import { Button } from './ui/button';
-import { Clock, PenLine, Trash2 } from 'lucide-react';
+import { Clock, PenLine, Trash } from 'lucide-react';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 
@@ -125,7 +125,7 @@ export default function InstructorAvailabilities({
 													size='sm'
 													className='text-red-500 flex items-center gap-1 text-xs'
 												>
-													<Trash2 size={14} />
+													<Trash size={14} />
 													Delete
 												</Button>
 											}
