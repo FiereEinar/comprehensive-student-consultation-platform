@@ -166,6 +166,10 @@ export default function LoginForm() {
 						</Link>
 					</div>
 
+					{errors.root && (
+						<FieldError className='text-center' errors={[errors.root]} />
+					)}
+
 					<div className='flex flex-col justify-center items-center gap-2'>
 						<Recaptcha onVerify={setRecaptchaToken} />
 						<Button
@@ -177,7 +181,6 @@ export default function LoginForm() {
 							Login
 						</Button>
 						<GoogleLoginButton />
-						{errors.root && <FieldError errors={[errors.root]} />}
 					</div>
 				</form>
 			</CardContent>
