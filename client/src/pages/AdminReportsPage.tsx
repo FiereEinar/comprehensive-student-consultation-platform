@@ -17,6 +17,7 @@ import {
 } from 'recharts';
 import GenerateReportFormAdmin from '@/components/forms/GenerateReportFormAdmin';
 import axiosInstance from '@/api/axios';
+import { Card, CardContent } from '@/components/ui/card';
 
 const PIE_COLORS = [
 	'#0088FE',
@@ -133,14 +134,9 @@ export default function AdminReportsPage() {
 			setLoading(true);
 			setError(null);
 			try {
-				// ---- Consultations
-				const consRes = await fetch('/api/v1/consultation');
-				if (!consRes.ok) {
-					throw new Error(
-						`Consultations API failed: ${consRes.status} ${consRes.statusText}`
-					);
-				}
-				const consRaw = await consRes.json();
+				const { data } = await axiosInstance.get('/consultation?fetchAll=true');
+				const consRaw = data.data;
+
 				const consList: ConsultationRaw[] = Array.isArray(consRaw)
 					? consRaw
 					: Array.isArray(consRaw.data)
@@ -205,7 +201,7 @@ export default function AdminReportsPage() {
 		}
 
 		loadAll();
-		logPageView();
+		// logPageView();
 	}, []);
 
 	if (loading) return <div>Loading consultations...</div>;
@@ -343,325 +339,253 @@ export default function AdminReportsPage() {
 	// ---------------------------------------------------------------------------
 
 	return (
-		<div
-			style={{
-				display: 'flex',
-				flexDirection: 'row',
-				gap: '2rem',
-				padding: '2rem',
-				minHeight: '100%',
-				background: '#faf2f7',
-				flexWrap: 'wrap',
-			}}
-		>
-			{/* Left Column */}
-			<div
-				style={{
-					flex: '2 1 300px',
-					display: 'flex',
-					flexDirection: 'column',
-					gap: '1.5rem',
-					minWidth: 0,
-					paddingBottom: '20rem',
-					marginBottom: '100px',
-					position: 'relative',
-				}}
-			>
-				<Header size='md'>Admin Consultations Dashboard</Header>
-
-				{/* Consultations by Month */}
+		<div className='space-y-5'>
+			<Header size='md'>Admin Consultations Dashboard</Header>
+			<div className='flex  gap-5 min-h-screen flex-wrap'>
+				{/* Left Column */}
 				<div
+					className='w-[70%]'
 					style={{
-						fontSize: '18px',
-						color: '#000000ff',
-						fontWeight: 500,
-						marginBottom: '-.2rem',
-					}}
-				>
-					Consultations by Month
-				</div>
-				<section
-					style={{
-						borderRadius: '14px',
-						minHeight: '310px',
-						marginBottom: '0.7rem',
+						flex: '2 1 300px',
 						display: 'flex',
 						flexDirection: 'column',
-						padding: '1rem',
-						background: 'white',
-						alignContent: 'center',
-						justifyContent: 'center',
+						gap: '1.5rem',
+						minWidth: 0,
+						paddingBottom: '20rem',
+						marginBottom: '100px',
+						position: 'relative',
 					}}
 				>
-					{rows.map((row, idx) => (
-						<div
-							key={idx}
-							style={{
-								display: 'flex',
-								flexDirection: 'row',
-								gap: '5px',
-								width: '100%',
-								justifyContent: 'space-between',
-								marginBottom: idx === 0 ? '1rem' : '0',
-								flexWrap: 'wrap',
-							}}
-						>
-							{row.map(({ name, value }, i) => (
-								<div
-									key={name + i}
-									style={{
-										flex: '1 1 30%',
-										background: '#fff',
-										borderRadius: '8px',
-										boxShadow: '2px 2px 3px #968f8fff',
-										minWidth: '32%',
-										maxWidth: 210,
-										margin: 0,
-										display: 'flex',
-										flexDirection: 'column',
-										alignItems: 'center',
-										justifyContent: 'center',
-										padding: '1.6rem 0.5rem',
-										border: '2px solid #eee',
-									}}
-								>
-									<div
-										style={{
-											fontSize: '1.15rem',
-											color: '#87858aff',
-											fontWeight: 500,
-											marginBottom: 6,
-											letterSpacing: '0.5px',
-										}}
-									>
-										{name}
-									</div>
-									<div
-										style={{
-											fontSize: '2.15rem',
-											fontWeight: 700,
-											color: 'black',
-											lineHeight: 1.18,
-										}}
-									>
-										{value}
-									</div>
-								</div>
-							))}
-						</div>
-					))}
-				</section>
-
-				{/* Consultations by Status */}
-				<div
-					style={{
-						fontSize: '18px',
-						color: '#000000ff',
-						fontWeight: 500,
-						marginBottom: '-.5rem',
-					}}
-				>
-					Consultations by Status
-				</div>
-				<section
-					style={{
-						padding: '1rem',
-						borderRadius: '14px',
-						background: '#fff',
-						boxShadow: '0 2px 8px #eee',
-						minHeight: 450,
-						border: '2px solid #eee',
-						marginBottom: '0.7rem',
-					}}
-				>
-					{statusPercents.length ? (
-						<div
-							style={{ width: '100%', height: '100%', minHeight: chartHeight }}
-						>
-							<ResponsiveContainer width='100%' height='100%'>
-								<PieChart>
-									<Pie
-										data={statusPercents}
-										dataKey='value'
-										nameKey='name'
-										cx='50%'
-										cy='50%'
-										outerRadius='70%'
-										label={({ name, percent }) => `${name}: ${percent}%`}
-									>
-										{statusPercents.map((_, idx) => (
-											<Cell
-												key={`cell-status-${idx}`}
-												fill={PIE_COLORS[idx % PIE_COLORS.length]}
-											/>
-										))}
-									</Pie>
-									<Legend
-										verticalAlign='bottom'
-										wrapperStyle={{ fontSize: 12 }}
-									/>
-									<Tooltip
-										formatter={(v: any, name: any, props: any) => [
-											`${props.payload.percent}% (${v})`,
-											name,
-										]}
-									/>
-								</PieChart>
-							</ResponsiveContainer>
-						</div>
-					) : (
-						<div
-							style={{
-								color: '#444',
-								padding: '1rem',
-								textAlign: 'center',
-								fontStyle: 'italic',
-							}}
-						>
-							No status data to visualize.
-						</div>
-					)}
-				</section>
-
-				{/* Consultations by Instructor */}
-				<div
-					style={{
-						fontSize: '18px',
-						color: '#000000ff',
-						fontWeight: 500,
-						marginBottom: '-.5rem',
-					}}
-				>
-					Consultations by Instructor
-				</div>
-				<section
-					style={{
-						padding: '1rem',
-						borderRadius: '14px',
-						background: '#fff',
-						boxShadow: '0 2px 8px #eee',
-						minWidth: '200px',
-						marginBottom: '2.5rem',
-						border: '2px solid #eee',
-					}}
-				>
-					{instructorData.length ? (
-						<div
-							style={{ width: '100%', height: '100%', minHeight: chartHeight }}
-						>
-							<ResponsiveContainer width='100%' height='100%'>
-								<BarChart
-									data={instructorData}
-									margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-								>
-									<CartesianGrid strokeDasharray='5 5' />
-									<XAxis
-										dataKey='name'
-										tick={{ fontSize: 12, fill: 'black' }}
-										interval={0}
-									/>
-									<YAxis />
-									<Tooltip />
-									<Legend wrapperStyle={{ color: 'black', fontSize: 12 }} />
-									<Bar dataKey='value'>
-										{instructorData.map((_, idx) => (
-											<Cell
-												key={`cell-bar-${idx}`}
-												fill={BAR_COLORS[idx % BAR_COLORS.length]}
-											/>
-										))}
-									</Bar>
-								</BarChart>
-							</ResponsiveContainer>
-						</div>
-					) : (
-						<div
-							style={{
-								color: '#444',
-								padding: '1rem',
-								textAlign: 'center',
-								fontStyle: 'italic',
-							}}
-						>
-							No instructor data to visualize.
-						</div>
-					)}
-				</section>
-			</div>
-
-			{/* Right Column: sticky header + scrollable content */}
-			<div
-				style={{
-					flex: '1 1 260px',
-					display: 'flex',
-					flexDirection: 'column',
-					gap: '1rem',
-					minWidth: 0,
-					marginTop: '3rem',
-					position: 'sticky',
-					top: '2rem',
-					height: 'fit-content',
-				}}
-			>
-				<div
-					style={{
-						fontSize: '18px',
-						color: '#000000ff',
-						fontWeight: 500,
-						marginBottom: '0.25rem',
-					}}
-				>
-					General Reports
-				</div>
-
-				<div
-					style={{
-						maxHeight: '70vh',
-						overflowY: 'auto',
-						paddingRight: '0.25rem',
-					}}
-				>
-					<section
-						style={{
-							width: '100%',
-							padding: '1rem',
-							borderRadius: '14px',
-							background: '#fff',
-							boxShadow: '0 2px 8px #eee',
-							border: '2px solid #eee',
-						}}
-					>
-						<div
-							style={{
-								background: '#fff',
-								borderRadius: '12px',
-								padding: '1.2rem',
-								width: '100%',
-							}}
-						>
-							<div
+					<Card>
+						<CardContent>
+							{/* Consultations by Month */}
+							<h2 className='font-medium mb-2'>Consultations by Month</h2>
+							<section
 								style={{
+									borderRadius: '14px',
+									minHeight: '310px',
+									// marginBottom: '0.7rem',
 									display: 'flex',
 									flexDirection: 'column',
-									gap: '1rem',
+									minWidth: 0,
+									// padding: '1rem',
+									// background: 'white',
+									alignContent: 'center',
+									justifyContent: 'center',
 								}}
 							>
-								<div>
-									Total Consultations: <strong>{totalConsultations}</strong>
-								</div>
-								<div>
-									Total Instructors: <strong>{instructorSet.size}</strong>
-								</div>
-								<div>
-									Total Students: <strong>{studentSet.size}</strong>
-								</div>
-								<div>
-									Average Consultations: <strong>{avgPerInstructor}</strong>
-								</div>
-								<GenerateReportFormAdmin />
+								{rows.map((row, idx) => (
+									<div
+										key={idx}
+										style={{
+											display: 'flex',
+											flexDirection: 'row',
+											gap: '5px',
+											minWidth: 0,
+											width: '100%',
+											justifyContent: 'space-between',
+											marginBottom: idx === 0 ? '1rem' : '0',
+											flexWrap: 'wrap',
+										}}
+									>
+										{row.map(({ name, value }, i) => (
+											<div
+												key={name + i}
+												style={{
+													flex: '1 1 30%',
+													background: '#fff',
+													borderRadius: '8px',
+													// boxShadow: '2px 2px 3px #968f8fff',
+													minWidth: '32%',
+													maxWidth: 210,
+													margin: 0,
+													display: 'flex',
+													flexDirection: 'column',
+													alignItems: 'center',
+													justifyContent: 'center',
+													padding: '1.6rem 0.5rem',
+													border: '2px solid #eee',
+												}}
+											>
+												<div
+													style={{
+														fontSize: '1.15rem',
+														color: '#87858aff',
+														fontWeight: 500,
+														marginBottom: 6,
+														letterSpacing: '0.5px',
+													}}
+												>
+													{name}
+												</div>
+												<div
+													style={{
+														fontSize: '2.15rem',
+														fontWeight: 700,
+														color: 'black',
+														minWidth: 0,
+														lineHeight: 1.18,
+													}}
+												>
+													{value}
+												</div>
+											</div>
+										))}
+									</div>
+								))}
+							</section>
+						</CardContent>
+					</Card>
+
+					{/* Consultations by Status */}
+
+					<section className='shadow-md border rounded-2xl min-h-[400px] bg-white pb-[5rem]'>
+						<h2 className='font-medium mb-2 mt-6 ml-5'>
+							Consultations by Status
+						</h2>
+						{statusPercents.length ? (
+							<div
+								style={{
+									width: '100%',
+									height: '100%',
+									minWidth: 0,
+									minHeight: chartHeight,
+								}}
+							>
+								<ResponsiveContainer minWidth={0} width='100%' height='100%'>
+									<PieChart>
+										<Pie
+											data={statusPercents}
+											dataKey='value'
+											nameKey='name'
+											cx='50%'
+											cy='50%'
+											outerRadius='70%'
+											label={({ name, percent }) => `${name}: ${percent}%`}
+										>
+											{statusPercents.map((_, idx) => (
+												<Cell
+													key={`cell-status-${idx}`}
+													fill={PIE_COLORS[idx % PIE_COLORS.length]}
+												/>
+											))}
+										</Pie>
+										<Legend
+											verticalAlign='bottom'
+											wrapperStyle={{ fontSize: 12 }}
+										/>
+										<Tooltip
+											formatter={(v: any, name: any, props: any) => [
+												`${props.payload.percent}% (${v})`,
+												name,
+											]}
+										/>
+									</PieChart>
+								</ResponsiveContainer>
 							</div>
-						</div>
+						) : (
+							<div
+								style={{
+									color: '#444',
+									padding: '1rem',
+									textAlign: 'center',
+									fontStyle: 'italic',
+								}}
+							>
+								No status data to visualize.
+							</div>
+						)}
 					</section>
+
+					{/* Consultations by Instructor */}
+					<section className='shadow-md border rounded-2xl min-h-[400px] bg-white pb-[5rem]'>
+						<h2 className='font-medium mb-2 mt-6 ml-5'>
+							Consultations by Instructor
+						</h2>
+						{instructorData.length ? (
+							<div
+								style={{
+									width: '100%',
+									minWidth: 0,
+									height: '100%',
+									minHeight: chartHeight,
+								}}
+							>
+								<ResponsiveContainer width='100%' height='100%'>
+									<BarChart
+										data={instructorData}
+										margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+									>
+										<CartesianGrid strokeDasharray='5 5' />
+										<XAxis
+											dataKey='name'
+											tick={{ fontSize: 12, fill: 'black' }}
+											interval={0}
+										/>
+										<YAxis />
+										<Tooltip />
+										<Legend wrapperStyle={{ color: 'black', fontSize: 12 }} />
+										<Bar dataKey='value'>
+											{instructorData.map((_, idx) => (
+												<Cell
+													key={`cell-bar-${idx}`}
+													fill={BAR_COLORS[idx % BAR_COLORS.length]}
+												/>
+											))}
+										</Bar>
+									</BarChart>
+								</ResponsiveContainer>
+							</div>
+						) : (
+							<div
+								style={{
+									color: '#444',
+									padding: '1rem',
+									textAlign: 'center',
+									fontStyle: 'italic',
+								}}
+							>
+								No instructor data to visualize.
+							</div>
+						)}
+					</section>
+				</div>
+
+				{/* Right Column: sticky header + scrollable content */}
+				<div
+					className='w-[30%]'
+					// style={{
+					// 	flex: '1 1 260px',
+					// 	display: 'flex',
+					// 	flexDirection: 'column',
+					// 	gap: '1rem',
+					// 	minWidth: 0,
+					// 	marginTop: '3rem',
+					// 	position: 'sticky',
+					// 	top: '2rem',
+					// 	height: 'fit-content',
+					// }}
+				>
+					<Card>
+						<CardContent>
+							<h2 className='font-medium mb-2'>General Reports</h2>
+							<div className='text-sm mb-3'>
+								<p>
+									Total Consultations: <strong>{totalConsultations}</strong>
+								</p>
+								<p>
+									Total Instructors: <strong>{instructorSet.size}</strong>
+								</p>
+								<p>
+									Total Students: <strong>{studentSet.size}</strong>
+								</p>
+								<p>
+									Average Consultations: <strong>{avgPerInstructor}</strong>
+								</p>
+							</div>
+							<GenerateReportFormAdmin />
+						</CardContent>
+					</Card>
 				</div>
 			</div>
 		</div>
