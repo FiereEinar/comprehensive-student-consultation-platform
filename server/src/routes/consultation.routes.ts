@@ -1,4 +1,5 @@
 import express from 'express';
+
 import {
 	acquireLock,
 	createConsultation,
@@ -55,4 +56,6 @@ router.delete(
 	deleteConsultation
 );
 
+
 export default router;
+

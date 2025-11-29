@@ -6,6 +6,7 @@ import {
 	GraduationCap,
 	LayoutDashboard,
 	Power,
+	ReceiptPoundSterling,
 	Settings,
 	type LucideProps,
 } from 'lucide-react';
@@ -89,6 +90,11 @@ const adminSidebarLinks: SidebarNavLink[] = [
 		title: 'Logs',
 		url: '/admin/logs',
 		icon: ClipboardClock,
+	},
+	{
+		title: 'Reports',
+		url: '/admin/reports',
+		icon: ReceiptPoundSterling,
 	},
 	{
 		title: 'Backups',

@@ -21,5 +21,8 @@
 	"homepage": "https://github.com/FiereEinar/comprehensive-student-consultation-platform#readme",
 	"devDependencies": {
 		"concurrently": "^9.2.1"
+	},
+	"dependencies": {
+		"react-ga4": "^2.1.0"
 	}
 }
