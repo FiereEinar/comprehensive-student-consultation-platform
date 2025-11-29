@@ -275,7 +275,7 @@ export const getConsultationsV2 = asynchandler(async (req, res) => {
 	 * STEP 5 — PAGINATION (after filtering)
 	 * ---------------------------------------------*/
 	const total = consultations.length;
-	const paginated = fetchAll
+	const paginated = Boolean(fetchAll)
 		? consultations
 		: consultations.slice(skip, skip + limit);
 
