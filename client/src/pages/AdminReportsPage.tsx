@@ -168,14 +168,10 @@ export default function AdminReportsPage() {
 					cons.slice(0, 10).map((c) => c.status)
 				);
 
-				// ---- Users (for instructor names)
-				const userRes = await fetch('/api/v1/user');
-				if (!userRes.ok) {
-					throw new Error(
-						`Users API failed: ${userRes.status} ${userRes.statusText}`
-					);
-				}
-				const userRaw = await userRes.json();
+				const { data: userRes } = await axiosInstance.get(
+					'/user?fetchAll=true'
+				);
+				const userRaw = userRes.data;
 				const userList: UserRaw[] = Array.isArray(userRaw)
 					? userRaw
 					: Array.isArray(userRaw.data)

@@ -86,6 +86,7 @@ export const getUsersV2 = asyncHandler(async (req, res) => {
 		pageSize = DEFAULT_LIMIT,
 		search = '',
 		role = '',
+		fetchAll = false,
 	} = req.query as Record<string, string>;
 
 	const numericPage = Number(page);
@@ -138,7 +139,9 @@ export const getUsersV2 = asyncHandler(async (req, res) => {
 	 *       PAGINATION (ON FILTERED DATA)
 	 * ----------------------------------------*/
 	const total = users.length;
-	const paginatedUsers = users.slice(skip, skip + limit);
+	const paginatedUsers = Boolean(fetchAll)
+		? users
+		: users.slice(skip, skip + limit);
 
 	const next = skip + limit < total ? numericPage + 1 : -1;
 	const prev = numericPage > 1 ? numericPage - 1 : -1;
