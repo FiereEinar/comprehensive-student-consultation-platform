@@ -64,8 +64,9 @@ export default function LoginForm() {
 				? navigate('/admin/dashboard')
 				: navigate('/');
 		} catch (error: any) {
+			setError('root', { message: error.error ?? 'Failed to login' });
 			console.error('Failed to login', error);
-			toast.error(error.message ?? 'Failed to login');
+			// toast.error(error.message ?? 'Failed to login');
 		} finally {
 			setIsLoading(false);
 		}

@@ -13,5 +13,4 @@ router.get('/:userID', getSingleUser);
 router.patch('/:userID/name', updateUserName);
 router.patch('/:userID/password', updateUserPassword);
 
-// router.put('/:userID/availability/:availabilityID/meet', generateDailyMeetLink);
 export default router;
