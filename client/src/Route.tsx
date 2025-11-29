@@ -1,7 +1,7 @@
 import {
-	createBrowserRouter,
-	Navigate,
-	RouterProvider,
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
 } from 'react-router-dom';
 import App from './App';
 import Login from './pages/Login';
@@ -24,98 +24,105 @@ import { useUserStore } from './stores/user';
 import AdminReportsPage from './pages/AdminReportsPage';
 
 export default function Route() {
-	const { user } = useUserStore((state) => state);
+  const { user } = useUserStore((state) => state);
 
-	let redirectTo = '/';
+  let redirectTo = '/';
 
-	user?.role === 'instructor'
-		? (redirectTo = '/instructor/dashboard')
-		: user?.role === 'student'
-		? (redirectTo = '/student/dashboard')
-		: user?.role === 'admin'
-		? (redirectTo = '/admin/dashboard')
-		: (redirectTo = '/');
+  user?.role === 'instructor'
+    ? (redirectTo = '/instructor/dashboard')
+    : user?.role === 'student'
+    ? (redirectTo = '/student/dashboard')
+    : user?.role === 'admin'
+    ? (redirectTo = '/admin/dashboard')
+    : (redirectTo = '/');
 
-	const route = createBrowserRouter([
-		{
-			path: '/',
-			element: (
-				<ProtectedRoute>
-					<App />
-				</ProtectedRoute>
-			),
-			children: [
-				{
-					index: true,
-					element: <Navigate to={redirectTo} />,
-				},
-				{
-					path: '/admin/dashboard',
-					element: <AdminDashboard />,
-				},
-				{
-					path: '/admin/consultation',
-					element: <AdminConsultations />,
-				},
-				{
-					path: '/admin/instructors',
-					element: <AdminInstructorsPage />,
-				},
-				{
-					path: '/admin/logs',
-					element: <Logs />,
-				},
-				{
-					path: '/admin/reports',
-					element: <AdminReportsPage />,
-				},
-				{
-					path: '/student/dashboard',
-					element: <StudentDashboard />,
-				},
-				{
-					path: '/student/consultation',
-					element: <StudentConsultations />,
-				},
-				{
-					path: '/instructor/dashboard',
-					element: <InstructorDashbaord />,
-				},
-				{
-					path: '/instructor/consultation',
-					element: <InstructorConsultations />,
-				},
-				{
-					path: '/instructor/availability',
-					element: <InstructorAvailability />,
-				},
-				{
-					path: '/settings',
-					element: <Settings />,
-				},
-			],
-		},
-		{
-			path: '/login',
-			element: <Login />,
-		},
-		{
-			path: '/signup',
-			element: <Signup />,
-		},
-		{
-			path: '/forgot-password',
-			element: <ForgotPassword />,
-		},
-		{
-			path: '/reset-password/:token',
-			element: <PasswordReset />,
-		},
-		{
-			path: '/invite/instructor/accept',
-			element: <AcceptInstructorInvitation />,
-		},
-	]);
+  const route = createBrowserRouter([
+    {
+      path: '/',
+      element: (
+        <ProtectedRoute>
+          <App />
+        </ProtectedRoute>
+      ),
+      children: [
+        {
+          index: true,
+          element: <Navigate to={redirectTo} />,
+        },
 
-	return <RouterProvider router={route} />;
+        // NEW: make /admin (and /admin/) redirect somewhere valid
+        {
+          path: '/admin',
+          element: <Navigate to="/admin/dashboard" replace />,
+        },
+
+        {
+          path: '/admin/dashboard',
+          element: <AdminDashboard />,
+        },
+        {
+          path: '/admin/consultation',
+          element: <AdminConsultations />,
+        },
+        {
+          path: '/admin/instructors',
+          element: <AdminInstructorsPage />,
+        },
+        {
+          path: '/admin/logs',
+          element: <Logs />,
+        },
+        {
+          path: '/admin/reports',
+          element: <AdminReportsPage />,
+        },
+        {
+          path: '/student/dashboard',
+          element: <StudentDashboard />,
+        },
+        {
+          path: '/student/consultation',
+          element: <StudentConsultations />,
+        },
+        {
+          path: '/instructor/dashboard',
+          element: <InstructorDashbaord />,
+        },
+        {
+          path: '/instructor/consultation',
+          element: <InstructorConsultations />,
+        },
+        {
+          path: '/instructor/availability',
+          element: <InstructorAvailability />,
+        },
+        {
+          path: '/settings',
+          element: <Settings />,
+        },
+      ],
+    },
+    {
+      path: '/login',
+      element: <Login />,
+    },
+    {
+      path: '/signup',
+      element: <Signup />,
+    },
+    {
+      path: '/forgot-password',
+      element: <ForgotPassword />,
+    },
+    {
+      path: '/reset-password/:token',
+      element: <PasswordReset />,
+    },
+    {
+      path: '/invite/instructor/accept',
+      element: <AcceptInstructorInvitation />,
+    },
+  ]);
+
+  return <RouterProvider router={route} />;
 }

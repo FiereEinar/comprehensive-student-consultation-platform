@@ -1,5 +1,3 @@
-// File: client/src/utils/reportSignature.ts
-
 /**
  * Generates a unique report signature
  * Format: CSCP + MMDDYYYYXXXXX

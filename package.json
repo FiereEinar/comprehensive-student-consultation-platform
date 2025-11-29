@@ -23,6 +23,8 @@
 		"concurrently": "^9.2.1"
 	},
 	"dependencies": {
+		"jspdf": "^3.0.4",
+		"jspdf-autotable": "^5.0.2",
 		"react-ga4": "^2.1.0"
 	}
 }

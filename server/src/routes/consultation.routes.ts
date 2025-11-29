@@ -58,6 +58,8 @@ router.delete(
 	deleteConsultation
 );
 
+router.get('/report', getConsultationReport);
+
 
 export default router;
 
