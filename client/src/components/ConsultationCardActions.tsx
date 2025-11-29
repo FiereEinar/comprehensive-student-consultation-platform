@@ -140,7 +140,10 @@ export default function ConsultationCardActions({
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align='end'>
 					{user?.role === 'instructor' && (
-						<DropdownMenuItem className='flex items-center gap-2 cursor-pointer'>
+						<DropdownMenuItem
+							onClick={() => handleAction('completed')}
+							className='flex items-center gap-2 cursor-pointer'
+						>
 							<Check className='w-4 h-4' />
 							Mark as Done
 						</DropdownMenuItem>
