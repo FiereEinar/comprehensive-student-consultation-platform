@@ -22,6 +22,7 @@ import logRoutes from './routes/log.route';
 import settingsRoutes from './routes/settings.routes';
 import availabilityRoutes from './routes/availability.route';
 import notificationRoutes from './routes/notification.routes';
+import backupRoutes from './routes/backup.route';
 import { decryptBodyData } from './middlewares/decrypt';
 connectToMongoDB();
 
@@ -44,6 +45,7 @@ app.use('/api/v1/log', logRoutes);
 app.use('/api/v1/settings', settingsRoutes);
 app.use('/api/v1/availability', availabilityRoutes);
 app.use('/api/v1/notification', notificationRoutes);
+app.use('/api/v1/backup', backupRoutes);
 
 // Error handlers
 app.use(notFoundHandler);

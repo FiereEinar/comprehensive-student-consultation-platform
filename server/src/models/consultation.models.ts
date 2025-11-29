@@ -68,7 +68,7 @@ export const consultatioModelEncryptedFields = [
 	'title',
 	'description',
 	'purpose',
-	'googleCalendarEventId',
+	// 'googleCalendarEventId',
 	'sectonCode',
 	'subjectCode',
 ];

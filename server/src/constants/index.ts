@@ -8,6 +8,7 @@ export const HASH_ALGORITHM = 'sha256';
 export const RESOURCE_TYPES = {
 	USER: 'User',
 	CONSULTATION: 'Consultation',
+	BACKUP: 'Backup',
 	SUBJECT: 'Subject',
 	SECTION: 'Section',
 };

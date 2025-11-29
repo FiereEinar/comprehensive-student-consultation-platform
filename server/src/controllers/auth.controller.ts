@@ -63,6 +63,7 @@ import { oAuth2Client } from '../utils/google-client';
 import NotificationSettingsModel, {
 	defaultNotificationSettings,
 } from '../models/notification-settings';
+import { encrypt } from '../utils/encryption';
 
 /**
  * @route POST /api/v1/auth/login - Login
@@ -419,7 +420,7 @@ export const forgotPasswordHandler = asyncHandler(async (req, res) => {
 export const resetPasswordHandler = asyncHandler(async (req, res) => {
 	const { token } = req.params;
 	const { password } = req.body;
-
+	console.log({ token });
 	// Hash token to compare with DB
 	const hashedToken = hashCrypto(token ?? '');
 
@@ -428,21 +429,21 @@ export const resetPasswordHandler = asyncHandler(async (req, res) => {
 		resetPasswordExpires: { $gt: new Date() },
 	});
 
+	appAssert(user, BAD_REQUEST, 'Invalid or expired token');
+
+	// Update password
+	const hashedPassword = await bcrypt.hash(password, parseInt(BCRYPT_SALT));
+	user.password = hashedPassword;
+	user.resetPasswordToken = '';
+	user.resetPasswordExpires = undefined;
+	await user.save();
+
 	await logActivity(req, {
 		action: 'USER_RESET_PASSWORD',
 		description: 'User reset password',
 		resourceId: user?._id as unknown as string,
 		resourceType: RESOURCE_TYPES.USER,
 	});
-
-	appAssert(user, BAD_REQUEST, 'Invalid or expired token');
-
-	// Update password
-	const hashedPassword = await bcrypt.hash(password, 10);
-	user.password = hashedPassword;
-	user.resetPasswordToken = '';
-	user.resetPasswordExpires = undefined;
-	await user.save();
 
 	res.json(
 		new CustomResponse(true, null, 'Password has been reset successfully')

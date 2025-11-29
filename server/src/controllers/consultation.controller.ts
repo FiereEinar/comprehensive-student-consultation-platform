@@ -721,6 +721,13 @@ export const updateConsultation = asynchandler(async (req, res) => {
 	updated.lock = { lockedBy: null, lockedAt: null };
 	await updated.save();
 
+	await logActivity(req, {
+		action: 'UPDATE_CONSULTATION',
+		description: 'Updated a consultation',
+		resourceId: consultationID,
+		resourceType: RESOURCE_TYPES.CONSULTATION,
+	});
+
 	res.json(new CustomResponse(true, updated, 'Consultation updated'));
 });
 

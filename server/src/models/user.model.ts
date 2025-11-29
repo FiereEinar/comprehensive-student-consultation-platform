@@ -67,8 +67,8 @@ export const userModelEncryptedFields = [
 	'name',
 	'institutionalID',
 	'profilePicture',
-	'resetPasswordToken',
-	'resetPasswordExpires',
+	// 'resetPasswordToken',
+	// 'resetPasswordExpires',
 	'googleID',
 ];
 
