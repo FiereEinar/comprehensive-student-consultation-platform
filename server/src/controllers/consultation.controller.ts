@@ -66,6 +66,7 @@ export const getConsultations = asynchandler(async (req, res) => {
 		sort = 'desc',
 		status = '',
 		userID = '',
+		fetchAll = false,
 	} = req.query;
 
 	const numericPage = Number(page);
@@ -147,7 +148,10 @@ export const getConsultations = asynchandler(async (req, res) => {
 	 * PAGINATION
 	 * --------------------------------*/
 	pipeline.push({ $skip: skip });
-	pipeline.push({ $limit: limit });
+
+	if (!Boolean(fetchAll)) {
+		pipeline.push({ $limit: limit });
+	}
 
 	// Get paginated data
 	let consultations = await ConsultationModel.aggregate(pipeline);
