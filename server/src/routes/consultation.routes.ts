@@ -1,18 +1,20 @@
 import express from 'express';
 
 import {
-	acquireLock,
-	createConsultation,
-	createConsultationMeeting,
-	deleteConsultation,
-	getAdminDashboardData,
-	getConsultations,
-	getStatusBreakdown,
-	getTodayOverview,
-	updateConsultation,
-	updateConsultationInstructorNotes,
-	updateConsultationStatus,
+    acquireLock,
+    createConsultation,
+    createConsultationMeeting,
+    deleteConsultation,
+    getAdminDashboardData,
+    getConsultations,
+    getStatusBreakdown,
+    getTodayOverview,
+    updateConsultation,
+    updateConsultationInstructorNotes,
+    updateConsultationStatus,
+    getConsultationReport, 
 } from '../controllers/consultation.controller';
+
 import { authorizeRoles } from '../middlewares/auth';
 
 const router = express.Router();

@@ -181,7 +181,7 @@ export default function AdminReportsPage() {
       flexDirection: 'row',
       gap: '2rem',
       padding: '2rem',
-      minHeight: '195vh',
+      minHeight: '100%',
       background: '#faf2f7'
     }}>
       {/* Left Column */}

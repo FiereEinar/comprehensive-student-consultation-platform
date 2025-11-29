@@ -765,3 +765,46 @@ export const acquireLock = asynchandler(async (req, res) => {
 	res.json({ locked: true, owner: false });
 	return;
 });
+
+export const getConsultationReport = asynchandler(async (req, res) => {
+  const { instructorId, status, startDate, endDate } = req.query;
+
+  // Basic validation of required query params
+  if (!instructorId || !startDate || !endDate) {
+    res
+      .status(BAD_REQUEST)
+      .json(new CustomResponse(false, null, 'Missing instructorId or date range'));
+    return; // <- just end the function, no value returned
+  }
+
+  const match: any = {
+    instructor: new Types.ObjectId(instructorId as string),
+    scheduledAt: {
+      $gte: new Date(startDate as string),
+      $lte: new Date(endDate as string),
+    },
+  };
+
+  // If a status filter is provided (e.g. 'completed')
+  if (status && typeof status === 'string') {
+    match.status = status;
+  }
+
+  // Fetch matching consultations (no pagination here)
+  const consultations = await ConsultationModel.find(match)
+    .select('title purpose subjectCode sectonCode status scheduledAt')
+    .lean();
+
+  const decrypted = consultations.map((c) =>
+    decryptFields(c, consultatioModelEncryptedFields),
+  );
+
+  // IMPORTANT: do NOT return this value, just call res.json and finish
+  res.json(
+    new CustomResponse(
+      true,
+      decrypted,
+      'Consultation report data fetched',
+    ),
+  );
+});
