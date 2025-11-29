@@ -9,6 +9,7 @@ import PaginationController from '@/components/PaginationController';
 import { useConsultationStateStore } from '@/stores/consultation-filter';
 import { Input } from '@/components/ui/input';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import ConsultationForm from '@/components/forms/ConsultationForm';
 
 export default function AdminConsultations() {
 	const { getFilters, page, setPage, setSearch, setStatus } =
@@ -27,6 +28,7 @@ export default function AdminConsultations() {
 		<section className='space-y-5'>
 			<div className='flex w-full justify-between'>
 				<Header size='md'>All Consultations</Header>
+				<ConsultationForm />
 			</div>
 
 			<div className='flex gap-3'>

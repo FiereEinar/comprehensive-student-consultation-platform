@@ -1,4 +1,5 @@
 import { fetchConsultations } from '@/api/consultation';
+import ConsultationForm from '@/components/forms/ConsultationForm';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import PaginationController from '@/components/PaginationController';
 import RightSidebar from '@/components/sidebars/RightSidebar';
@@ -36,7 +37,7 @@ export default function InstructorConsultations() {
 		<section className='space-y-5'>
 			<div className='flex w-full justify-between'>
 				<Header size='md'>My Consultations</Header>
-				{/* <ConsultationForm /> */}
+				<ConsultationForm />
 			</div>
 			<div className='flex gap-3'>
 				<Tabs

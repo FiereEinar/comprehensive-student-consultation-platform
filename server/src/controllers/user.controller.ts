@@ -69,6 +69,88 @@ export const getUsers = asyncHandler(async (req, res) => {
 });
 
 /**
+ * handler made to work with that dumbass IAS requirement "encryption"
+ * @route GET /api/v1/user
+ * @query page=1
+ * @query pageSize=10
+ * @query search=keyword (runs on decrypted data)
+ * @query role=admin|student|instructor
+ */
+export const getUsersV2 = asyncHandler(async (req, res) => {
+	const {
+		page = 1,
+		pageSize = DEFAULT_LIMIT,
+		search = '',
+		role = '',
+	} = req.query as Record<string, string>;
+
+	const numericPage = Number(page);
+	const limit = Number(pageSize);
+	const skip = (numericPage - 1) * limit;
+
+	/** ----------------------------------------
+	 * FETCH ALL USERS FIRST (NO SEARCH FILTER)
+	 * ----------------------------------------*/
+	const dbFilter: Record<string, any> = {};
+
+	// filter by role (optional)
+	if (role.trim() !== '') {
+		dbFilter.role = role;
+	}
+
+	// fetch all
+	const allUsersRaw = await UserModel.find(dbFilter).exec();
+
+	/** ----------------------------------------
+	 *  DECRYPT AND CLEAN USER DATA
+	 * ----------------------------------------*/
+	let users = allUsersRaw.map((u) => {
+		const base = u.omitPassword(); // remove password
+		return decryptFields(base, userModelEncryptedFields);
+	});
+
+	/** ----------------------------------------
+	 *  APPLY SEARCH AFTER DECRYPTION
+	 * ----------------------------------------*/
+	if (search.trim() !== '') {
+		const s = search.toLowerCase();
+
+		users = users.filter((u) => {
+			return (
+				String(u.name || '')
+					.toLowerCase()
+					.includes(s) ||
+				String(u.email || '')
+					.toLowerCase()
+					.includes(s) ||
+				String(u.institutionalID || '')
+					.toLowerCase()
+					.includes(s)
+			);
+		});
+	}
+
+	/** ----------------------------------------
+	 *       PAGINATION (ON FILTERED DATA)
+	 * ----------------------------------------*/
+	const total = users.length;
+	const paginatedUsers = users.slice(skip, skip + limit);
+
+	const next = skip + limit < total ? numericPage + 1 : -1;
+	const prev = numericPage > 1 ? numericPage - 1 : -1;
+
+	res.json(
+		new CustomPaginatedResponse(
+			true,
+			paginatedUsers,
+			'Users fetched',
+			next,
+			prev
+		)
+	);
+});
+
+/**
  * @route GET /api/v1/user/:userID
  */
 export const getSingleUser = asyncHandler(async (req, res) => {

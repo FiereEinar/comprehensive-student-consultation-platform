@@ -6,7 +6,8 @@ import {
 	createConsultationMeeting,
 	deleteConsultation,
 	getAdminDashboardData,
-	getConsultations,
+	// getConsultations,
+	getConsultationsV2,
 	getStatusBreakdown,
 	getTodayOverview,
 	updateConsultation,
@@ -17,7 +18,7 @@ import { authorizeRoles } from '../middlewares/auth';
 
 const router = express.Router();
 
-router.get('/', getConsultations);
+router.get('/', getConsultationsV2);
 router.post('/', createConsultation);
 
 router.get(
@@ -56,6 +57,4 @@ router.delete(
 	deleteConsultation
 );
 
-
 export default router;
-

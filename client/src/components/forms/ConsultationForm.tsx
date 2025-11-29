@@ -1,4 +1,3 @@
-import { fetchInstructors } from '@/api/instructor';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -12,7 +11,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { QUERY_KEYS } from '@/constants';
-import { useQuery } from '@tanstack/react-query';
 import {
 	Select,
 	SelectContent,
@@ -43,6 +41,7 @@ import _ from 'lodash';
 import { Plus } from 'lucide-react';
 import { Separator } from '@radix-ui/react-separator';
 import { queryClient } from '@/main';
+import SearchableSelect from '../SearchableSelect';
 
 export type ConsultationFormValues = z.infer<typeof createConsultationSchema>;
 
@@ -53,12 +52,18 @@ type ConsultationFormProps = {
 };
 
 export default function ConsultationForm({ title }: ConsultationFormProps) {
-	const { user } = useUserStore((state) => state);
-	const [selectedInstructor, setSelectedInstructor] = useState<string>('');
 	const [selectedPurpose, setSelectedPurpose] = useState<string>('');
+
+	const { user } = useUserStore((state) => state);
+	const isStudent = user?.role === 'student';
+	const isInstructor = user?.role === 'instructor';
+	const isAdmin = user?.role === 'admin';
+
 	const {
 		control,
 		handleSubmit,
+		setValue,
+		watch,
 		formState: { isSubmitting },
 	} = useForm<ConsultationFormValues>({
 		resolver: zodResolver(createConsultationSchema),
@@ -66,6 +71,7 @@ export default function ConsultationForm({ title }: ConsultationFormProps) {
 			title: '',
 			description: '',
 			scheduledAt: '',
+			student: '',
 			instructor: '',
 			purpose: '',
 			sectonCode: '',
@@ -73,24 +79,24 @@ export default function ConsultationForm({ title }: ConsultationFormProps) {
 		},
 	});
 
-	const { data: instructors } = useQuery({
-		queryKey: [QUERY_KEYS.INSTRUCTORS],
-		queryFn: fetchInstructors,
-	});
+	const selectedStudent = watch('student');
+	const selectedInstructor = watch('instructor');
 
 	const onSubmit = async (formData: ConsultationFormValues) => {
 		try {
-			const { data } = await axiosInstance.post('/consultation', {
+			const payload = {
 				...formData,
-				student: user?._id,
-			});
+				student: isStudent ? user._id : formData.student,
+				instructor: isInstructor ? user._id : formData.instructor,
+			};
 
+			const { data } = await axiosInstance.post('/consultation', payload);
 			toast.success(data.message);
 			await queryClient.invalidateQueries({
 				queryKey: [QUERY_KEYS.CONSULTATIONS],
 			});
 		} catch (error: any) {
-			console.error('Failed to create consultation', error);
+			console.error(error);
 			toast.error(error.message ?? 'Failed to create consultation');
 		}
 	};
@@ -258,49 +264,36 @@ export default function ConsultationForm({ title }: ConsultationFormProps) {
 					/>
 
 					<div className='flex flex-col gap-4 w-full'>
+						{/* Select student field */}
+						{(isInstructor || isAdmin) && (
+							<Field>
+								<FieldLabel>Student</FieldLabel>
+								<SearchableSelect
+									placeholder='Select Student'
+									role='student'
+									value={selectedStudent}
+									onChange={(val) => {
+										setValue('student', val);
+									}}
+								/>
+							</Field>
+						)}
+						{/* END */}
+
 						{/* Select instructor field */}
-						<Controller
-							name='instructor'
-							control={control}
-							render={({ field, fieldState }) => (
-								<Field>
-									<FieldLabel htmlFor={field.name}>Instructor</FieldLabel>
-									<Select
-										onValueChange={(value) => {
-											setSelectedInstructor(value);
-											field.onChange(value);
-										}}
-										value={field.value}
-									>
-										<SelectTrigger
-											id={field.name}
-											className='w-full cursor-pointer'
-											data-invalid={fieldState.invalid}
-										>
-											<SelectValue placeholder='Select Instructor' />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectGroup>
-												<SelectLabel>Instructors</SelectLabel>
-												{instructors &&
-													instructors.map((instructor) => (
-														<SelectItem
-															key={instructor._id}
-															value={instructor._id}
-															className='cursor-pointer'
-														>
-															{_.startCase(instructor.name)}
-														</SelectItem>
-													))}
-											</SelectGroup>
-										</SelectContent>
-										{fieldState.invalid && (
-											<FieldError errors={[fieldState.error]} />
-										)}
-									</Select>
-								</Field>
-							)}
-						/>
+						{(isStudent || isAdmin) && (
+							<Field>
+								<FieldLabel>Instructor</FieldLabel>
+								<SearchableSelect
+									placeholder='Select Instructor'
+									role='instructor'
+									value={selectedInstructor}
+									onChange={(val) => {
+										setValue('instructor', val);
+									}}
+								/>
+							</Field>
+						)}
 						{/* END */}
 
 						{selectedInstructor && selectedInstructor !== '' && (

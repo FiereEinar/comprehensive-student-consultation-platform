@@ -2,6 +2,7 @@ export const QUERY_KEYS = {
 	CONSULTATIONS: 'consultations',
 	INSTRUCTORS: 'instructors',
 	STUDENTS: 'students',
+	USERS: 'users',
 	INSTRUCTORS_AVAILABILITIES: 'instructors-availabilities',
 	ADMIN_DASHBOARD: 'admin-dashboard',
 	INVITATIONS: 'invitations',

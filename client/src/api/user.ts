@@ -3,7 +3,7 @@ import axiosInstance from './axios';
 import type { User } from '@/types/user';
 
 export const fetchUsers = async (
-	filters: UserFilterValues
+	filters: Partial<UserFilterValues>
 ): Promise<User[]> => {
 	try {
 		let url = `/user?`;

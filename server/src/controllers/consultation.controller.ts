@@ -47,7 +47,7 @@ import { Types } from 'mongoose';
 import { notifyUser } from '../utils/notification';
 import AppNotificationModel from '../models/app-notification';
 import { startCase } from 'lodash';
-import { decryptFields } from '../utils/encryption';
+import { decryptFields, encrypt } from '../utils/encryption';
 
 /**
  * @route GET /api/v1/consultation - get all recent consultations
@@ -184,6 +184,113 @@ export const getConsultations = asynchandler(async (req, res) => {
 });
 
 /**
+ * handler made to work with that dumbass IAS requirement "encryption"
+ */
+export const getConsultationsV2 = asynchandler(async (req, res) => {
+	const {
+		page = 1,
+		pageSize = 10,
+		search = '',
+		sort = 'desc',
+		status = '',
+		userID = '',
+		fetchAll = false,
+	} = req.query;
+
+	const numericPage = Number(page);
+	const limit = Number(pageSize);
+	const skip = (numericPage - 1) * limit;
+
+	/** --------------------------------------------
+	 * STEP 1 — Fetch everything (NO SEARCH here)
+	 * ---------------------------------------------*/
+	const match: any = {};
+
+	// Filter by status
+	if (status) {
+		const statuses = (status as string).split(',').map((s) => s.trim());
+		match.status = { $in: statuses };
+	}
+
+	// Filter by specific student/instructor
+	if (userID) {
+		const objectID = new Types.ObjectId(userID as string);
+		match.$or = [{ student: objectID }, { instructor: objectID }];
+	}
+
+	let consultations = await ConsultationModel.find(match)
+		.populate('student')
+		.populate('instructor')
+		.lean();
+
+	/** --------------------------------------------
+	 * STEP 2 — DECRYPT ALL FIELDS
+	 * ---------------------------------------------*/
+	consultations = consultations.map((c) =>
+		decryptFields(c, consultatioModelEncryptedFields)
+	);
+
+	/** --------------------------------------------
+	 * STEP 3 — SEARCH FILTERING (now decrypted)
+	 * ---------------------------------------------*/
+	if (String(search).trim() !== '') {
+		const keyword = String(search).toLowerCase();
+
+		consultations = consultations.filter((c) => {
+			const student: IUser = c.student as unknown as IUser;
+			const instructor: IUser = c.instructor as unknown as IUser;
+
+			const flat = [
+				c.title,
+				c.description,
+				c.purpose,
+				c.sectonCode,
+				c.subjectCode,
+				student?.name,
+				student?.email,
+				instructor?.name,
+				instructor?.email,
+			]
+				.filter(Boolean)
+				.join(' ')
+				.toLowerCase();
+
+			return flat.includes(keyword);
+		});
+	}
+
+	/** --------------------------------------------
+	 * STEP 4 — SORTING
+	 * ---------------------------------------------*/
+	consultations.sort((a, b) => {
+		const da = new Date(a.createdAt).getTime();
+		const db = new Date(b.createdAt).getTime();
+		return sort === 'asc' ? da - db : db - da;
+	});
+
+	/** --------------------------------------------
+	 * STEP 5 — PAGINATION (after filtering)
+	 * ---------------------------------------------*/
+	const total = consultations.length;
+	const paginated = fetchAll
+		? consultations
+		: consultations.slice(skip, skip + limit);
+
+	const next = skip + limit < total ? numericPage + 1 : -1;
+	const prev = numericPage > 1 ? numericPage - 1 : -1;
+
+	res.json(
+		new CustomPaginatedResponse(
+			true,
+			paginated,
+			'Consultations fetched',
+			next,
+			prev
+		)
+	);
+});
+
+/**
  * @route POST /api/v1/consultation - create a consultation
  */
 export const createConsultation = asynchandler(async (req, res) => {
@@ -234,17 +341,20 @@ export const createConsultation = asynchandler(async (req, res) => {
 		'No remaining consultation slots for this day'
 	);
 
-	// if student already has a consultation for this day then reject
-	const existingConsultation = await ConsultationModel.findOne({
-		student: student._id,
-		scheduledAt: { $gte: startOfDay, $lte: endOfDay },
-		status: { $nin: ['cancelled', 'declined'] },
-	});
-	appAssert(
-		!existingConsultation,
-		BAD_REQUEST,
-		'Student already has a consultation for this day'
-	);
+	if (req.user.role === 'student') {
+		// if student already has a consultation for this day then reject
+		const existingConsultation = await ConsultationModel.findOne({
+			student: student._id,
+			instructor: instructor._id,
+			scheduledAt: { $gte: startOfDay, $lte: endOfDay },
+			status: { $nin: ['cancelled', 'declined'] },
+		});
+		appAssert(
+			!existingConsultation,
+			BAD_REQUEST,
+			'Student already has a consultation for this day'
+		);
+	}
 
 	// create consultation
 	const consultation = await ConsultationModel.create(body);
@@ -253,20 +363,42 @@ export const createConsultation = asynchandler(async (req, res) => {
 	const instructorId = String(instructor._id);
 	notifyUser(instructorId, 'newConsultation', {
 		emailNotification: async () => {
-			await sendPendingConsultationEmail({
-				instructorEmail: instructor.email,
-				instructorName: instructor.name,
-				studentName: student.name,
-				scheduledAt: consultationDate,
-			});
+			if (req.user.role === 'student' || req.user.role === 'admin') {
+				await sendPendingConsultationEmail({
+					instructorEmail: instructor.email,
+					instructorName: instructor.name,
+					studentName: student.name,
+					scheduledAt: consultationDate,
+				});
+			}
+			if (req.user.role === 'instructor' || req.user.role === 'admin') {
+				await sendPendingConsultationEmail({
+					instructorEmail: student.email,
+					instructorName: student.name,
+					studentName: instructor.name,
+					scheduledAt: consultationDate,
+				});
+			}
 		},
 		inAppNotification: async () => {
-			await AppNotificationModel.create({
-				user: instructorId,
-				title: `A new consultation request from ${startCase(student.name)}.`,
-				message: 'Check your dashboard for more details.',
-				isRead: false,
-			});
+			if (req.user.role === 'student' || req.user.role === 'admin') {
+				await AppNotificationModel.create({
+					user: instructorId,
+					title: `A new consultation request from ${startCase(student.name)}.`,
+					message: 'Check your dashboard for more details.',
+					isRead: false,
+				});
+			}
+			if (req.user.role === 'instructor' || req.user.role === 'admin') {
+				await AppNotificationModel.create({
+					user: student._id,
+					title: `A new consultation request from ${startCase(
+						instructor.name
+					)}.`,
+					message: 'Check your dashboard for more details.',
+					isRead: false,
+				});
+			}
 		},
 	});
 
