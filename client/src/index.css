@@ -144,3 +144,9 @@ input[type="checkbox"].custom-purple:checked {
 }
 
 
+.pdf-safe,
+.pdf-safe * {
+  color: #000 !important;
+  background-color: #fff !important;
+  border-color: #000 !important;
+}

@@ -13,7 +13,9 @@ import {
 	updateConsultation,
 	updateConsultationInstructorNotes,
 	updateConsultationStatus,
+	getConsultationReport,
 } from '../controllers/consultation.controller';
+
 import { authorizeRoles } from '../middlewares/auth';
 
 const router = express.Router();
@@ -56,5 +58,7 @@ router.delete(
 	authorizeRoles('instructor'),
 	deleteConsultation
 );
+
+router.get('/report', getConsultationReport);
 
 export default router;

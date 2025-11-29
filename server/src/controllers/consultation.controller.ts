@@ -1,4 +1,7 @@
+// File: src/controllers/consultation.controller.ts
+
 import asynchandler from 'express-async-handler';
+import { Request, Response } from 'express';
 import {
 	consutationStatusSchema,
 	createConsultationSchema,
@@ -475,7 +478,6 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 	});
 
 	// Manage Google Calendar event based on status
-	// const instructorUser = await UserModel.findById(instructor._id);
 	if (instructor?.googleCalendarTokens) {
 		const oAuth2Client = new google.auth.OAuth2(
 			GOOGLE_CLIENT_ID,
@@ -538,7 +540,7 @@ export const getAdminDashboardData = asynchandler(async (req, res) => {
 		.limit(5)
 		.exec();
 
-	// get active instructors (instructors with upcoming or ongoing consultations) ===
+	// get active instructors (instructors with upcoming or ongoing consultations)
 	const activeInstructorIDs = await ConsultationModel.distinct('instructor', {
 		status: { $in: ['pending', 'accepted'] },
 		scheduledAt: { $gte: new Date() },
@@ -907,4 +909,96 @@ export const acquireLock = asynchandler(async (req, res) => {
 	// Someone else owns lock
 	res.json({ locked: true, owner: false });
 	return;
+});
+
+/**
+ * @route GET /api/v1/consultation/report
+ * @query instructorId
+ * @query startDate
+ * @query endDate
+ * @query status (optional)
+ */
+export const getConsultationReport = asynchandler(async (req, res) => {
+	const { instructorId, status, startDate, endDate } = req.query;
+
+	if (!instructorId || !startDate || !endDate) {
+		res
+			.status(BAD_REQUEST)
+			.json(
+				new CustomResponse(false, null, 'Missing instructorId or date range')
+			);
+		return;
+	}
+
+	const match: any = {
+		instructor: new Types.ObjectId(instructorId as string),
+		scheduledAt: {
+			$gte: new Date(startDate as string),
+			$lte: new Date(endDate as string),
+		},
+	};
+
+	if (status && typeof status === 'string') {
+		match.status = status;
+	}
+
+	console.log('getConsultationReport match:', match);
+
+	const consultations = await ConsultationModel.find(match)
+		.select('title purpose subjectCode sectonCode status scheduledAt')
+		.lean();
+
+	const decrypted = consultations.map((c) =>
+		decryptFields(c, consultatioModelEncryptedFields)
+	);
+
+	res.json(
+		new CustomResponse(true, decrypted, 'Consultation report data fetched')
+	);
+});
+
+/**
+ * @route GET /api/v1/consultation/report
+ * @query instructorId
+ * @query startDate
+ * @query endDate
+ * @query status (optional)
+ */
+export const getConsultationReport = asynchandler(async (req, res) => {
+	const { instructorId, status, startDate, endDate } = req.query;
+
+	if (!instructorId || !startDate || !endDate) {
+		res
+			.status(BAD_REQUEST)
+			.json(
+				new CustomResponse(false, null, 'Missing instructorId or date range')
+			);
+		return;
+	}
+
+	const match: any = {
+		instructor: new Types.ObjectId(instructorId as string),
+		scheduledAt: {
+			$gte: new Date(startDate as string),
+			$lte: new Date(endDate as string),
+		},
+	};
+
+	if (status && typeof status === 'string') {
+		match.status = status;
+	}
+
+	console.log('getConsultationReport match:', match);
+
+	const consultations = await ConsultationModel.find(match)
+		.select('title purpose subjectCode sectonCode status scheduledAt')
+		.lean();
+
+	const decrypted = consultations.map((c) =>
+		decryptFields(c, consultatioModelEncryptedFields)
+	);
+
+	res.json(
+		new CustomResponse(true, decrypted, 'Consultation report data fetched')
+	);
 });

@@ -1,202 +1,388 @@
+import { useState } from 'react';
 import { fetchInstructors } from '@/api/instructor';
 import { Button } from '@/components/ui/button';
 import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { QUERY_KEYS } from '@/constants';
 import { useQuery } from '@tanstack/react-query';
 import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
 } from '../ui/select';
-import type z from 'zod';
-import { createConsultationSchema } from '@/lib/schemas/consultation.schema';
-import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Field, FieldError, FieldLabel } from '../ui/field';
-import {
-	InputGroup,
-	InputGroupAddon,
-	InputGroupText,
-	InputGroupTextarea,
-} from '../ui/input-group';
-import { DatePicker } from '../DatePicker';
+import { Controller, useForm } from 'react-hook-form';
+import { FieldLabel, FieldError } from '../ui/field';
+import * as z from 'zod';
 import axiosInstance from '@/api/axios';
 import { toast } from 'sonner';
+import { generateReportSignature } from '@/utils/ReportSignature';
 
-export type GenerateReportFormAdminValues = z.infer<typeof createConsultationSchema>;
+import type { ConsultationRow } from '@/components/reports/ConsultationReportView';
+import { generateConsultationPdf } from '@/utils/GenerateConsultationPdf';
 
+// ===== VALIDATION SCHEMA =====
+const generateReportSchema = z.object({
+  instructor: z.string().min(1, 'Instructor is required'),
+  semester: z.enum(['1st', '2nd']),
+  schoolYearStart: z.preprocess(
+    (val) => (val ? parseInt(String(val)) : undefined),
+    z.number().int().min(2000).max(2100),
+  ),
+  schoolYearEnd: z.preprocess(
+    (val) => (val ? parseInt(String(val)) : undefined),
+    z.number().int().min(2000).max(2100),
+  ),
+});
+
+export type GenerateReportFormValues = z.infer<typeof generateReportSchema>;
+
+// ===== REPORT DATA TYPE =====
+type ReportData = {
+  instructorName: string;
+  periodLabel: string;
+  semesterLabel: string;
+  consultations: ConsultationRow[];
+  acceptedConsultations: ConsultationRow[];
+  pendingConsultations: ConsultationRow[];
+  declinedConsultations: ConsultationRow[];
+  completedConsultations: ConsultationRow[];
+  totalAccepted: number;
+  totalPending: number;
+  totalDeclined: number;
+  totalCompleted: number;
+  totalFinished: number;
+  reportSignature: string;
+};
+
+// Match your DB statuses: "accepted" and "pending"
+const SPLIT_STATUS = {
+  accepted: ['accepted'],
+  pending: ['pending'],
+  declined: ['declined'],
+  completed: ['completed'],
+};
+
+// ===== MAIN COMPONENT (DEFAULT EXPORT) =====
 export default function GenerateReportFormAdmin() {
-	const { control, handleSubmit } = useForm<GenerateReportFormAdminValues>({
-		resolver: zodResolver(createConsultationSchema),
-		defaultValues: {
-			title: '',
-			description: '',
-			scheduledAt: '',
-			instructor: '',
-		},
-	});
+  const { control, handleSubmit, watch } = useForm<GenerateReportFormValues>({
+    resolver: zodResolver(generateReportSchema as any),
+    defaultValues: {
+      instructor: '',
+      semester: '1st',
+      schoolYearStart: new Date().getFullYear(),
+      schoolYearEnd: new Date().getFullYear() + 1,
+    },
+  });
 
-	const { data: instructors } = useQuery({
-		queryKey: [QUERY_KEYS.INSTRUCTORS],
-		queryFn: fetchInstructors,
-	});
+  const schoolYearStart = watch('schoolYearStart') as number;
+  const schoolYearEnd = watch('schoolYearEnd') as number;
+  const semester = watch('semester') as '1st' | '2nd';
 
-	const onSubmit = async (formData: GenerateReportFormAdminValues) => {
-		try {
-			// temp
-			const { data } = await axiosInstance.post('/consultation', {
-				...formData,
-				student: '68e9d2e0a4aee4c61f7d2de5',
-			});
+  const [_reportData, setReportData] = useState<ReportData | null>(null);
 
-			toast.success(data.message);
-		} catch (error: any) {
-			console.error('Failed to create consultation', error);
-			toast.error(error.message ?? 'Failed to create consultation');
-		}
-	};
+  const { data: instructors } = useQuery({
+    queryKey: [QUERY_KEYS.INSTRUCTORS],
+    queryFn: fetchInstructors,
+  });
 
-	return (
-		<Dialog>
-			<DialogTrigger asChild>
-				<Button variant='default' className='cursor-pointer'>
-					Generate Reports
-				</Button>
-			</DialogTrigger>
-			<DialogContent className='sm:max-w-[425px]'>
-				<DialogHeader>
-					<DialogTitle>Request Consultation</DialogTitle>
-					<DialogDescription></DialogDescription>
-				</DialogHeader>
-				<form
-					id='consultation-form'
-					onSubmit={handleSubmit(onSubmit)}
-					className='grid gap-4'
-				>
-					{/* TITLE */}
-					<Controller
-						name='title'
-						control={control}
-						render={({ field, fieldState }) => (
-							<Field data-invalid={fieldState.invalid}>
-								<FieldLabel htmlFor={field.name}>Title</FieldLabel>
-								<Input
-									{...field}
-									id={field.name}
-									aria-invalid={fieldState.invalid}
-									placeholder='Grade consultation'
-									autoComplete='off'
-								/>
-								{fieldState.invalid && (
-									<FieldError errors={[fieldState.error]} />
-								)}
-							</Field>
-						)}
-					/>
-					{/* END TITLE */}
+  const getSemesterDateRange = (
+    startYear: number,
+    endYear: number,
+    sem: '1st' | '2nd',
+  ): string => {
+    if (sem === '1st') {
+      return `August–December ${startYear}`;
+    }
+    return `January–May ${endYear}`;
+  };
 
-					{/* DESCRIPTION */}
-					<Controller
-						name='description'
-						control={control}
-						render={({ field, fieldState }) => (
-							<Field data-invalid={fieldState.invalid}>
-								<FieldLabel htmlFor={field.name}>Description</FieldLabel>
-								<InputGroup>
-									<InputGroupTextarea
-										{...field}
-										id={field.name}
-										placeholder='I need help with my grade...'
-										rows={6}
-										className='min-h-24 resize-none'
-										aria-invalid={fieldState.invalid}
-									/>
-									<InputGroupAddon align='block-end'>
-										<InputGroupText className='tabular-nums'>
-											{field.value?.length ?? 0}/100 characters
-										</InputGroupText>
-									</InputGroupAddon>
-								</InputGroup>
-								{fieldState.invalid && (
-									<FieldError errors={[fieldState.error]} />
-								)}
-							</Field>
-						)}
-					/>
-					{/* END DESCRIPTION */}
+  const semesterDateRange = getSemesterDateRange(
+    schoolYearStart,
+    schoolYearEnd,
+    semester,
+  );
 
-					{/* Select instructor field */}
-					<Controller
-						name='instructor'
-						control={control}
-						render={({ field, fieldState }) => (
-							<Select
-								onValueChange={field.onChange}
-								value={field.value}
-								defaultValue={field.value}
-							>
-								<SelectTrigger
-									className='w-full cursor-pointer'
-									data-invalid={fieldState.invalid}
-								>
-									<SelectValue placeholder='Select Instructor' />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectGroup>
-										<SelectLabel>Instructors</SelectLabel>
-										{instructors &&
-											instructors.map((instructor) => (
-												<SelectItem
-													key={instructor._id}
-													value={instructor._id}
-													className='cursor-pointer'
-												>
-													{instructor.name}
-												</SelectItem>
-											))}
-									</SelectGroup>
-								</SelectContent>
-								{fieldState.invalid && (
-									<FieldError errors={[fieldState.error]} />
-								)}
-							</Select>
-						)}
-					/>
-					{/* END */}
+  const onSubmit = async (formData: GenerateReportFormValues) => {
+    try {
+      const { instructor, semester, schoolYearStart, schoolYearEnd } = formData;
 
-					{/* DATE */}
-					<Controller
-						name='scheduledAt'
-						control={control}
-						render={({ field, fieldState }) => (
-							<DatePicker field={field} fieldState={fieldState} />
-						)}
-					/>
-					{/* END DATE */}
-				</form>
-				<DialogFooter>
-					<DialogClose asChild>
-						<Button variant='outline'>Cancel</Button>
-					</DialogClose>
-					<Button type='submit' form='consultation-form'>
-						Submit
-					</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
-	);
+      // This is the old date range label (still used in Summary)
+      const periodLabel =
+        semester === '1st'
+          ? `August–December ${schoolYearStart}`
+          : `January–May ${schoolYearEnd}`;
+
+      // This is the semester label that will appear in the header
+      const semesterLabel = semester === '1st' ? '1st' : '2nd';
+
+      const range =
+        semester === '1st'
+          ? {
+              start: `${schoolYearStart}-08-01T00:00:00.000Z`,
+              end: `${schoolYearStart}-12-31T23:59:59.999Z`,
+            }
+          : {
+              start: `${schoolYearEnd}-01-01T00:00:00.000Z`,
+              end: `${schoolYearEnd}-05-31T23:59:59.999Z`,
+            };
+
+      const params = {
+        instructorId: instructor,
+        startDate: range.start,
+        endDate: range.end,
+      };
+      console.log('Calling /consultation/report with params:', params);
+
+      const res = await axiosInstance.get('/consultation/report', {
+        params,
+      });
+      const responseBody = res.data;
+
+      const raw: any[] = Array.isArray(responseBody)
+        ? responseBody
+        : Array.isArray(responseBody?.data)
+        ? responseBody.data
+        : Array.isArray((responseBody as any).consultations)
+        ? (responseBody as any).consultations
+        : [];
+
+      console.log('raw from /consultation/report:', raw);
+
+      const allConsultations: ConsultationRow[] = raw.map((c: any) => ({
+        _id: c._id?.$oid ?? c._id ?? '',
+        title: c.title ?? '',
+        purpose: c.purpose ?? '',
+        subjectCode: c.subjectCode ?? '',
+        sectonCode: c.sectonCode ?? '',
+        status: c.status ?? '',
+        scheduledAt: c.scheduledAt?.$date
+          ? new Date(c.scheduledAt.$date).toLocaleString()
+          : '',
+      }));
+
+      console.log(
+        'allConsultations sample (first 10):',
+        allConsultations.slice(0, 10),
+      );
+
+      const acceptedConsultations = allConsultations.filter((c) =>
+        SPLIT_STATUS.accepted.includes(String(c.status)),
+      );
+      const pendingConsultations = allConsultations.filter((c) =>
+        SPLIT_STATUS.pending.includes(String(c.status)),
+      );
+      const declinedConsultations = allConsultations.filter((c) =>
+        SPLIT_STATUS.declined.includes(String(c.status)),
+      );
+      const completedConsultations = allConsultations.filter((c) =>
+        SPLIT_STATUS.completed.includes(String(c.status)),
+      );
+
+      console.log('acceptedConsultations:', acceptedConsultations);
+      console.log('pendingConsultations:', pendingConsultations);
+
+      const totalAccepted = acceptedConsultations.length;
+      const totalPending = pendingConsultations.length;
+      const totalDeclined = declinedConsultations.length;
+      const totalCompleted = completedConsultations.length;
+      const totalFinished = totalAccepted + totalCompleted;
+
+      const instructorRes = await axiosInstance.get(`/user/${instructor}`);
+      const instructorName: string =
+        instructorRes.data?.data?.name ??
+        instructorRes.data?.name ??
+        'Unknown Instructor';
+
+      const reportSignature = generateReportSignature();
+
+      const newReportData: ReportData = {
+        instructorName,
+        periodLabel,
+        semesterLabel,
+        consultations: allConsultations,
+        acceptedConsultations,
+        pendingConsultations,
+        declinedConsultations,
+        completedConsultations,
+        totalAccepted,
+        totalPending,
+        totalDeclined,
+        totalCompleted,
+        totalFinished,
+        reportSignature,
+      };
+
+      setReportData(newReportData);
+
+      generateConsultationPdf({
+        instructorName,
+        periodLabel,
+        semesterLabel,
+        buckets: {
+          accepted: acceptedConsultations,
+          pending: pendingConsultations,
+          declined: declinedConsultations,
+          completed: completedConsultations,
+        },
+        reportSignature,
+      });
+
+      toast.success('Report generated and downloading...');
+    } catch (error: any) {
+      console.error('Failed to generate report', error);
+      toast.error(
+        error.response?.data?.message ?? 'Failed to generate report',
+      );
+    }
+  };
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="default" className="cursor-pointer">
+          Generate Report
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="sm:max-w-[425px]" aria-describedby={undefined}>
+        <DialogHeader>
+          <DialogTitle>Generate Instructor Report</DialogTitle>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
+          {/* INSTRUCTOR SELECT */}
+          <Controller
+            name="instructor"
+            control={control}
+            render={({ field, fieldState }) => (
+              <div>
+                <FieldLabel htmlFor="instructor">Instructor Name</FieldLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger
+                    id="instructor"
+                    className="w-full"
+                    data-invalid={fieldState.invalid}
+                  >
+                    <SelectValue placeholder="Select Instructor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Instructors</SelectLabel>
+                      {instructors?.map((instr) => (
+                        <SelectItem key={instr._id} value={instr._id}>
+                          {instr.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                {fieldState.error && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </div>
+            )}
+          />
+
+          {/* SEMESTER SELECT */}
+          <Controller
+            name="semester"
+            control={control}
+            render={({ field, fieldState }) => (
+              <div>
+                <FieldLabel htmlFor="semester">Semester</FieldLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger
+                    id="semester"
+                    className="w-full"
+                    data-invalid={fieldState.invalid}
+                  >
+                    <SelectValue placeholder="Select Semester" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1st">1st Semester</SelectItem>
+                    <SelectItem value="2nd">2nd Semester</SelectItem>
+                  </SelectContent>
+                </Select>
+                {fieldState.error && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </div>
+            )}
+          />
+
+          {/* SCHOOL YEAR INPUTS */}
+          <div>
+            <FieldLabel htmlFor="schoolYearStart">School Year</FieldLabel>
+            <div className="flex gap-2">
+              <Controller
+                name="schoolYearStart"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    id="schoolYearStart"
+                    name="schoolYearStart"
+                    type="number"
+                    placeholder="2022"
+                    className="flex-1"
+                    min={2000}
+                    max={2100}
+                  />
+                )}
+              />
+              <span className="flex items-center px-2 text-muted-foreground">
+                -
+              </span>
+              <Controller
+                name="schoolYearEnd"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    id="schoolYearEnd"
+                    name="schoolYearEnd"
+                    type="number"
+                    placeholder="2023"
+                    className="flex-1"
+                    min={2000}
+                    max={2100}
+                  />
+                )}
+              />
+            </div>
+          </div>
+
+          {/* SEMESTER PERIOD DISPLAY */}
+          <div className="p-3 bg-muted/50 rounded-md text-sm text-muted-foreground">
+            📅 Period: {semesterDateRange}
+          </div>
+
+          <Button type="submit" className="w-full">
+            Generate Report
+          </Button>
+        </form>
+
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline" className="w-full">
+              Cancel
+            </Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }

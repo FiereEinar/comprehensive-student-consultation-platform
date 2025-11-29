@@ -1,3 +1,5 @@
+// File: src/pages/AdminReportsPage.tsx
+
 import { useEffect, useState } from 'react';
 import Header from '@/components/ui/header';
 import {
@@ -35,110 +37,196 @@ const BAR_COLORS = [
 	'#B2F7EF',
 ];
 
-interface UserLike {
-	_id: string;
-	name?: string;
-	email?: string;
+type ObjectIdShape = { $oid: string };
+type DateShape = { $date: string };
+
+interface UserRaw {
+	_id: ObjectIdShape;
+	name: string;
+	email: string;
+	role: string;
+	createdAt: DateShape;
+	updatedAt: DateShape;
 	[key: string]: any;
 }
+
+interface UserLike {
+	_id: string;
+	name: string;
+	email?: string;
+}
+
+interface ConsultationRaw {
+	_id: ObjectIdShape;
+	createdAt: DateShape;
+	description: string;
+	googleCalendarEventId: string | null;
+	instructor: ObjectIdShape;
+	lock: { lockedAt: null; lockedBy: null };
+	meetLink: null;
+	purpose: string;
+	scheduledAt: DateShape;
+	sectonCode: string;
+	status: string;
+	student: ObjectIdShape;
+	subjectCode: string;
+	title: string;
+	updatedAt: DateShape;
+	[key: string]: any;
+}
+
 interface Consultation {
 	_id: string;
-	createdAt: { $date: string };
+	createdAt: DateShape;
 	description: string;
-	instructor: string | UserLike;
-	scheduledAt: { $date: string };
+	instructorId: string;
+	scheduledAt: DateShape;
 	status: string;
-	student: string | UserLike;
+	studentId: string;
 	title: string;
-	updatedAt: { $date: string };
+	updatedAt: DateShape;
+	purpose: string;
+	subjectCode: string;
+	sectonCode: string;
+	googleCalendarEventId: string | null;
+	meetLink: null;
 }
 
 type MaybeString = string | undefined | null;
-function getConsultationDate(c: Consultation): Date | null {
-	let raw: MaybeString = undefined;
-	if (c?.scheduledAt && typeof c.scheduledAt === 'object') {
-		raw =
-			(c.scheduledAt as any).$date ?? (c.scheduledAt as any).date ?? undefined;
-	} else if (typeof c?.scheduledAt === 'string') {
-		raw = c.scheduledAt;
-	}
-	raw = raw ?? (c as any).date ?? (c as any).createdAt?.$date ?? undefined;
-	if (typeof raw !== 'string' || !raw) return null;
-	const d = new Date(raw);
-	if (!d || isNaN(d.getTime())) return null;
-	return d;
+
+function normalizeId(id: ObjectIdShape | string): string {
+	if (typeof id === 'string') return id;
+	return id?.$oid ?? '';
 }
 
-function getLastNConsecutiveMonthsData(
-	n: number,
-	monthData: Array<{ name: string; value: number }>
-) {
-	const now = new Date();
-	const months = [];
-	for (let i = n - 1; i >= 0; i--) {
-		const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-		const label = d.toLocaleString('default', {
-			month: 'short',
-			year: 'numeric',
-		});
-		const found = monthData.find((m) => m.name === label);
-		months.push({
-			name: label,
-			value: found ? found.value : 0,
-		});
-	}
-	return months;
+function getDateFromShape(d: DateShape | string | undefined): Date | null {
+	let raw: MaybeString;
+	if (!d) return null;
+	if (typeof d === 'string') raw = d;
+	else raw = d.$date;
+	if (!raw) return null;
+	const dt = new Date(raw);
+	if (isNaN(dt.getTime())) return null;
+	return dt;
+}
+
+// Map raw status strings to pretty labels, but DO NOT drop unknown ones
+function mapStatusLabel(raw: string): string {
+	const s = raw.trim().toLowerCase();
+	if (s.includes('accept')) return 'Accepted';
+	if (s.includes('pend')) return 'Pending';
+	if (s.includes('declin') || s.includes('reject')) return 'Declined';
+	if (s.includes('complet') || s === 'done' || s.includes('finish'))
+		return 'Completed';
+	// fall back to the original status text so it still shows in the chart
+	return raw || 'Unknown';
 }
 
 export default function AdminReportsPage() {
 	const [consultations, setConsultations] = useState<Consultation[]>([]);
+	const [users, setUsers] = useState<UserLike[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
-		async function fetchConsultations() {
+		async function loadAll() {
 			setLoading(true);
 			setError(null);
 			try {
-				const { data } = await axiosInstance.get('/consultation?fetchAll=true');
-				let cons: any = data;
-				if (Array.isArray(cons)) {
-					setConsultations(cons);
-				} else if (cons?.data && Array.isArray(cons.data)) {
-					setConsultations(cons.data);
-				} else if (cons?.consultations && Array.isArray(cons.consultations)) {
-					setConsultations(cons.consultations);
-				} else {
-					setConsultations([]);
-					setError(
-						'No consultation data found in API response. API shape: ' +
-							JSON.stringify(cons)
+				// ---- Consultations
+				const consRes = await fetch('/api/v1/consultation');
+				if (!consRes.ok) {
+					throw new Error(
+						`Consultations API failed: ${consRes.status} ${consRes.statusText}`
 					);
 				}
+				const consRaw = await consRes.json();
+				const consList: ConsultationRaw[] = Array.isArray(consRaw)
+					? consRaw
+					: Array.isArray(consRaw.data)
+					? consRaw.data
+					: Array.isArray(consRaw.consultations)
+					? consRaw.consultations
+					: [];
+
+				const cons: Consultation[] = consList.map((c) => ({
+					_id: normalizeId(c._id),
+					createdAt: c.createdAt,
+					description: c.description,
+					instructorId: normalizeId(c.instructor),
+					scheduledAt: c.scheduledAt,
+					status: c.status, // keep raw
+					studentId: normalizeId(c.student),
+					title: c.title,
+					updatedAt: c.updatedAt,
+					purpose: c.purpose,
+					subjectCode: c.subjectCode,
+					sectonCode: c.sectonCode,
+					googleCalendarEventId: c.googleCalendarEventId,
+					meetLink: c.meetLink,
+				}));
+
+				// quick log so you can see exactly what statuses the DB sends
+				console.log(
+					'Sample statuses from DB:',
+					cons.slice(0, 10).map((c) => c.status)
+				);
+
+				// ---- Users (for instructor names)
+				const userRes = await fetch('/api/v1/user');
+				if (!userRes.ok) {
+					throw new Error(
+						`Users API failed: ${userRes.status} ${userRes.statusText}`
+					);
+				}
+				const userRaw = await userRes.json();
+				const userList: UserRaw[] = Array.isArray(userRaw)
+					? userRaw
+					: Array.isArray(userRaw.data)
+					? userRaw.data
+					: Array.isArray(userRaw.users)
+					? userRaw.users
+					: [];
+
+				const mappedUsers: UserLike[] = userList.map((u) => ({
+					_id: normalizeId(u._id),
+					name: u.name,
+					email: u.email,
+				}));
+
+				setConsultations(cons);
+				setUsers(mappedUsers);
 			} catch (e: any) {
-				setError('Error loading consultations: ' + (e.message || String(e)));
+				setError('Error loading reports: ' + (e.message || String(e)));
 				setConsultations([]);
+				setUsers([]);
 			}
 			setLoading(false);
 		}
-		fetchConsultations();
-		// logPageView();
+
+		loadAll();
+		logPageView();
 	}, []);
 
 	if (loading) return <div>Loading consultations...</div>;
 	if (error)
 		return <div style={{ color: 'red', fontWeight: 700 }}>{error}</div>;
 
-	// PieChart: Status breakdown & percentages
+	// ---------------------------------------------------------------------------
+	// STATUS PIE – group by mapped label, never drop a status
+	// ---------------------------------------------------------------------------
+
 	const statusCounts: Record<string, number> = {};
 	consultations.forEach((c) => {
-		if (!c?.status) return;
-		statusCounts[c.status] = (statusCounts[c.status] || 0) + 1;
+		const label = mapStatusLabel(c.status);
+		statusCounts[label] = (statusCounts[label] || 0) + 1;
 	});
+
 	const statusData = Object.entries(statusCounts).map(([name, value]) => ({
 		name,
 		value,
 	}));
+
 	const totalConsultations = statusData.reduce(
 		(acc, cur) => acc + cur.value,
 		0
@@ -150,32 +238,38 @@ export default function AdminReportsPage() {
 			: 0,
 	}));
 
-	// BarChart: Instructor breakdown, top 3 only
+	// ---------------------------------------------------------------------------
+	// INSTRUCTOR BAR – all instructors with names from /user
+	// ---------------------------------------------------------------------------
+
+	const userById = new Map<string, UserLike>();
+	users.forEach((u) => userById.set(u._id, u));
+
 	const instructorCounts: Record<string, number> = {};
 	consultations.forEach((c) => {
-		let name =
-			typeof c?.instructor === 'object' && c.instructor?.name
-				? c.instructor.name
-				: typeof c?.instructor === 'string'
-				? c.instructor
-				: 'Unknown';
+		const id = c.instructorId;
+		const instructorUser = id ? userById.get(id) : undefined;
+		const name = instructorUser?.name || `Instructor ${id.slice(0, 6)}`;
 		instructorCounts[name] = (instructorCounts[name] || 0) + 1;
 	});
-	const instructorData = Object.entries(instructorCounts).map(
-		([name, value]) => ({ name, value })
-	);
-	const top3Instructors = [...instructorData]
-		.sort((a, b) => b.value - a.value)
-		.slice(0, 3);
 
-	// Month Cards Section
+	const instructorData = Object.entries(instructorCounts)
+		.map(([name, value]) => ({ name, value }))
+		.sort((a, b) => b.value - a.value); // highest first
+
+	// ---------------------------------------------------------------------------
+	// MONTH CARDS (same as before)
+	// ---------------------------------------------------------------------------
+
 	const monthCounts: Record<string, number> = {};
 	let minYear = Infinity,
 		minMonth = 12,
 		maxYear = -Infinity,
 		maxMonth = 1;
+
 	consultations.forEach((c) => {
-		const date = getConsultationDate(c);
+		const date =
+			getDateFromShape(c.scheduledAt) || getDateFromShape(c.createdAt);
 		if (!date) return;
 		const year = date.getFullYear();
 		const month = date.getMonth() + 1;
@@ -186,7 +280,7 @@ export default function AdminReportsPage() {
 		const key = `${year}-${month}`;
 		monthCounts[key] = (monthCounts[key] || 0) + 1;
 	});
-	// build full monthData (for continuity)
+
 	const monthData: Array<{ name: string; value: number }> = [];
 	if (minYear !== Infinity && maxYear !== -Infinity) {
 		let y = minYear,
@@ -209,28 +303,44 @@ export default function AdminReportsPage() {
 			}
 		}
 	}
-	// 6 most recent months, split into 2 rows of 3
+
+	function getLastNConsecutiveMonthsData(
+		n: number,
+		data: Array<{ name: string; value: number }>
+	) {
+		const now = new Date();
+		const months: Array<{ name: string; value: number }> = [];
+		for (let i = n - 1; i >= 0; i--) {
+			const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+			const label = d.toLocaleString('default', {
+				month: 'short',
+				year: 'numeric',
+			});
+			const found = data.find((m) => m.name === label);
+			months.push({
+				name: label,
+				value: found ? found.value : 0,
+			});
+		}
+		return months;
+	}
+
 	const latestSixCards = getLastNConsecutiveMonthsData(6, monthData);
 	const rows = [latestSixCards.slice(0, 3), latestSixCards.slice(3, 6)];
 
-	// Extra stats, non-repeating
 	const studentSet = new Set(
-		consultations
-			.map((c) =>
-				typeof c.student === 'object' && c.student?.email
-					? c.student.email
-					: typeof c.student === 'string'
-					? c.student
-					: null
-			)
-			.filter(Boolean)
+		consultations.map((c) => c.studentId).filter(Boolean)
 	);
-	const instructorSet = new Set(instructorData.map((d) => d.name));
+	const instructorSet = new Set(Object.keys(instructorCounts));
 	const avgPerInstructor = instructorData.length
 		? Math.round(totalConsultations / instructorData.length)
 		: 0;
 
 	const chartHeight = 370;
+
+	// ---------------------------------------------------------------------------
+	// RENDER
+	// ---------------------------------------------------------------------------
 
 	return (
 		<div
@@ -239,14 +349,15 @@ export default function AdminReportsPage() {
 				flexDirection: 'row',
 				gap: '2rem',
 				padding: '2rem',
-				minHeight: '195vh',
+				minHeight: '100%',
 				background: '#faf2f7',
+				flexWrap: 'wrap',
 			}}
 		>
 			{/* Left Column */}
 			<div
 				style={{
-					flex: '2 1 0%',
+					flex: '2 1 300px',
 					display: 'flex',
 					flexDirection: 'column',
 					gap: '1.5rem',
@@ -258,7 +369,7 @@ export default function AdminReportsPage() {
 			>
 				<Header size='md'>Admin Consultations Dashboard</Header>
 
-				{/* --- Consultations by Month Section --- */}
+				{/* Consultations by Month */}
 				<div
 					style={{
 						fontSize: '18px',
@@ -292,13 +403,14 @@ export default function AdminReportsPage() {
 								width: '100%',
 								justifyContent: 'space-between',
 								marginBottom: idx === 0 ? '1rem' : '0',
+								flexWrap: 'wrap',
 							}}
 						>
 							{row.map(({ name, value }, i) => (
 								<div
 									key={name + i}
 									style={{
-										flex: 1,
+										flex: '1 1 30%',
 										background: '#fff',
 										borderRadius: '8px',
 										boxShadow: '2px 2px 3px #968f8fff',
@@ -340,7 +452,6 @@ export default function AdminReportsPage() {
 					))}
 				</section>
 
-				{/* Rest of your dashboard untouched... */}
 				{/* Consultations by Status */}
 				<div
 					style={{
@@ -364,33 +475,40 @@ export default function AdminReportsPage() {
 					}}
 				>
 					{statusPercents.length ? (
-						<ResponsiveContainer width='100%' height={chartHeight}>
-							<PieChart>
-								<Pie
-									data={statusPercents}
-									dataKey='value'
-									nameKey='name'
-									cx='50%'
-									cy='50%'
-									outerRadius={100}
-									label={({ name, percent }) => `${name}: ${percent}%`}
-								>
-									{statusPercents.map((_, idx) => (
-										<Cell
-											key={`cell-status-${idx}`}
-											fill={PIE_COLORS[idx % PIE_COLORS.length]}
-										/>
-									))}
-								</Pie>
-								<Legend />
-								<Tooltip
-									formatter={(v, name, props) => [
-										`${props.payload.percent}% (${v})`,
-										name,
-									]}
-								/>
-							</PieChart>
-						</ResponsiveContainer>
+						<div
+							style={{ width: '100%', height: '100%', minHeight: chartHeight }}
+						>
+							<ResponsiveContainer width='100%' height='100%'>
+								<PieChart>
+									<Pie
+										data={statusPercents}
+										dataKey='value'
+										nameKey='name'
+										cx='50%'
+										cy='50%'
+										outerRadius='70%'
+										label={({ name, percent }) => `${name}: ${percent}%`}
+									>
+										{statusPercents.map((_, idx) => (
+											<Cell
+												key={`cell-status-${idx}`}
+												fill={PIE_COLORS[idx % PIE_COLORS.length]}
+											/>
+										))}
+									</Pie>
+									<Legend
+										verticalAlign='bottom'
+										wrapperStyle={{ fontSize: 12 }}
+									/>
+									<Tooltip
+										formatter={(v: any, name: any, props: any) => [
+											`${props.payload.percent}% (${v})`,
+											name,
+										]}
+									/>
+								</PieChart>
+							</ResponsiveContainer>
+						</div>
 					) : (
 						<div
 							style={{
@@ -428,26 +546,34 @@ export default function AdminReportsPage() {
 					}}
 				>
 					{instructorData.length ? (
-						<ResponsiveContainer width='100%' height={chartHeight}>
-							<BarChart
-								data={top3Instructors}
-								margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
-							>
-								<CartesianGrid strokeDasharray='5 5' />
-								<XAxis dataKey='name' tick={{ fontSize: 14, fill: 'black' }} />
-								<YAxis />
-								<Tooltip />
-								<Legend wrapperStyle={{ color: 'black' }} iconType='line' />
-								<Bar dataKey='value'>
-									{instructorData.map((_, idx) => (
-										<Cell
-											key={`cell-bar-${idx}`}
-											fill={BAR_COLORS[idx % BAR_COLORS.length]}
-										/>
-									))}
-								</Bar>
-							</BarChart>
-						</ResponsiveContainer>
+						<div
+							style={{ width: '100%', height: '100%', minHeight: chartHeight }}
+						>
+							<ResponsiveContainer width='100%' height='100%'>
+								<BarChart
+									data={instructorData}
+									margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+								>
+									<CartesianGrid strokeDasharray='5 5' />
+									<XAxis
+										dataKey='name'
+										tick={{ fontSize: 12, fill: 'black' }}
+										interval={0}
+									/>
+									<YAxis />
+									<Tooltip />
+									<Legend wrapperStyle={{ color: 'black', fontSize: 12 }} />
+									<Bar dataKey='value'>
+										{instructorData.map((_, idx) => (
+											<Cell
+												key={`cell-bar-${idx}`}
+												fill={BAR_COLORS[idx % BAR_COLORS.length]}
+											/>
+										))}
+									</Bar>
+								</BarChart>
+							</ResponsiveContainer>
+						</div>
 					) : (
 						<div
 							style={{
@@ -463,14 +589,13 @@ export default function AdminReportsPage() {
 				</section>
 			</div>
 
-			{/* Right Column untouched... */}
+			{/* Right Column: sticky header + scrollable content */}
 			<div
 				style={{
-					flex: '1 1 0%',
+					flex: '1 1 260px',
 					display: 'flex',
 					flexDirection: 'column',
-					gap: '2rem',
-					alignItems: 'left',
+					gap: '1rem',
 					minWidth: 0,
 					marginTop: '3rem',
 					position: 'sticky',
@@ -478,54 +603,66 @@ export default function AdminReportsPage() {
 					height: 'fit-content',
 				}}
 			>
-				{/* Other Consultation Stats */}
 				<div
 					style={{
 						fontSize: '18px',
 						color: '#000000ff',
 						fontWeight: 500,
-						marginBottom: '-.5rem',
+						marginBottom: '0.25rem',
 					}}
 				>
 					General Reports
 				</div>
-				<section
+
+				<div
 					style={{
-						width: '100%',
-						padding: '1rem',
-						borderRadius: '14px',
-						background: '#fff',
-						boxShadow: '0 2px 8px #eee',
-						border: '2px solid #eee',
+						maxHeight: '70vh',
+						overflowY: 'auto',
+						paddingRight: '0.25rem',
 					}}
 				>
-					<div
+					<section
 						style={{
-							background: '#fff',
-							borderRadius: '12px',
-							padding: '1.2rem',
 							width: '100%',
+							padding: '1rem',
+							borderRadius: '14px',
+							background: '#fff',
+							boxShadow: '0 2px 8px #eee',
+							border: '2px solid #eee',
 						}}
 					>
 						<div
-							style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+							style={{
+								background: '#fff',
+								borderRadius: '12px',
+								padding: '1.2rem',
+								width: '100%',
+							}}
 						>
-							<div>
-								Total Consultations: <strong>{totalConsultations}</strong>
+							<div
+								style={{
+									display: 'flex',
+									flexDirection: 'column',
+									gap: '1rem',
+								}}
+							>
+								<div>
+									Total Consultations: <strong>{totalConsultations}</strong>
+								</div>
+								<div>
+									Total Instructors: <strong>{instructorSet.size}</strong>
+								</div>
+								<div>
+									Total Students: <strong>{studentSet.size}</strong>
+								</div>
+								<div>
+									Average Consultations: <strong>{avgPerInstructor}</strong>
+								</div>
+								<GenerateReportFormAdmin />
 							</div>
-							<div>
-								Total Instructors: <strong>{instructorSet.size}</strong>
-							</div>
-							<div>
-								Total Students: <strong>{studentSet.size}</strong>
-							</div>
-							<div>
-								Average Consultations: <strong>{avgPerInstructor}</strong>
-							</div>
-							<GenerateReportFormAdmin />
 						</div>
-					</div>
-				</section>
+					</section>
+				</div>
 			</div>
 		</div>
 	);

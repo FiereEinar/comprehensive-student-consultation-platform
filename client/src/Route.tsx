@@ -52,6 +52,10 @@ export default function Route() {
 					element: <Navigate to={redirectTo} />,
 				},
 				{
+					path: '/admin',
+					element: <Navigate to='/admin/dashboard' replace />,
+				},
+				{
 					path: '/admin/dashboard',
 					element: <AdminDashboard />,
 				},
