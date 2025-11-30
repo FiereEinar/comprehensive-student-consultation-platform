@@ -33,13 +33,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { QUERY_KEYS } from '@/constants';
+import { MODULES, QUERY_KEYS } from '@/constants';
 import axiosInstance from '@/api/axios';
 import type { User } from '@/types/user';
 import { startCase } from 'lodash';
 import { useEffect, useState } from 'react';
 import ConfirmDeleteDialog from './ConfirmDeleteDialog';
 import { fetchRoles } from '@/api/role';
+import HasPermission from './HasPermission';
 
 // Schema for updating user
 const updateUserSchema = z.object({
@@ -222,42 +223,54 @@ export default function UserSheet({
 						{/* User Status */}
 						<div className='flex items-center justify-end'>
 							<div className='flex gap-2'>
-								<Button
-									size='sm'
-									variant='link'
-									className='text-xs text-black'
-									onClick={handleResetPassword}
-									disabled={resetPasswordMutation.isPending}
+								<HasPermission
+									userRole={['admin']}
+									permissions={[MODULES.UPDATE_USER]}
 								>
-									<Key className='w-4 h-4' />
-									Reset Password
-								</Button>
+									<Button
+										size='sm'
+										variant='link'
+										className='text-xs text-black'
+										onClick={handleResetPassword}
+										disabled={resetPasswordMutation.isPending}
+									>
+										<Key className='w-4 h-4' />
+										Reset Password
+									</Button>
+								</HasPermission>
 
-								<ConfirmDeleteDialog
-									onConfirm={handleArchive}
-									trigger={
-										<Button
-											size='sm'
-											className={`${
-												!user.archived ? 'text-red-500' : 'text-custom-primary'
-											} text-xs`}
-											variant='link'
-											disabled={archiveUserMutation.isPending}
-										>
-											{user.archived ? (
-												<>
-													<ArchiveRestore className='w-4 h-4' />
-													Unarchive
-												</>
-											) : (
-												<>
-													<Archive className='w-4 h-4' />
-													Archive
-												</>
-											)}
-										</Button>
-									}
-								/>
+								<HasPermission
+									userRole={['admin']}
+									permissions={[MODULES.ARCHIVE_USER]}
+								>
+									<ConfirmDeleteDialog
+										onConfirm={handleArchive}
+										trigger={
+											<Button
+												size='sm'
+												className={`${
+													!user.archived
+														? 'text-red-500'
+														: 'text-custom-primary'
+												} text-xs`}
+												variant='link'
+												disabled={archiveUserMutation.isPending}
+											>
+												{user.archived ? (
+													<>
+														<ArchiveRestore className='w-4 h-4' />
+														Unarchive
+													</>
+												) : (
+													<>
+														<Archive className='w-4 h-4' />
+														Archive
+													</>
+												)}
+											</Button>
+										}
+									/>
+								</HasPermission>
 							</div>
 						</div>
 
@@ -328,56 +341,17 @@ export default function UserSheet({
 								)}
 							/>
 
-							{/* ROLE */}
-							<Controller
-								name='role'
-								control={control}
-								render={({ field, fieldState }) => (
-									<Field data-invalid={fieldState.invalid}>
-										<FieldLabel htmlFor={field.name}>Role</FieldLabel>
-										<Select onValueChange={field.onChange} value={field.value}>
-											<SelectTrigger
-												className='w-full cursor-pointer'
-												data-invalid={fieldState.invalid}
-											>
-												<SelectValue placeholder='Select Role' />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectGroup>
-													<SelectLabel>User Roles</SelectLabel>
-													<SelectItem
-														value='student'
-														className='cursor-pointer'
-													>
-														Student
-													</SelectItem>
-													<SelectItem
-														value='instructor'
-														className='cursor-pointer'
-													>
-														Instructor
-													</SelectItem>
-													<SelectItem value='admin' className='cursor-pointer'>
-														Admin
-													</SelectItem>
-												</SelectGroup>
-											</SelectContent>
-										</Select>
-										{fieldState.invalid && (
-											<FieldError errors={[fieldState.error]} />
-										)}
-									</Field>
-								)}
-							/>
-
-							{/* ADMIN ROLES */}
-							{selectedRole === 'admin' && (
+							<HasPermission
+								userRole={['admin']}
+								permissions={[MODULES.ASSIGN_ROLE]}
+							>
+								{/* ROLE */}
 								<Controller
-									name='adminRole'
+									name='role'
 									control={control}
 									render={({ field, fieldState }) => (
 										<Field data-invalid={fieldState.invalid}>
-											<FieldLabel htmlFor={field.name}>Admin Role</FieldLabel>
+											<FieldLabel htmlFor={field.name}>Role</FieldLabel>
 											<Select
 												onValueChange={field.onChange}
 												value={field.value}
@@ -386,20 +360,29 @@ export default function UserSheet({
 													className='w-full cursor-pointer'
 													data-invalid={fieldState.invalid}
 												>
-													<SelectValue placeholder='Select Admin Role' />
+													<SelectValue placeholder='Select Role' />
 												</SelectTrigger>
 												<SelectContent>
 													<SelectGroup>
-														<SelectLabel>Admin Role</SelectLabel>
-														{roles?.map((role) => (
-															<SelectItem
-																key={role._id}
-																value={role._id}
-																className='cursor-pointer'
-															>
-																{startCase(role.name)}
-															</SelectItem>
-														))}
+														<SelectLabel>User Roles</SelectLabel>
+														<SelectItem
+															value='student'
+															className='cursor-pointer'
+														>
+															Student
+														</SelectItem>
+														<SelectItem
+															value='instructor'
+															className='cursor-pointer'
+														>
+															Instructor
+														</SelectItem>
+														<SelectItem
+															value='admin'
+															className='cursor-pointer'
+														>
+															Admin
+														</SelectItem>
 													</SelectGroup>
 												</SelectContent>
 											</Select>
@@ -409,7 +392,48 @@ export default function UserSheet({
 										</Field>
 									)}
 								/>
-							)}
+
+								{/* ADMIN ROLES */}
+								{selectedRole === 'admin' && (
+									<Controller
+										name='adminRole'
+										control={control}
+										render={({ field, fieldState }) => (
+											<Field data-invalid={fieldState.invalid}>
+												<FieldLabel htmlFor={field.name}>Admin Role</FieldLabel>
+												<Select
+													onValueChange={field.onChange}
+													value={field.value}
+												>
+													<SelectTrigger
+														className='w-full cursor-pointer'
+														data-invalid={fieldState.invalid}
+													>
+														<SelectValue placeholder='Select Admin Role' />
+													</SelectTrigger>
+													<SelectContent>
+														<SelectGroup>
+															<SelectLabel>Admin Role</SelectLabel>
+															{roles?.map((role) => (
+																<SelectItem
+																	key={role._id}
+																	value={role._id}
+																	className='cursor-pointer'
+																>
+																	{startCase(role.name)}
+																</SelectItem>
+															))}
+														</SelectGroup>
+													</SelectContent>
+												</Select>
+												{fieldState.invalid && (
+													<FieldError errors={[fieldState.error]} />
+												)}
+											</Field>
+										)}
+									/>
+								)}
+							</HasPermission>
 
 							{/* Account Info */}
 							<div className='text-sm text-muted-foreground space-y-1'>
@@ -421,13 +445,18 @@ export default function UserSheet({
 
 							{/* Save Button */}
 							<div className='flex justify-end pt-4 mb-5'>
-								<Button
-									type='submit'
-									disabled={isSubmitting || updateUserMutation.isPending}
+								<HasPermission
+									userRole={['admin']}
+									permissions={[MODULES.UPDATE_USER]}
 								>
-									<Save className='w-4 h-4 mr-2' />
-									Save Changes
-								</Button>
+									<Button
+										type='submit'
+										disabled={isSubmitting || updateUserMutation.isPending}
+									>
+										<Save className='w-4 h-4 mr-2' />
+										Save Changes
+									</Button>
+								</HasPermission>
 							</div>
 						</form>
 					</div>

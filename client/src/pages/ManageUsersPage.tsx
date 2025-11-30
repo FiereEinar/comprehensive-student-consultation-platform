@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { QUERY_KEYS } from '@/constants';
+import { MODULES, QUERY_KEYS } from '@/constants';
 import { fetchUsers } from '@/api/user';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Header from '@/components/ui/header';
@@ -9,10 +9,11 @@ import { useUserFilterStore } from '@/stores/user-filter';
 import { Input } from '@/components/ui/input';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import PaginationController from '@/components/PaginationController';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { User } from '@/types/user';
 import UserSheet from '@/components/UserSheet';
 import UserRightSidebar from '@/components/sidebars/UserRightSidebar';
+import HasPermission from '@/components/HasPermission';
 
 export default function ManageUsersPage() {
 	const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -27,6 +28,12 @@ export default function ManageUsersPage() {
 		queryFn: () => fetchUsers(getFilters()),
 	});
 
+	useEffect(() => {
+		setRole(null);
+		setPage(1);
+		setSearch('');
+	}, []);
+
 	const handleUserClick = (user: User) => {
 		setSelectedUser(user);
 		setSheetOpen(true);
@@ -36,7 +43,9 @@ export default function ManageUsersPage() {
 		<section className='space-y-5'>
 			<div className='flex w-full justify-between'>
 				<Header size='md'>Manage Users</Header>
-				<CreateUserForm />
+				<HasPermission userRole={['admin']} permissions={[MODULES.CREATE_USER]}>
+					<CreateUserForm />
+				</HasPermission>
 			</div>
 
 			<div className='flex gap-3'>

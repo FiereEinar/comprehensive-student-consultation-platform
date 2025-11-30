@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { QUERY_KEYS } from '@/constants';
+import { MODULES, QUERY_KEYS } from '@/constants';
 import { fetchRoles } from '@/api/role';
 import Header from '@/components/ui/header';
 import CreateRoleForm from '@/components/forms/CreateRoleForm';
@@ -8,6 +8,7 @@ import { useState } from 'react';
 import type { Role } from '@/api/role';
 import RoleCard from '@/components/RoleCard';
 import RoleSheet from '@/components/RoleSheet';
+import HasPermission from '@/components/HasPermission';
 
 export default function RolesPage() {
 	const [selectedRole, setSelectedRole] = useState<Role | null>(null);
@@ -28,7 +29,12 @@ export default function RolesPage() {
 			<section className='space-y-5'>
 				<div className='flex w-full justify-between'>
 					<Header size='md'>Manage Roles</Header>
-					<CreateRoleForm />
+					<HasPermission
+						userRole={['admin']}
+						permissions={[MODULES.CREATE_ROLE]}
+					>
+						<CreateRoleForm />
+					</HasPermission>
 				</div>
 
 				<div className='border-2 p-3 bg-white rounded-2xl'>

@@ -27,6 +27,8 @@ import ManageUsersPage from './pages/ManageUsersPage';
 import RolesPage from './pages/RolesPage';
 import NotFound from './pages/NotFound';
 import HasPermission from './components/HasPermission';
+import NoPermission from './pages/NoPermission';
+import { MODULES } from './constants';
 
 export default function Route() {
 	const { user } = useUserStore((state) => state);
@@ -62,59 +64,143 @@ export default function Route() {
 				{
 					path: '/admin/dashboard',
 					element: (
-						<HasPermission userRole={['admin']}>
-							{' '}
+						<HasPermission userRole={['admin']} fallback={<NoPermission />}>
 							<AdminDashboard />
 						</HasPermission>
 					),
 				},
 				{
 					path: '/admin/consultation',
-					element: <AdminConsultations />,
+					element: (
+						<HasPermission
+							userRole={['admin']}
+							permissions={[MODULES.READ_CONSULTATION]}
+							fallback={<NoPermission />}
+						>
+							<AdminConsultations />
+						</HasPermission>
+					),
 				},
 				{
 					path: '/admin/instructors',
-					element: <AdminInstructorsPage />,
+					element: (
+						<HasPermission
+							userRole={['admin']}
+							permissions={[MODULES.READ_USER]}
+							fallback={<NoPermission />}
+						>
+							<AdminInstructorsPage />
+						</HasPermission>
+					),
 				},
 				{
 					path: '/admin/logs',
-					element: <Logs />,
+					element: (
+						<HasPermission
+							userRole={['admin']}
+							permissions={[MODULES.READ_LOG]}
+							fallback={<NoPermission />}
+						>
+							<Logs />
+						</HasPermission>
+					),
 				},
 				{
 					path: '/admin/reports',
-					element: <AdminReportsPage />,
+					element: (
+						<HasPermission
+							userRole={['admin']}
+							permissions={[MODULES.GET_CONSULTATION_REPORT]}
+							fallback={<NoPermission />}
+						>
+							<AdminReportsPage />
+						</HasPermission>
+					),
 				},
 				{
 					path: '/admin/backups',
-					element: <AdminBackupPage />,
+					element: (
+						<HasPermission
+							userRole={['admin']}
+							permissions={[MODULES.READ_BACKUP]}
+							fallback={<NoPermission />}
+						>
+							<AdminBackupPage />
+						</HasPermission>
+					),
 				},
 				{
 					path: '/admin/users',
-					element: <ManageUsersPage />,
+					element: (
+						<HasPermission
+							userRole={['admin']}
+							permissions={[MODULES.READ_USER]}
+							fallback={<NoPermission />}
+						>
+							<ManageUsersPage />
+						</HasPermission>
+					),
 				},
 				{
 					path: '/admin/roles',
-					element: <RolesPage />,
+					element: (
+						<HasPermission
+							userRole={['admin']}
+							permissions={[MODULES.READ_ROLE]}
+							fallback={<NoPermission />}
+						>
+							<RolesPage />
+						</HasPermission>
+					),
 				},
 				{
 					path: '/student/dashboard',
-					element: <StudentDashboard />,
+					element: (
+						<HasPermission userRole={['student']} fallback={<NoPermission />}>
+							<StudentDashboard />
+						</HasPermission>
+					),
 				},
 				{
 					path: '/student/consultation',
-					element: <StudentConsultations />,
+					element: (
+						<HasPermission userRole={['student']} fallback={<NoPermission />}>
+							<StudentConsultations />
+						</HasPermission>
+					),
 				},
 				{
 					path: '/instructor/dashboard',
-					element: <InstructorDashbaord />,
+					element: (
+						<HasPermission
+							userRole={['instructor']}
+							fallback={<NoPermission />}
+						>
+							<InstructorDashbaord />
+						</HasPermission>
+					),
 				},
 				{
 					path: '/instructor/consultation',
-					element: <InstructorConsultations />,
+					element: (
+						<HasPermission
+							userRole={['instructor']}
+							fallback={<NoPermission />}
+						>
+							<InstructorConsultations />
+						</HasPermission>
+					),
 				},
 				{
 					path: '/instructor/availability',
-					element: <InstructorAvailability />,
+					element: (
+						<HasPermission
+							userRole={['instructor']}
+							fallback={<NoPermission />}
+						>
+							<InstructorAvailability />
+						</HasPermission>
+					),
 				},
 				{
 					path: '/settings',

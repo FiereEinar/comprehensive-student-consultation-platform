@@ -1,19 +1,4 @@
 import {
-	Calendar,
-	ClipboardClock,
-	Clock4,
-	DatabaseBackup,
-	GraduationCap,
-	LayoutDashboard,
-	Power,
-	ReceiptPoundSterling,
-	Settings,
-	Shield,
-	Users,
-	type LucideProps,
-} from 'lucide-react';
-
-import {
 	Sidebar,
 	SidebarContent,
 	SidebarGroup,
@@ -27,96 +12,34 @@ import {
 import { useUserStore } from '@/stores/user';
 import { NavLink } from 'react-router-dom';
 import LogoutButton from '../buttons/LogoutButton';
-
-type SidebarNavLink = {
-	title: string;
-	url: string;
-	icon: React.ForwardRefExoticComponent<
-		Omit<LucideProps, 'ref'> & React.RefAttributes<SVGSVGElement>
-	>;
-};
-
-const instructorSidebarLinks: SidebarNavLink[] = [
-	{
-		title: 'Dashboard',
-		url: '/instructor/dashboard',
-		icon: LayoutDashboard,
-	},
-	{
-		title: 'Consultations',
-		url: '/instructor/consultation',
-		icon: Calendar,
-	},
-	{
-		title: 'Availability',
-		url: '/instructor/availability',
-		icon: Clock4,
-	},
-	// {
-	// 	title: 'Subjects',
-	// 	url: '/instructor/subject',
-	// 	icon: Book,
-	// },
-];
-
-const studentSidebarLinks: SidebarNavLink[] = [
-	{
-		title: 'Dashboard',
-		url: '/student/dashboard',
-		icon: LayoutDashboard,
-	},
-	{
-		title: 'Consultations',
-		url: '/student/consultation',
-		icon: Calendar,
-	},
-];
-
-const adminSidebarLinks: SidebarNavLink[] = [
-	{
-		title: 'Dashboard',
-		url: '/admin/dashboard',
-		icon: LayoutDashboard,
-	},
-	{
-		title: 'Consultations',
-		url: '/admin/consultation',
-		icon: Calendar,
-	},
-	{
-		title: 'Instructors',
-		url: '/admin/instructors',
-		icon: GraduationCap,
-	},
-	{
-		title: 'Users',
-		url: '/admin/users',
-		icon: Users,
-	},
-	{
-		title: 'Roles',
-		url: '/admin/roles',
-		icon: Shield,
-	},
-	{
-		title: 'Logs',
-		url: '/admin/logs',
-		icon: ClipboardClock,
-	},
-	{
-		title: 'Reports',
-		url: '/admin/reports',
-		icon: ReceiptPoundSterling,
-	},
-	{
-		title: 'Backups',
-		url: '/admin/backups',
-		icon: DatabaseBackup,
-	},
-];
+import {
+	adminSidebarLinks,
+	instructorSidebarLinks,
+	studentSidebarLinks,
+	type SidebarNavLinkType,
+} from '@/constants';
+import { Power, Settings } from 'lucide-react';
 
 export function AppSidebar() {
 	const { user } = useUserStore((state) => state);
+
+	function canView(item: SidebarNavLinkType) {
+		if (!user) return false;
+
+		// Role check
+		if (item.roles && !item.roles.includes(user.role)) {
+			return false;
+		}
+
+		// If no permissions required, the role check is enough
+		if (!item.permissions || item.permissions.length === 0) return true;
+
+		// Permission check (admin only)
+		if (user.role !== 'admin') return false;
+
+		const userPerms = user.adminRole?.permissions ?? [];
+		return item.permissions.some((p) => userPerms.includes(p));
+	}
 
 	return (
 		<Sidebar>
@@ -169,9 +92,11 @@ export function AppSidebar() {
 						<SidebarGroupLabel>Admin Panel</SidebarGroupLabel>
 						<SidebarGroupContent>
 							<SidebarMenu>
-								{adminSidebarLinks.map((item) => (
-									<SidebarNavLink key={item.title} item={item} />
-								))}
+								{adminSidebarLinks
+									.filter((item) => canView(item))
+									.map((item) => (
+										<SidebarNavLink key={item.title} item={item} />
+									))}
 							</SidebarMenu>
 						</SidebarGroupContent>
 					</SidebarGroup>
@@ -213,7 +138,7 @@ export function AppSidebar() {
 	);
 }
 
-function SidebarNavLink({ item }: { item: SidebarNavLink }) {
+function SidebarNavLink({ item }: { item: SidebarNavLinkType }) {
 	return (
 		<NavLink
 			className={({ isActive }) =>

@@ -13,6 +13,8 @@ import BackupList from '@/components/BackupList';
 import { Card, CardContent } from '@/components/ui/card';
 import Header from '@/components/ui/header';
 import { DialogDescription } from '@radix-ui/react-dialog';
+import HasPermission from '@/components/HasPermission';
+import { MODULES } from '@/constants';
 
 type BackupItem = {
 	name: string;
@@ -111,25 +113,30 @@ export default function AdminBackupPage() {
 			<Header size='md'>Backups</Header>
 			<Card>
 				<CardContent>
-					<Card>
-						<CardContent>
-							<h2 className='font-medium mb-2'>Manual Backup</h2>
-							<p className='text-sm text-muted-foreground mb-3'>
-								Manually create a backup of the database.
-							</p>
+					<HasPermission
+						userRole={['admin']}
+						permissions={[MODULES.CREATE_BACKUP]}
+					>
+						<Card>
+							<CardContent>
+								<h2 className='font-medium mb-2'>Manual Backup</h2>
+								<p className='text-sm text-muted-foreground mb-3'>
+									Manually create a backup of the database.
+								</p>
 
-							<div className='flex gap-2'>
-								{/* <Input
+								<div className='flex gap-2'>
+									{/* <Input
 									placeholder='mongodb+srv://...'
 									value={mongoUri}
 									onChange={(e) => setMongoUri(e.target.value)}
 								/> */}
-								<Button onClick={handleManual} disabled={loading}>
-									{loading ? 'Creating...' : 'Create Backup'}
-								</Button>
-							</div>
-						</CardContent>
-					</Card>
+									<Button onClick={handleManual} disabled={loading}>
+										{loading ? 'Creating...' : 'Create Backup'}
+									</Button>
+								</div>
+							</CardContent>
+						</Card>
+					</HasPermission>
 
 					<div className='mt-5'>
 						<h2 className='text-lg font-medium mb-4'>Backup History</h2>

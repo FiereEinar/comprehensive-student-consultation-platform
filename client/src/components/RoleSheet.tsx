@@ -22,6 +22,7 @@ import { deleteRole, updateRole } from '@/api/role';
 import type { Role } from '@/api/role';
 import { useEffect } from 'react';
 import ConfirmDeleteDialog from './ConfirmDeleteDialog';
+import HasPermission from './HasPermission';
 
 // Schema for updating role
 const updateRoleSchema = z.object({
@@ -97,13 +98,13 @@ export default function RoleSheet({
 
 	// Group permissions by module
 	const moduleGroups = {
-		User: Object.entries(MODULES).filter(([key]) => key.includes('USER')),
 		Consultation: Object.entries(MODULES).filter(([key]) =>
 			key.includes('CONSULTATION')
 		),
+		User: Object.entries(MODULES).filter(([key]) => key.includes('USER')),
+		Role: Object.entries(MODULES).filter(([key]) => key.includes('ROLE')),
 		Log: Object.entries(MODULES).filter(([key]) => key.includes('LOG')),
 		Backup: Object.entries(MODULES).filter(([key]) => key.includes('BACKUP')),
-		Role: Object.entries(MODULES).filter(([key]) => key.includes('ROLE')),
 	};
 
 	const handleDeleteRole = async () => {
@@ -246,28 +247,39 @@ export default function RoleSheet({
 
 						{/* Save Button */}
 						<div className='flex justify-end pt-4 mb-5 gap-2'>
-							<ConfirmDeleteDialog
-								onConfirm={handleDeleteRole}
-								trigger={
-									<Button
-										size='sm'
-										variant='link'
-										type='button'
-										className='text-red-500 text-xs'
-										disabled={isSubmitting || updateRoleMutation.isPending}
-									>
-										<Trash className='w-4 h-4' /> Delete Role
-									</Button>
-								}
-							/>
-							<Button
-								size='sm'
-								type='submit'
-								disabled={isSubmitting || updateRoleMutation.isPending}
+							<HasPermission
+								userRole={['admin']}
+								permissions={[MODULES.DELETE_ROLE]}
 							>
-								<Save className='w-4 h-4 mr-2' />
-								Save Changes
-							</Button>
+								<ConfirmDeleteDialog
+									onConfirm={handleDeleteRole}
+									trigger={
+										<Button
+											size='sm'
+											variant='link'
+											type='button'
+											className='text-red-500 text-xs'
+											disabled={isSubmitting || updateRoleMutation.isPending}
+										>
+											<Trash className='w-4 h-4' /> Delete Role
+										</Button>
+									}
+								/>
+							</HasPermission>
+
+							<HasPermission
+								userRole={['admin']}
+								permissions={[MODULES.UPDATE_ROLE]}
+							>
+								<Button
+									size='sm'
+									type='submit'
+									disabled={isSubmitting || updateRoleMutation.isPending}
+								>
+									<Save className='w-4 h-4 mr-2' />
+									Save Changes
+								</Button>
+							</HasPermission>
 						</div>
 					</form>
 				</div>

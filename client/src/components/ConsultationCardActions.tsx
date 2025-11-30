@@ -1,5 +1,5 @@
 import axiosInstance from '@/api/axios';
-import { QUERY_KEYS } from '@/constants';
+import { MODULES, QUERY_KEYS } from '@/constants';
 import { queryClient } from '@/main';
 import type { Consultation, ConsultationStatus } from '@/types/consultation';
 import { Check, Ban, Ellipsis, Info, Trash } from 'lucide-react';
@@ -15,6 +15,7 @@ import {
 import ConfirmDeleteDialog from './ConfirmDeleteDialog';
 import { useState } from 'react';
 import { useUserStore } from '@/stores/user';
+import HasPermission from './HasPermission';
 
 type ConsultationCardActionsProps = {
 	consultation: Consultation;
@@ -78,89 +79,119 @@ export default function ConsultationCardActions({
 			{/* Inline primary actions */}
 			{status === 'pending' && !isStudent && (
 				<>
-					<ConfirmDeleteDialog
-						icon={<Info className='size-5 text-blue-500' />}
-						title='Create Google Meet Link?'
-						description='Would you like to generate google meet link'
-						onConfirm={() => handleAction('accepted', true)}
-						confirmText='Create'
-						onCancel={() => handleAction('accepted')}
-						cancelText='Skip'
-						trigger={
-							<Button
-								disabled={isLoading}
-								variant='link'
-								size='sm'
-								className='text-green-500 flex items-center gap-1 text-xs'
-							>
-								<Check className='w-4 h-4' /> Accept
-							</Button>
-						}
-					/>
-					<ConfirmDeleteDialog
-						trigger={
-							<Button
-								disabled={isLoading}
-								variant='link'
-								size='sm'
-								className='text-red-500 flex items-center gap-1 text-xs'
-							>
-								<Ban className='w-4 h-4' /> Decline
-							</Button>
-						}
-						onConfirm={() => handleAction('declined')}
-						confirmText='Decline'
-						title='Decline request?'
-						description='Are you sure you want to decline this request? This action can not be undone.'
-					/>
+					<HasPermission
+						userRole={['admin', 'instructor']}
+						permissions={[MODULES.UPDATE_CONSULTATION_STATUS]}
+					>
+						<ConfirmDeleteDialog
+							icon={<Info className='size-5 text-blue-500' />}
+							title='Create Google Meet Link?'
+							description='Would you like to generate google meet link'
+							onConfirm={() => handleAction('accepted', true)}
+							confirmText='Create'
+							onCancel={() => handleAction('accepted')}
+							cancelText='Skip'
+							trigger={
+								<Button
+									disabled={isLoading}
+									variant='link'
+									size='sm'
+									className='text-green-500 flex items-center gap-1 text-xs'
+								>
+									<Check className='w-4 h-4' /> Accept
+								</Button>
+							}
+						/>
+					</HasPermission>
+
+					<HasPermission
+						userRole={['admin', 'instructor']}
+						permissions={[MODULES.UPDATE_CONSULTATION_STATUS]}
+					>
+						<ConfirmDeleteDialog
+							trigger={
+								<Button
+									disabled={isLoading}
+									variant='link'
+									size='sm'
+									className='text-red-500 flex items-center gap-1 text-xs'
+								>
+									<Ban className='w-4 h-4' /> Decline
+								</Button>
+							}
+							onConfirm={() => handleAction('declined')}
+							confirmText='Decline'
+							title='Decline request?'
+							description='Are you sure you want to decline this request? This action can not be undone.'
+						/>
+					</HasPermission>
 				</>
 			)}
 
 			{(status === 'declined' || status === 'completed') && !isStudent && (
-				<ConfirmDeleteDialog
-					onConfirm={() => handleDelete(consultationID)}
-					trigger={
-						<Button
-							variant='link'
-							size='sm'
-							className='text-red-500 flex items-center gap-1 text-xs'
-						>
-							<Trash className='w-4 h-4' /> Delete
-						</Button>
-					}
-				/>
+				<HasPermission
+					userRole={['admin', 'instructor']}
+					permissions={[MODULES.DELETE_CONSULTATION]}
+				>
+					<ConfirmDeleteDialog
+						onConfirm={() => handleDelete(consultationID)}
+						trigger={
+							<Button
+								variant='link'
+								size='sm'
+								className='text-red-500 flex items-center gap-1 text-xs'
+							>
+								<Trash className='w-4 h-4' /> Delete
+							</Button>
+						}
+					/>
+				</HasPermission>
 			)}
 
-			{/* {status === 'accepted' && ( */}
-			{!isStudent && (
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button variant='ghost' size='icon'>
-							<Ellipsis className='w-5 h-5' />
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align='end'>
-						<>
-							<DropdownMenuItem
-								onClick={() => handleAction('completed')}
-								className='flex items-center gap-2 cursor-pointer'
-							>
-								<Check className='w-4 h-4' />
-								Mark as Done
-							</DropdownMenuItem>
+			<HasPermission
+				userRole={['admin', 'instructor']}
+				permissions={[MODULES.UPDATE_CONSULTATION_STATUS]}
+			>
+				{!isStudent && (
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button variant='ghost' size='icon'>
+								<Ellipsis className='w-5 h-5' />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align='end'>
+							<>
+								<HasPermission
+									userRole={['admin', 'instructor']}
+									permissions={[MODULES.UPDATE_CONSULTATION_STATUS]}
+								>
+									<DropdownMenuItem
+										onClick={() => handleAction('completed')}
+										className='flex items-center gap-2 cursor-pointer'
+									>
+										<Check className='w-4 h-4' />
+										Mark as Done
+									</DropdownMenuItem>
+								</HasPermission>
 
-							<DropdownMenuSeparator />
+								<DropdownMenuSeparator />
 
-							<DropdownMenuItem
-								onClick={() => handleAction('declined')}
-								className='flex items-center gap-2 cursor-pointer text-red-500'
-							>
-								<Ban className='w-4 h-4 text-red-500' /> Cancel
-							</DropdownMenuItem>
-						</>
-					</DropdownMenuContent>
-				</DropdownMenu>
-			)}
+								<HasPermission
+									userRole={['admin', 'instructor']}
+									permissions={[MODULES.UPDATE_CONSULTATION_STATUS]}
+								>
+									<DropdownMenuItem
+										onClick={() => handleAction('declined')}
+										className='flex items-center gap-2 cursor-pointer text-red-500'
+									>
+										<Ban className='w-4 h-4 text-red-500' /> Cancel
+									</DropdownMenuItem>
+								</HasPermission>
+							</>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				)}
+			</HasPermission>
 		</div>
 	);
 }

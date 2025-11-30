@@ -214,13 +214,12 @@ export default function ConsultationSheet({
 							<p className='font-medium text-sm text-muted-foreground'>
 								Instructor Notes
 							</p>
-							{user?.role === 'instructor' &&
-								user._id === consultation.instructor._id && (
-									<InstructorNotesForm
-										consultationID={consultation._id}
-										currentNotes={consultation.instructorNotes}
-									/>
-								)}
+							{user?.role !== 'student' && (
+								<InstructorNotesForm
+									consultationID={consultation._id}
+									currentNotes={consultation.instructorNotes}
+								/>
+							)}
 						</div>
 
 						<div className='flex items-center'>

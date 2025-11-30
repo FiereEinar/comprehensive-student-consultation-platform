@@ -70,7 +70,9 @@ import { encrypt } from '../utils/encryption';
  */
 export const loginHandler = asyncHandler(async (req, res) => {
 	const body = loginSchema.parse(req.body);
-	const user = await UserModel.findOne({ email: body.email }).exec();
+	const user = await UserModel.findOne({ email: body.email })
+		.populate('adminRole')
+		.exec();
 
 	// Check if user exists
 	appAssert(user, UNAUTHORIZED, 'Incorrect email or password');
@@ -271,7 +273,9 @@ export const verifyAuthHandler = asyncHandler(async (req, res) => {
 		AppErrorCodes.InvalidAccessToken
 	);
 
-	const user = await UserModel.findById(payload.userID as string);
+	const user = await UserModel.findById(payload.userID as string).populate(
+		'adminRole'
+	);
 	const session = await SessionModel.findById(payload.sessionID);
 
 	appAssert(
@@ -327,7 +331,7 @@ export const googleLoginHandlerV2 = asyncHandler(async (req, res) => {
 	const { email, name, id: googleID, picture, hd } = googleUser;
 
 	// Check if user exists
-	let user = await UserModel.findOne({ email });
+	let user = await UserModel.findOne({ email }).populate('adminRole');
 	if (!user) {
 		appAssert(
 			WHITELISTED_DOMAINS.includes(hd),

@@ -26,6 +26,8 @@ export default function AdminInstructorsPage() {
 
 	useEffect(() => {
 		setRole('instructor');
+		setPage(1);
+		setSearch('');
 	}, []);
 
 	const { data: invitations, isLoading: isLoadingInvitations } = useQuery({

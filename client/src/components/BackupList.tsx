@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from './ui/card';
 import ConfirmDeleteDialog from './ConfirmDeleteDialog';
 import { Download, Edit, Trash } from 'lucide-react';
+import HasPermission from './HasPermission';
+import { MODULES } from '@/constants';
 
 type BackupItem = {
 	name: string;
@@ -44,34 +46,51 @@ export default function BackupList({
 						</div>
 
 						<div className='flex gap-2'>
-							<Button
-								size='sm'
-								variant='link'
-								onClick={() => onDownload(b.name)}
-								className='text-xs text-black'
+							<HasPermission
+								userRole={['admin']}
+								permissions={[MODULES.DOWNLOAD_BACKUP]}
 							>
-								<Download className='w-4 h-4' /> Download
-							</Button>
-							<Button
-								size='sm'
-								variant='link'
-								onClick={() => onRestore(b)}
-								className='text-xs text-blue-500'
+								<Button
+									size='sm'
+									variant='link'
+									onClick={() => onDownload(b.name)}
+									className='text-xs text-black'
+								>
+									<Download className='w-4 h-4' /> Download
+								</Button>
+							</HasPermission>
+
+							<HasPermission
+								userRole={['admin']}
+								permissions={[MODULES.RESTORE_BACKUP]}
 							>
-								<Edit className='w-4 h-4' /> Restore
-							</Button>
-							<ConfirmDeleteDialog
-								onConfirm={() => onRemove(b)}
-								trigger={
-									<Button
-										size='sm'
-										variant='link'
-										className='text-xs text-red-500'
-									>
-										<Trash className='w-4 h-4' /> Remove
-									</Button>
-								}
-							/>
+								<Button
+									size='sm'
+									variant='link'
+									onClick={() => onRestore(b)}
+									className='text-xs text-blue-500'
+								>
+									<Edit className='w-4 h-4' /> Restore
+								</Button>
+							</HasPermission>
+
+							<HasPermission
+								userRole={['admin']}
+								permissions={[MODULES.DELETE_BACKUP]}
+							>
+								<ConfirmDeleteDialog
+									onConfirm={() => onRemove(b)}
+									trigger={
+										<Button
+											size='sm'
+											variant='link'
+											className='text-xs text-red-500'
+										>
+											<Trash className='w-4 h-4' /> Remove
+										</Button>
+									}
+								/>
+							</HasPermission>
 						</div>
 					</CardContent>
 				</Card>

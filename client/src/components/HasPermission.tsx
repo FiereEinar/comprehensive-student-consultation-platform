@@ -29,7 +29,9 @@ export default function HasPermission({
 	if (user.role === 'admin' && permissions.length > 0) {
 		const userPerms = user.adminRole?.permissions ?? [];
 		const hasPerm = permissions.some((p) => userPerms.includes(p));
-		if (!hasPerm) return fallback;
+		if (!hasPerm) {
+			return fallback;
+		}
 	}
 
 	return children;

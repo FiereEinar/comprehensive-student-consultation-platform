@@ -18,6 +18,8 @@ import {
 import GenerateReportFormAdmin from '@/components/forms/GenerateReportFormAdmin';
 import axiosInstance from '@/api/axios';
 import { Card, CardContent } from '@/components/ui/card';
+import { useQuery } from '@tanstack/react-query';
+import { QUERY_KEYS } from '@/constants';
 
 const PIE_COLORS = [
 	'#0088FE',
@@ -129,13 +131,28 @@ export default function AdminReportsPage() {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 
+	const { data: consRes } = useQuery({
+		queryKey: [QUERY_KEYS.CONSULTATIONS, { fetchAll: true }],
+		queryFn: async () => {
+			const { data } = await axiosInstance.get('/consultation?fetchAll=true');
+			return data.data;
+		},
+	});
+
+	const { data: usersRes } = useQuery({
+		queryKey: [QUERY_KEYS.USERS, { fetchAll: true }],
+		queryFn: async () => {
+			const { data } = await axiosInstance.get('/user?fetchAll=true');
+			return data.data;
+		},
+	});
+
 	useEffect(() => {
 		async function loadAll() {
 			setLoading(true);
 			setError(null);
 			try {
-				const { data } = await axiosInstance.get('/consultation?fetchAll=true');
-				const consRaw = data.data;
+				const consRaw = consRes;
 
 				const consList: ConsultationRaw[] = Array.isArray(consRaw)
 					? consRaw
@@ -162,10 +179,7 @@ export default function AdminReportsPage() {
 					meetLink: c.meetLink,
 				}));
 
-				const { data: userRes } = await axiosInstance.get(
-					'/user?fetchAll=true'
-				);
-				const userRaw = userRes.data;
+				const userRaw = usersRes;
 				const userList: UserRaw[] = Array.isArray(userRaw)
 					? userRaw
 					: Array.isArray(userRaw.data)
@@ -190,9 +204,10 @@ export default function AdminReportsPage() {
 			setLoading(false);
 		}
 
+		if (!consRes || !usersRes) return;
 		loadAll();
 		// logPageView();
-	}, []);
+	}, [consRes, usersRes]);
 
 	if (loading) return <div>Loading consultations...</div>;
 	if (error)
