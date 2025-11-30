@@ -19,7 +19,9 @@ export const consutationStatusSchema = z.enum(
 export const updateConsultationSchema = z.object({
 	title: z.string().min(1, 'Title is required').max(100),
 	description: z.string().min(1, 'Description is required').max(500),
+	scheduledAt: z.string().min(1, 'Schedule is required'),
 	purpose: z.string().min(1, 'Purpose is required'),
 	subjectCode: z.string().optional(),
 	sectionCode: z.string().optional(),
+	status: consutationStatusSchema,
 });

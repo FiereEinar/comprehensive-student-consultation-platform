@@ -10,18 +10,11 @@ import { authorizeRoles } from '../middlewares/auth';
 const router = express.Router();
 
 router.get('/', getInstructorAvailability);
-router.post('/', authorizeRoles('instructor'), createInstructorAvailability);
 
-router.put(
-	'/:availabilityID',
-	authorizeRoles('instructor'),
-	updateSingleAvailability
-);
+router.use(authorizeRoles('instructor'));
 
-router.delete(
-	'/:availabilityID',
-	authorizeRoles('instructor'),
-	deleteSingleAvailability
-);
+router.post('/', createInstructorAvailability);
+router.put('/:availabilityID', updateSingleAvailability);
+router.delete('/:availabilityID', deleteSingleAvailability);
 
 export default router;

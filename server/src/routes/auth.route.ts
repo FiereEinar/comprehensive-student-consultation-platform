@@ -18,6 +18,8 @@ import {
 	verifyAuthHandler,
 } from '../controllers/auth.controller';
 import { auth } from '../middlewares/auth';
+import { hasRole } from '../middlewares/authorization.middleware';
+import { MODULES } from '../constants';
 const router = express.Router();
 
 router.post('/login', loginHandler);
@@ -37,7 +39,12 @@ router.post('/reset-password/:token', resetPasswordHandler);
 
 // might wanna separate to /api/v1/invitations ???
 router.get('/invite', getInvitations);
-router.post('/invite/instructor', auth, inviteInstructor);
+router.post(
+	'/invite/instructor',
+	auth,
+	hasRole([MODULES.INVITE_INSTRUCTOR_USER]),
+	inviteInstructor
+);
 router.post('/invite/instructor/accept', acceptInvitation);
 
 export default router;

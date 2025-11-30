@@ -39,15 +39,16 @@ import InstructorAvailabilities from '../InstructorAvailabilities';
 import { Separator } from '@radix-ui/react-separator';
 import { queryClient } from '@/main';
 import type z from 'zod';
-import { createConsultationSchema } from '@/lib/schemas/consultation.schema';
+import { updateConsultationSchema } from '@/lib/schemas/consultation.schema';
 import _ from 'lodash';
 import type { Consultation } from '@/types/consultation';
 import { Pencil } from 'lucide-react';
+import { useUserStore } from '@/stores/user';
 
-export type ConsultationFormValues = z.infer<typeof createConsultationSchema>;
+export type ConsultationFormValues = z.infer<typeof updateConsultationSchema>;
 
 type EditConsultationFormProps = {
-	consultation: Consultation; // pass full consultation object
+	consultation: Consultation;
 	title?: string;
 	trigger?: React.ReactNode;
 };
@@ -56,6 +57,9 @@ export default function EditConsultationForm({
 	consultation,
 	trigger,
 }: EditConsultationFormProps) {
+	const { user } = useUserStore((state) => state);
+	const isStudent = user?.role === 'student';
+
 	const [selectedInstructor] = useState<string>(consultation.instructor._id);
 	const [selectedPurpose, setSelectedPurpose] = useState<string>(
 		consultation.purpose
@@ -66,7 +70,7 @@ export default function EditConsultationForm({
 		handleSubmit,
 		formState: { isSubmitting },
 	} = useForm<ConsultationFormValues>({
-		resolver: zodResolver(createConsultationSchema),
+		resolver: zodResolver(updateConsultationSchema),
 		defaultValues: {
 			title: consultation.title,
 			description: consultation.description,
@@ -75,6 +79,7 @@ export default function EditConsultationForm({
 			purpose: consultation.purpose,
 			sectonCode: consultation.sectonCode,
 			subjectCode: consultation.subjectCode,
+			status: consultation.status,
 		},
 	});
 
@@ -112,8 +117,6 @@ export default function EditConsultationForm({
 			toast.error(error.message ?? 'Failed to aquire lock');
 		}
 	};
-
-	// console.log({ consultation });
 
 	return (
 		<Dialog>
@@ -293,10 +296,46 @@ export default function EditConsultationForm({
 								<DatePicker
 									field={field}
 									fieldState={fieldState}
-									isDisabled={true}
+									isDisabled={isStudent}
 								/>
 							)}
 						/>
+
+						{/* STATUS */}
+						{!isStudent && (
+							<Controller
+								name='status'
+								control={control}
+								render={({ field, fieldState }) => (
+									<Field>
+										<FieldLabel>Status</FieldLabel>
+										<Select
+											value={field.value}
+											onValueChange={(val) => field.onChange(val)}
+										>
+											<SelectTrigger data-invalid={fieldState.invalid}>
+												<SelectValue placeholder='Status' />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectGroup>
+													<SelectLabel></SelectLabel>
+													{[
+														'pending',
+														'accepted',
+														'declined',
+														'completed',
+													]?.map((stat) => (
+														<SelectItem key={stat} value={stat}>
+															{_.startCase(stat)}
+														</SelectItem>
+													))}
+												</SelectGroup>
+											</SelectContent>
+										</Select>
+									</Field>
+								)}
+							/>
+						)}
 					</div>
 				</form>
 

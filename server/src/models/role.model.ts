@@ -1,12 +1,12 @@
 import mongoose from 'mongoose';
-import { EncryptPlugin } from '../utils/mongoose-encryption-plugin';
 
 const Schema = mongoose.Schema;
 
 export interface IRole extends mongoose.Document {
+	_id: mongoose.Types.ObjectId;
 	name: string;
 	description?: string;
-	permissions: mongoose.Types.ObjectId[];
+	permissions: string[];
 	createdBy: mongoose.Types.ObjectId; // admin who created the role
 	createdAt: Date;
 	updatedAt: Date;
@@ -22,17 +22,13 @@ const RoleSchema = new Schema<IRole>(
 			maxlength: 50,
 		},
 		description: { type: String, maxlength: 200 },
-		permissions: [{ type: Schema.Types.ObjectId, ref: 'Permission' }],
+		permissions: [String],
 		createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
 	},
 	{
 		timestamps: true,
 	}
 );
-
-const roleModelEncryptedFields = ['name', 'description'];
-
-RoleSchema.plugin(EncryptPlugin, { fields: roleModelEncryptedFields });
 
 const RoleModel = mongoose.model('Role', RoleSchema);
 export default RoleModel;

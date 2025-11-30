@@ -21,7 +21,7 @@ root.render(
 				<QueryClientProvider client={queryClient}>
 					<SidebarProvider>
 						<Route />
-						<Toaster />
+						<Toaster position='bottom-left' />
 					</SidebarProvider>
 				</QueryClientProvider>
 			</ThemeProvider>

@@ -2,7 +2,7 @@ import asyncHandler from 'express-async-handler';
 import { createAvilabilitySchema } from '../schemas/availability.schema';
 import UserModel from '../models/user.model';
 import appAssert from '../errors/app-assert';
-import { BAD_REQUEST, CREATED, NOT_FOUND, OK } from '../constants/http';
+import { BAD_REQUEST, NOT_FOUND, OK } from '../constants/http';
 import AvailabilityModel from '../models/availability.model';
 import CustomResponse from '../utils/response';
 import { logActivity } from '../utils/activity-logger';

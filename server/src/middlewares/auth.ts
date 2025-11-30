@@ -26,9 +26,7 @@ export const auth = asyncHandler(
 			AppErrorCodes.InvalidAccessToken
 		);
 
-		const user = await UserModel.findById(payload.userID as string).populate(
-			'roles'
-		);
+		const user = await UserModel.findById(payload.userID as string);
 		appAssert(
 			user,
 			UNAUTHORIZED,

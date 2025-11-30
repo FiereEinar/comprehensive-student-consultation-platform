@@ -1,3 +1,4 @@
+import type { Role } from '@/api/role';
 import type { createAvilabilitySchema } from '@/lib/schemas/availability.schema';
 import type z from 'zod';
 
@@ -10,7 +11,7 @@ export type User = {
 	email: string;
 	password: string;
 	role: UserTypes;
-	roles?: string[]; // For advanced RBAC
+	adminRole?: Role; // For advanced RBAC
 	archived?: boolean;
 	profilePicture?: string;
 	resetPasswordToken?: string;

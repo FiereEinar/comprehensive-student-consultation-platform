@@ -11,7 +11,7 @@ export interface IUser extends mongoose.Document {
 	email: string;
 	password: string;
 	role: UserTypes; // Keep for backward compatibility
-	roles: mongoose.Types.ObjectId[]; // New RBAC roles
+	adminRole?: mongoose.Types.ObjectId | undefined; // New RBAC roles
 	profilePicture?: string;
 	resetPasswordToken?: string;
 	resetPasswordExpires?: Date | undefined;
@@ -41,7 +41,7 @@ const UserSchema = new Schema<IUser>(
 			default: 'student',
 			required: true,
 		},
-		roles: [{ type: Schema.Types.ObjectId, ref: 'Role' }],
+		adminRole: { type: Schema.Types.ObjectId, ref: 'Role' },
 		resetPasswordToken: { type: String, required: false },
 		resetPasswordExpires: { type: Date, required: false },
 		profilePicture: { type: String, required: false },

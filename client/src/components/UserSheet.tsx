@@ -32,20 +32,22 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/constants';
 import axiosInstance from '@/api/axios';
 import type { User } from '@/types/user';
 import { startCase } from 'lodash';
 import { useEffect, useState } from 'react';
 import ConfirmDeleteDialog from './ConfirmDeleteDialog';
+import { fetchRoles } from '@/api/role';
 
 // Schema for updating user
 const updateUserSchema = z.object({
 	name: z.string().min(1, 'Name is required'),
 	institutionalID: z.string().min(1, 'Institutional ID is required'),
-	email: z.string().email('Invalid email').optional().or(z.literal('')),
+	email: z.email('Invalid email').optional().or(z.literal('')),
 	role: z.enum(['admin', 'student', 'instructor'], 'Role is required'),
+	adminRole: z.string().optional(),
 });
 
 export type UpdateUserFormValues = z.infer<typeof updateUserSchema>;
@@ -65,9 +67,15 @@ export default function UserSheet({
 	const [resetPasswordDialogOpen, setResetPasswordDialogOpen] = useState(false);
 	const [newPassword, setNewPassword] = useState('');
 
+	const { data: roles } = useQuery({
+		queryKey: [QUERY_KEYS.ROLES],
+		queryFn: () => fetchRoles(),
+	});
+
 	const {
 		control,
 		handleSubmit,
+		watch,
 		reset,
 		formState: { isSubmitting },
 	} = useForm<UpdateUserFormValues>({
@@ -77,8 +85,11 @@ export default function UserSheet({
 			institutionalID: user?.institutionalID || '',
 			email: user?.email || '',
 			role: user?.role || 'student',
+			adminRole: user?.adminRole?._id.toString() || '',
 		},
 	});
+
+	const selectedRole = watch('role');
 
 	// Update user mutation
 	const updateUserMutation = useMutation({
@@ -95,7 +106,7 @@ export default function UserSheet({
 			onOpenChange(false);
 		},
 		onError: (error: any) => {
-			toast.error(error.response?.data?.message ?? 'Failed to update user');
+			toast.error(error.message ?? 'Failed to update user');
 		},
 	});
 
@@ -116,9 +127,7 @@ export default function UserSheet({
 			onOpenChange(false);
 		},
 		onError: (error: any) => {
-			toast.error(
-				error.response?.data?.message ?? 'Failed to update user status'
-			);
+			toast.error(error.message ?? 'Failed to update user status');
 		},
 	});
 
@@ -135,7 +144,7 @@ export default function UserSheet({
 			toast.success('Password reset successfully');
 		},
 		onError: (error: any) => {
-			toast.error(error.response?.data?.message ?? 'Failed to reset password');
+			toast.error(error.message ?? 'Failed to reset password');
 		},
 	});
 
@@ -169,6 +178,7 @@ export default function UserSheet({
 				institutionalID: user.institutionalID,
 				email: user.email || '',
 				role: user.role,
+				adminRole: user.adminRole?._id.toString() || '',
 			});
 		}
 	}, [user, reset]);
@@ -208,7 +218,7 @@ export default function UserSheet({
 						</SheetDescription>
 					</SheetHeader>
 
-					<div className='space-y-6 px-5'>
+					<div className='space-y-6 px-5 overflow-y-auto'>
 						{/* User Status */}
 						<div className='flex items-center justify-end'>
 							<div className='flex gap-2'>
@@ -360,6 +370,47 @@ export default function UserSheet({
 								)}
 							/>
 
+							{/* ADMIN ROLES */}
+							{selectedRole === 'admin' && (
+								<Controller
+									name='adminRole'
+									control={control}
+									render={({ field, fieldState }) => (
+										<Field data-invalid={fieldState.invalid}>
+											<FieldLabel htmlFor={field.name}>Admin Role</FieldLabel>
+											<Select
+												onValueChange={field.onChange}
+												value={field.value}
+											>
+												<SelectTrigger
+													className='w-full cursor-pointer'
+													data-invalid={fieldState.invalid}
+												>
+													<SelectValue placeholder='Select Admin Role' />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectGroup>
+														<SelectLabel>Admin Role</SelectLabel>
+														{roles?.map((role) => (
+															<SelectItem
+																key={role._id}
+																value={role._id}
+																className='cursor-pointer'
+															>
+																{startCase(role.name)}
+															</SelectItem>
+														))}
+													</SelectGroup>
+												</SelectContent>
+											</Select>
+											{fieldState.invalid && (
+												<FieldError errors={[fieldState.error]} />
+											)}
+										</Field>
+									)}
+								/>
+							)}
+
 							{/* Account Info */}
 							<div className='text-sm text-muted-foreground space-y-1'>
 								<p>Created: {new Date(user.createdAt).toLocaleDateString()}</p>
@@ -369,7 +420,7 @@ export default function UserSheet({
 							</div>
 
 							{/* Save Button */}
-							<div className='flex justify-end pt-4'>
+							<div className='flex justify-end pt-4 mb-5'>
 								<Button
 									type='submit'
 									disabled={isSubmitting || updateUserMutation.isPending}

@@ -28,6 +28,7 @@ export default function ConsultationCardActions({
 	const consultationID = consultation._id;
 	const [isLoading, setIsLoading] = useState(false);
 	const { user } = useUserStore((state) => state);
+	const isStudent = user?.role === 'student';
 
 	const handleAction = async (
 		newStatus: ConsultationStatus,
@@ -75,7 +76,7 @@ export default function ConsultationCardActions({
 	return (
 		<div className='flex items-center gap-2 ml-auto'>
 			{/* Inline primary actions */}
-			{status === 'pending' && user?.role === 'instructor' && (
+			{status === 'pending' && !isStudent && (
 				<>
 					<ConfirmDeleteDialog
 						icon={<Info className='size-5 text-blue-500' />}
@@ -115,67 +116,51 @@ export default function ConsultationCardActions({
 				</>
 			)}
 
-			{(status === 'declined' || status === 'completed') &&
-				user?.role !== 'student' && (
-					<ConfirmDeleteDialog
-						onConfirm={() => handleDelete(consultationID)}
-						trigger={
-							<Button
-								variant='link'
-								size='sm'
-								className='text-red-500 flex items-center gap-1 text-xs'
-							>
-								<Trash className='w-4 h-4' /> Delete
-							</Button>
-						}
-					/>
-				)}
+			{(status === 'declined' || status === 'completed') && !isStudent && (
+				<ConfirmDeleteDialog
+					onConfirm={() => handleDelete(consultationID)}
+					trigger={
+						<Button
+							variant='link'
+							size='sm'
+							className='text-red-500 flex items-center gap-1 text-xs'
+						>
+							<Trash className='w-4 h-4' /> Delete
+						</Button>
+					}
+				/>
+			)}
 
 			{/* {status === 'accepted' && ( */}
-			<DropdownMenu>
-				<DropdownMenuTrigger asChild>
-					<Button variant='ghost' size='icon'>
-						<Ellipsis className='w-5 h-5' />
-					</Button>
-				</DropdownMenuTrigger>
-				<DropdownMenuContent align='end'>
-					{user?.role === 'instructor' && (
-						<DropdownMenuItem
-							onClick={() => handleAction('completed')}
-							className='flex items-center gap-2 cursor-pointer'
-						>
-							<Check className='w-4 h-4' />
-							Mark as Done
-						</DropdownMenuItem>
-					)}
+			{!isStudent && (
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<Button variant='ghost' size='icon'>
+							<Ellipsis className='w-5 h-5' />
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align='end'>
+						<>
+							<DropdownMenuItem
+								onClick={() => handleAction('completed')}
+								className='flex items-center gap-2 cursor-pointer'
+							>
+								<Check className='w-4 h-4' />
+								Mark as Done
+							</DropdownMenuItem>
 
-					{/* <DropdownMenuItem>
-						<div
-							className='flex items-center gap-2 cursor-pointer w-full'
-							// onClick={(e) => e.stopPropagation()}
-						>
-							<EditConsultationForm
-								consultation={consultation}
-								trigger={
-									<div className='flex items-center w-full gap-2'>
-										<Pencil /> Edit
-									</div>
-								}
-							/>
-						</div>
-					</DropdownMenuItem> */}
+							<DropdownMenuSeparator />
 
-					<DropdownMenuSeparator />
-
-					<DropdownMenuItem
-						onClick={() => handleAction('declined')}
-						className='flex items-center gap-2 cursor-pointer text-red-500'
-					>
-						<Ban className='w-4 h-4 text-red-500' /> Cancel
-					</DropdownMenuItem>
-				</DropdownMenuContent>
-			</DropdownMenu>
-			{/* )} */}
+							<DropdownMenuItem
+								onClick={() => handleAction('declined')}
+								className='flex items-center gap-2 cursor-pointer text-red-500'
+							>
+								<Ban className='w-4 h-4 text-red-500' /> Cancel
+							</DropdownMenuItem>
+						</>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			)}
 		</div>
 	);
 }

@@ -50,7 +50,11 @@ import { Types } from 'mongoose';
 import { notifyUser } from '../utils/notification';
 import AppNotificationModel from '../models/app-notification';
 import { startCase } from 'lodash';
-import { decryptFields, encrypt } from '../utils/encryption';
+import {
+	decryptFields,
+	decryptRequestData,
+	encrypt,
+} from '../utils/encryption';
 
 /**
  * @route GET /api/v1/consultation - get all recent consultations
@@ -748,12 +752,22 @@ export const deleteConsultation = asynchandler(async (req, res) => {
 	const currentUser = req.user;
 	const { consultationID } = req.params;
 
-	const consultation = await ConsultationModel.findById<IConsultation>(
+	const consultationDoc = await ConsultationModel.findById<IConsultation>(
 		consultationID
 	)
 		.populate('instructor')
 		.exec();
-	appAssert(consultation, NOT_FOUND, 'Consultation not found');
+	appAssert(consultationDoc, NOT_FOUND, 'Consultation not found');
+
+	const consultation = decryptFields(consultationDoc, [
+		'googleCalendarEventId',
+	]);
+	const instructor = decryptFields(consultation.instructor, [
+		'googleCalendarTokens',
+	]);
+	// const consultation = decryptRequestData(
+	// 	consultationDoc
+	// ) as unknown as IConsultation;
 
 	appAssert(
 		consultation.instructor._id?.toString() === currentUser._id.toString(),
@@ -761,22 +775,26 @@ export const deleteConsultation = asynchandler(async (req, res) => {
 		'You are not authorized to delete this consultation'
 	);
 
-	if (consultation.instructor.googleCalendarTokens) {
+	if (instructor.googleCalendarTokens) {
 		const oAuth2Client = new google.auth.OAuth2(
 			GOOGLE_CLIENT_ID,
 			GOOGLE_CLIENT_SECRET,
 			GOOGLE_REDIRECT_URI
 		);
-		oAuth2Client.setCredentials(consultation.instructor.googleCalendarTokens);
+		oAuth2Client.setCredentials(instructor.googleCalendarTokens);
 		const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
 
-		// Remove event if completed
-		await calendar.events.delete({
-			calendarId: 'primary',
-			eventId: consultation.googleCalendarEventId as string,
-		});
-		consultation.googleCalendarEventId = null;
-		await consultation.save();
+		try {
+			// Remove event if completed
+			await calendar.events.delete({
+				calendarId: 'primary',
+				eventId: consultation.googleCalendarEventId as string,
+			});
+			consultation.googleCalendarEventId = null;
+			await consultation.save();
+		} catch (error) {
+			console.error('Failed to delete google event', error);
+		}
 	}
 
 	await ConsultationModel.findByIdAndDelete(consultationID);
@@ -840,8 +858,11 @@ export const updateConsultation = asynchandler(async (req, res) => {
 	);
 
 	// only lock owner can save
+	const ownerOfLock =
+		consultation.lock?.lockedBy?.toString() === req.user._id.toString();
+
 	appAssert(
-		consultation.lock?.lockedBy?.toString() === req.user._id.toString(),
+		ownerOfLock || consultation.lock?.lockedBy === null,
 		CONFLICT,
 		'Another user is currently editing this consultation.'
 	);
@@ -941,8 +962,6 @@ export const getConsultationReport = asynchandler(async (req, res) => {
 	if (status && typeof status === 'string') {
 		match.status = status;
 	}
-
-	console.log('getConsultationReport match:', match);
 
 	const consultations = await ConsultationModel.find(match)
 		.select('title purpose subjectCode sectonCode status scheduledAt')

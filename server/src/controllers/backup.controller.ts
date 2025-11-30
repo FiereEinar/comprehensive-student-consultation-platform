@@ -15,17 +15,9 @@ import { MONGO_URI } from '../constants/env';
 import { logActivity } from '../utils/activity-logger';
 import { RESOURCE_TYPES } from '../constants';
 
-const ensureExists = async (p: string) => {
-	await fs.mkdir(p, { recursive: true });
-};
-
 // POST /backup/manual
 export const manualBackup = asyncHandler(async (req, res) => {
-	// require admin auth in route
-	const mongoUri = req.body.mongoUri || MONGO_URI;
-	appAssert(mongoUri, BAD_REQUEST, 'mongoUri required');
-
-	const backupPath = await runBackup(mongoUri);
+	const backupPath = await runBackup(MONGO_URI);
 
 	await logActivity(req, {
 		action: 'BACKUP_MANUAL',
@@ -84,7 +76,7 @@ export const restoreBackup = asyncHandler(async (req, res) => {
 
 	const folder = path.join(BACKUPS_ROOT, name, 'ipt2_cscp');
 	await fs.access(folder);
-	console.log({ folder, targetUri });
+
 	await runRestore(folder, targetUri || MONGO_URI);
 
 	await logActivity(req, {

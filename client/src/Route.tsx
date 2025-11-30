@@ -24,6 +24,9 @@ import { useUserStore } from './stores/user';
 import AdminReportsPage from './pages/AdminReportsPage';
 import AdminBackupPage from './pages/AdminBackupPage';
 import ManageUsersPage from './pages/ManageUsersPage';
+import RolesPage from './pages/RolesPage';
+import NotFound from './pages/NotFound';
+import HasPermission from './components/HasPermission';
 
 export default function Route() {
 	const { user } = useUserStore((state) => state);
@@ -41,6 +44,7 @@ export default function Route() {
 	const route = createBrowserRouter([
 		{
 			path: '/',
+			errorElement: <NotFound />,
 			element: (
 				<ProtectedRoute>
 					<App />
@@ -57,7 +61,12 @@ export default function Route() {
 				},
 				{
 					path: '/admin/dashboard',
-					element: <AdminDashboard />,
+					element: (
+						<HasPermission userRole={['admin']}>
+							{' '}
+							<AdminDashboard />
+						</HasPermission>
+					),
 				},
 				{
 					path: '/admin/consultation',
@@ -82,6 +91,10 @@ export default function Route() {
 				{
 					path: '/admin/users',
 					element: <ManageUsersPage />,
+				},
+				{
+					path: '/admin/roles',
+					element: <RolesPage />,
 				},
 				{
 					path: '/student/dashboard',

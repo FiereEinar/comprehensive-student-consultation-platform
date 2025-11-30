@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
 	Dialog,
 	DialogContent,
@@ -23,7 +22,6 @@ type BackupItem = {
 };
 
 export default function AdminBackupPage() {
-	const [mongoUri, setMongoUri] = useState('');
 	const [loading, setLoading] = useState(false);
 	const [history, setHistory] = useState<BackupItem[]>([]);
 	const [confirm, setConfirm] = useState<{
@@ -47,7 +45,7 @@ export default function AdminBackupPage() {
 	const handleManual = async () => {
 		try {
 			setLoading(true);
-			const { data } = await axiosInstance.post('/backup/manual', { mongoUri });
+			const { data } = await axiosInstance.post('/backup/manual');
 			if (data.success) {
 				toast.success('Backup created');
 				fetchHistory();
@@ -63,9 +61,11 @@ export default function AdminBackupPage() {
 	};
 
 	const handleDownload = (name: string) => {
-		window.location.href = `${
+		const url = `${
 			import.meta.env.VITE_API_URL
 		}/backup/download?name=${encodeURIComponent(name)}`;
+
+		window.open(url, '_blank');
 	};
 
 	const handleRestore = async (item: BackupItem) => {
@@ -115,16 +115,15 @@ export default function AdminBackupPage() {
 						<CardContent>
 							<h2 className='font-medium mb-2'>Manual Backup</h2>
 							<p className='text-sm text-muted-foreground mb-3'>
-								Optionally supply a Mongo URI (leave empty to use server
-								default).
+								Manually create a backup of the database.
 							</p>
 
 							<div className='flex gap-2'>
-								<Input
+								{/* <Input
 									placeholder='mongodb+srv://...'
 									value={mongoUri}
 									onChange={(e) => setMongoUri(e.target.value)}
-								/>
+								/> */}
 								<Button onClick={handleManual} disabled={loading}>
 									{loading ? 'Creating...' : 'Create Backup'}
 								</Button>

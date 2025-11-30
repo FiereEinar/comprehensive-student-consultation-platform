@@ -424,7 +424,7 @@ export const forgotPasswordHandler = asyncHandler(async (req, res) => {
 export const resetPasswordHandler = asyncHandler(async (req, res) => {
 	const { token } = req.params;
 	const { password } = req.body;
-	console.log({ token });
+
 	// Hash token to compare with DB
 	const hashedToken = hashCrypto(token ?? '');
 

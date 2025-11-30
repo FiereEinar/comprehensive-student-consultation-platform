@@ -8,6 +8,7 @@ import {
 	Power,
 	ReceiptPoundSterling,
 	Settings,
+	Shield,
 	Users,
 	type LucideProps,
 } from 'lucide-react';
@@ -91,6 +92,11 @@ const adminSidebarLinks: SidebarNavLink[] = [
 		title: 'Users',
 		url: '/admin/users',
 		icon: Users,
+	},
+	{
+		title: 'Roles',
+		url: '/admin/roles',
+		icon: Shield,
 	},
 	{
 		title: 'Logs',

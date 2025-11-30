@@ -5,9 +5,17 @@ import UserModel, {
 } from '../models/user.model';
 import CustomResponse, { CustomPaginatedResponse } from '../utils/response';
 import appAssert from '../errors/app-assert';
-import { BAD_REQUEST, NOT_FOUND, UNAUTHORIZED } from '../constants/http';
+import {
+	BAD_REQUEST,
+	CONFLICT,
+	NOT_FOUND,
+	UNAUTHORIZED,
+} from '../constants/http';
 import { DEFAULT_LIMIT, RESOURCE_TYPES } from '../constants';
-import { updateUserPasswordSchema } from '../schemas/user.schema';
+import {
+	createUserSchema,
+	updateUserPasswordSchema,
+} from '../schemas/user.schema';
 import bcrypt from 'bcryptjs';
 import { BCRYPT_SALT } from '../constants/env';
 import { logActivity } from '../utils/activity-logger';
@@ -104,7 +112,9 @@ export const getUsersV2 = asyncHandler(async (req, res) => {
 	}
 
 	// fetch all
-	const allUsersRaw = await UserModel.find(dbFilter).exec();
+	const allUsersRaw = await UserModel.find(dbFilter)
+		.populate('adminRole')
+		.exec();
 
 	/** ----------------------------------------
 	 *  DECRYPT AND CLEAN USER DATA
@@ -243,11 +253,11 @@ export const updateUserPassword = asyncHandler(async (req, res) => {
 
 /**
  * @route PATCH /api/v1/user/:userID/admin
- * @body { name?: string, institutionalID?: string, email?: string, role?: UserTypes, roles?: string[] }
+ * @body { name?: string, institutionalID?: string, email?: string, role?: UserTypes, adminRole?: string }
  */
 export const updateUserByAdmin = asyncHandler(async (req, res) => {
 	const { userID } = req.params;
-	const { name, institutionalID, email, role, roles } = req.body;
+	const { name, institutionalID, email, role, adminRole } = req.body;
 
 	await logActivity(req, {
 		action: 'UPDATE_USER_BY_ADMIN',
@@ -265,15 +275,15 @@ export const updateUserByAdmin = asyncHandler(async (req, res) => {
 		updateData.institutionalID = institutionalID;
 	if (email !== undefined) updateData.email = email;
 	if (role !== undefined) updateData.role = role;
-	if (roles !== undefined) {
+	if (adminRole !== undefined && req.user.role === 'admin') {
 		// Validate roles exist
-		const roleDocs = await RoleModel.find({ _id: { $in: roles } });
+		const roleDocs = await RoleModel.findById(adminRole).exec();
 		appAssert(
-			roleDocs.length === roles.length,
+			roleDocs,
 			BAD_REQUEST,
-			'Invalid roles provided'
+			'Admin roles must exist before they can be assigned to users'
 		);
-		updateData.roles = roles;
+		updateData.adminRole = adminRole;
 	}
 
 	const updatedUser = await UserModel.findByIdAndUpdate(userID, updateData, {
@@ -378,3 +388,74 @@ export const getUserStats = asyncHandler(async (req, res) => {
 
 	res.json(new CustomResponse(true, stats, 'User statistics fetched'));
 });
+
+export const createUser = asyncHandler(async (req, res) => {
+	const body = createUserSchema.parse(req.body);
+
+	await logActivity(req, {
+		action: 'CREATE_USER',
+		description: 'Create user',
+		resourceType: RESOURCE_TYPES.USER,
+	});
+
+	// check for duplicate email
+	const existingUser = await UserModel.findOne({ email: body.email });
+	appAssert(!existingUser, CONFLICT, 'Email already used');
+
+	// Hash password
+	const hashedPassword = await bcrypt.hash(
+		body.password,
+		parseInt(BCRYPT_SALT)
+	);
+
+	// create user
+	const user = await UserModel.create({
+		name: body.name,
+		institutionalID: body.institutionalID,
+		email: body.email,
+		password: hashedPassword,
+		role: 'student',
+	});
+
+	res.json(new CustomResponse(true, user, 'User created successfully'));
+});
+
+/**
+ * @route PATCH /api/v1/user/:userID/roles
+ * @body { roleIds: string[] }
+ */
+// export const assignRolesToUser = asyncHandler(async (req, res) => {
+// 	const { userID } = req.params;
+// 	const { roleIds } = req.body;
+
+// 	appAssert(
+// 		roleIds && Array.isArray(roleIds),
+// 		BAD_REQUEST,
+// 		'Role IDs are required and must be an array'
+// 	);
+
+// 	// Check if user exists
+// 	const user = await UserModel.findById(userID);
+// 	appAssert(user, NOT_FOUND, 'User not found');
+
+// 	// Check if roles exist
+// 	const roles = await RoleModel.find({ _id: { $in: roleIds } });
+// 	appAssert(
+// 		roles.length === roleIds.length,
+// 		BAD_REQUEST,
+// 		'One or more roles not found'
+// 	);
+
+// 	await logActivity(req, {
+// 		action: 'ASSIGN_ROLES',
+// 		description: 'Assign roles to user',
+// 		resourceId: userID,
+// 		resourceType: RESOURCE_TYPES.USER,
+// 	});
+
+// 	// Assign roles to user
+// 	user.roles = roleIds;
+// 	await user.save();
+
+// 	res.json(new CustomResponse(true, null, 'Roles assigned successfully'));
+// });

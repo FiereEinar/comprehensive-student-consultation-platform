@@ -33,7 +33,7 @@ import { queryClient } from '@/main';
 const createUserSchema = z.object({
 	name: z.string().min(1, 'Name is required'),
 	institutionalID: z.string().min(1, 'Institutional ID is required'),
-	email: z.email('Invalid email').optional().or(z.literal('')),
+	email: z.email('Invalid email').or(z.literal('')),
 	password: z.string().min(6, 'Password must be at least 6 characters'),
 	role: z.enum(['admin', 'student', 'instructor'], 'Role is required'),
 });
@@ -66,10 +66,10 @@ export default function CreateUserForm({ title }: CreateUserFormProps) {
 			// Remove empty email
 			const payload = {
 				...formData,
-				email: formData.email || undefined,
+				confirmPassword: formData.password,
 			};
 
-			await axiosInstance.post('/auth/register', payload);
+			await axiosInstance.post('/user', payload);
 			toast.success('User created successfully');
 			reset();
 			await queryClient.invalidateQueries({
@@ -77,7 +77,7 @@ export default function CreateUserForm({ title }: CreateUserFormProps) {
 			});
 		} catch (error: any) {
 			console.error(error);
-			toast.error(error.response?.data?.message ?? 'Failed to create user');
+			toast.error(error.message ?? 'Failed to create user');
 		}
 	};
 
@@ -147,7 +147,7 @@ export default function CreateUserForm({ title }: CreateUserFormProps) {
 						control={control}
 						render={({ field, fieldState }) => (
 							<Field data-invalid={fieldState.invalid}>
-								<FieldLabel htmlFor={field.name}>Email (Optional)</FieldLabel>
+								<FieldLabel htmlFor={field.name}>Email</FieldLabel>
 								<Input
 									{...field}
 									id={field.name}

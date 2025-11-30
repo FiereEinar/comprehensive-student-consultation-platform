@@ -162,12 +162,6 @@ export default function AdminReportsPage() {
 					meetLink: c.meetLink,
 				}));
 
-				// quick log so you can see exactly what statuses the DB sends
-				console.log(
-					'Sample statuses from DB:',
-					cons.slice(0, 10).map((c) => c.status)
-				);
-
 				const { data: userRes } = await axiosInstance.get(
 					'/user?fetchAll=true'
 				);

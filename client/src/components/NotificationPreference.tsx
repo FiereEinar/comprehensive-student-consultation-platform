@@ -38,10 +38,10 @@ const defaultNotificationSettings: NotificationSettings = {
 		systemAnnouncements: true,
 	},
 	inApp: {
+		systemAnnouncements: true,
 		newConsultation: true,
 		statusUpdates: true,
 		reminders: true,
-		systemAnnouncements: true,
 	},
 	quietHours: {
 		enabled: false,
