@@ -26,6 +26,7 @@ type BackupItem = {
 export default function AdminBackupPage() {
 	const [loading, setLoading] = useState(false);
 	const [history, setHistory] = useState<BackupItem[]>([]);
+	const [cloudHistory, setCloudHistory] = useState<BackupItem[]>([]);
 	const [confirm, setConfirm] = useState<{
 		open: boolean;
 		target?: BackupItem;
@@ -34,7 +35,9 @@ export default function AdminBackupPage() {
 	const fetchHistory = async () => {
 		try {
 			const { data } = await axiosInstance.get('/backup/history');
+			const { data: cloud } = await axiosInstance.get('/backup/history/cloud');
 			if (data?.success) setHistory(data.data || []);
+			if (cloud?.success) setCloudHistory(cloud.data || []);
 		} catch (err) {
 			console.error(err);
 		}
@@ -44,16 +47,12 @@ export default function AdminBackupPage() {
 		fetchHistory();
 	}, []);
 
-	const handleManual = async () => {
+	const handleManual = async (cloud: boolean = false) => {
 		try {
 			setLoading(true);
-			const { data } = await axiosInstance.post('/backup/manual');
-			if (data.success) {
-				toast.success('Backup created');
-				fetchHistory();
-			} else {
-				toast.error('Backup failed');
-			}
+			await axiosInstance.post('/backup/manual' + (cloud ? '/cloud' : ''));
+			toast.success('Backup created');
+			fetchHistory();
 		} catch (err: any) {
 			console.error(err);
 			toast.error(err?.message || 'Backup failed');
@@ -130,16 +129,41 @@ export default function AdminBackupPage() {
 									value={mongoUri}
 									onChange={(e) => setMongoUri(e.target.value)}
 								/> */}
-									<Button onClick={handleManual} disabled={loading}>
+									<Button onClick={() => handleManual()} disabled={loading}>
 										{loading ? 'Creating...' : 'Create Backup'}
+									</Button>
+									<Button
+										variant='outline'
+										onClick={() => handleManual(true)}
+										disabled={loading}
+									>
+										{loading ? 'Creating...' : 'Create Cloud Backup'}
 									</Button>
 								</div>
 							</CardContent>
 						</Card>
 					</HasPermission>
 
+					{/* <HasPermission
+						userRole={['admin']}
+						permissions={[MODULES.RESTORE_BACKUP]}
+					>
+						<ImportBackup fetchHistory={fetchHistory} />
+					</HasPermission> */}
+
 					<div className='mt-5'>
-						<h2 className='text-lg font-medium mb-4'>Backup History</h2>
+						<h2 className='text-lg font-medium mb-4'>Cloud Backup History</h2>
+						<BackupList
+							backups={cloudHistory}
+							onDownload={() => {}}
+							onRestore={() => {}}
+							onRemove={() => {}}
+							disableActions
+						/>
+					</div>
+
+					<div className='mt-5'>
+						<h2 className='text-lg font-medium mb-4'>Local Backup History</h2>
 						<BackupList
 							backups={history}
 							onDownload={handleDownload}
@@ -187,3 +211,55 @@ export default function AdminBackupPage() {
 		</div>
 	);
 }
+
+// function ImportBackup({ fetchHistory }: { fetchHistory: () => Promise<void> }) {
+// 	const [loading, setLoading] = useState(false);
+// 	const [importFile, setImportFile] = useState<File | null>(null);
+
+// 	const handleImportBackup = async () => {
+// 		if (!importFile) return toast.error('Please select a backup ZIP');
+
+// 		const formData = new FormData();
+// 		formData.append('backupZip', importFile);
+
+// 		try {
+// 			setLoading(true);
+// 			await axiosInstance.post('/backup/import', formData, {
+// 				headers: { 'Content-Type': 'multipart/form-data' },
+// 			});
+// 			toast.success('Backup imported successfully');
+// 			fetchHistory();
+// 			setImportFile(null);
+// 		} catch (err: any) {
+// 			console.error(err);
+// 			toast.error(err?.message || 'Backup import failed');
+// 		} finally {
+// 			setLoading(false);
+// 		}
+// 	};
+
+// 	return (
+// 		<Card className='mt-4'>
+// 			<CardContent>
+// 				<h2 className='font-medium mb-2'>Import Backup</h2>
+// 				<p className='text-sm text-muted-foreground mb-3'>
+// 					Upload a backup ZIP file to restore the database.
+// 				</p>
+
+// 				<div className='flex gap-5 items-center'>
+// 					<Button
+// 						onClick={handleImportBackup}
+// 						disabled={loading || !importFile}
+// 					>
+// 						{loading ? 'Importing...' : 'Import Backup'}
+// 					</Button>
+// 					<input
+// 						type='file'
+// 						accept='.zip'
+// 						onChange={(e) => setImportFile(e.target.files?.[0] || null)}
+// 					/>
+// 				</div>
+// 			</CardContent>
+// 		</Card>
+// 	);
+// }

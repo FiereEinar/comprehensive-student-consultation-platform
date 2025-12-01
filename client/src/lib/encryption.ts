@@ -102,6 +102,10 @@ export const encryptRequestData = (obj: any): any => {
 		return obj; // <-- keep Date objects as-is
 	}
 
+	if (obj instanceof File) {
+		return obj;
+	}
+
 	if (typeof obj === 'object') {
 		const encryptedObj: any = {};
 		for (const key in obj) {
