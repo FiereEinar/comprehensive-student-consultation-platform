@@ -1,7 +1,7 @@
 import { CorsOptions } from 'cors';
-import { FRONTEND_URL } from '../constants/env';
+import { BACKEND_URL, FRONTEND_URL } from '../constants/env';
 
 export const corsOptions: CorsOptions = {
-	origin: FRONTEND_URL,
+	origin: [FRONTEND_URL, BACKEND_URL],
 	credentials: true,
 };
