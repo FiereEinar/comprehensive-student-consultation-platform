@@ -25,14 +25,13 @@ export interface IUser extends mongoose.Document {
 
 const UserSchema = new Schema<IUser>(
 	{
-		name: { type: String, minlength: 1, maxlength: 50, required: true },
+		name: { type: String, minlength: 1, required: true },
 		email: { type: String, required: false },
 		password: { type: String, required: true },
 		googleID: { type: String },
 		institutionalID: {
 			type: String,
 			minlength: 1,
-			maxlength: 50,
 			required: true,
 		},
 		role: {

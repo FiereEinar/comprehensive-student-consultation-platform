@@ -19,7 +19,6 @@ const RoleSchema = new Schema<IRole>(
 			required: true,
 			unique: true,
 			minlength: 1,
-			maxlength: 50,
 		},
 		description: { type: String, maxlength: 200 },
 		permissions: [String],
