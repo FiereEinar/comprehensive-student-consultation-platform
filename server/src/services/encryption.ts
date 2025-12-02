@@ -49,6 +49,19 @@ export const decryptFields = (obj: any, fields: string[]) => {
 	return obj;
 };
 
+export const encryptFields = (obj: any, fields: string[]) => {
+	for (const f of fields) {
+		if (obj[f]) {
+			try {
+				obj[f] = encrypt(obj[f]);
+			} catch (e) {
+				console.error('Encrypt failed for field:', f);
+			}
+		}
+	}
+	return obj;
+};
+
 export const isEncrypted = (value: any) => {
 	if (typeof value !== 'string') return false;
 

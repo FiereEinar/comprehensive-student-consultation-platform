@@ -41,7 +41,7 @@ export default function Logs() {
 			<div className='flex justify-between items-center'>
 				<h1 className='text-2xl font-semibold'>System Logs</h1>
 
-				<div className='flex gap-2'>
+				<div className='flex gap-2 items-center'>
 					<Input
 						className='bg-white'
 						placeholder='Search'

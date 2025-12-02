@@ -5,6 +5,11 @@
 	"main": "index.js",
 	"scripts": {
 		"dev-all": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\" \"mongod --dbpath ./data/db\"",
+		"build-client": "npm run build --prefix client",
+		"build-server": "npm run build --prefix server",
+		"build-all": "npm run build-client && npm run build-server",
+		"start-server": "npm run start --prefix server",
+		"start-build": "npm run build-all && npm run start-server",
 		"stop-all": "taskkill /F /IM node.exe /IM mongod.exe"
 	},
 	"repository": {

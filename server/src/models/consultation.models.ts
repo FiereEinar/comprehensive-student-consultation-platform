@@ -68,9 +68,9 @@ export const consultatioModelEncryptedFields = [
 	'title',
 	'description',
 	'purpose',
-	// 'googleCalendarEventId',
 	'sectonCode',
 	'subjectCode',
+	// 'googleCalendarEventId',
 ];
 
 ConsultationSchema.plugin(EncryptPlugin, {

@@ -15,7 +15,11 @@ import { oAuth2Client } from '../services/google-client';
 import { createGoogleMeetLink } from '../services/google-meet';
 import { createGoogleCalendarOnStatusUpdate } from '../services/google-calendar';
 import { notifyUser } from '../services/notification';
-import { decryptFields } from '../services/encryption';
+import {
+	decryptFields,
+	encryptFields,
+	encryptResponseData,
+} from '../services/encryption';
 import {
 	consutationStatusSchema,
 	createConsultationSchema,
@@ -883,7 +887,10 @@ export const updateConsultation = asynchandler(async (req, res) => {
 		'Another user is currently editing this consultation.'
 	);
 
-	const body = updateConsultationSchema.parse(req.body);
+	const body = encryptFields(
+		updateConsultationSchema.parse(req.body),
+		consultatioModelEncryptedFields
+	);
 
 	const updated = await ConsultationModel.findByIdAndUpdate<IConsultation>(
 		consultationID,

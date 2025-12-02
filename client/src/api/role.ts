@@ -14,8 +14,12 @@ export const fetchRoles = async (params?: {
 	pageSize?: number;
 	search?: string;
 }): Promise<Role[]> => {
-	const response = await axiosInstance.get('/role', { params });
-	return response.data.data;
+	try {
+		const response = await axiosInstance.get('/role', { params });
+		return response.data.data;
+	} catch (error: any) {
+		return [];
+	}
 };
 
 export const createRole = async (data: {

@@ -6,6 +6,7 @@
 	"scripts": {
 		"dev": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules src/app.ts",
 		"build": "tsc",
+		"start": "node dist/src/app.js",
 		"check:ts": "tsc --noEmit",
 		"prod": "node ./dist/app.js",
 		"test": "echo \"Error: no test specified\" && exit 1"

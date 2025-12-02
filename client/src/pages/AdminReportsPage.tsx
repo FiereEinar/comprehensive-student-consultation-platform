@@ -345,7 +345,7 @@ export default function AdminReportsPage() {
 
 	return (
 		<div className='space-y-5'>
-			<Header size='md'>Admin Consultations Dashboard</Header>
+			<Header size='md'>Reports</Header>
 			<div className='flex  gap-5 min-h-screen flex-wrap'>
 				{/* Left Column */}
 				<div

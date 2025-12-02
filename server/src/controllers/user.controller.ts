@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import CustomResponse, { CustomPaginatedResponse } from '../utils/response';
 import { DEFAULT_LIMIT, RESOURCE_TYPES } from '../constants';
 import { logActivity } from '../utils/activity-logger';
-import { decryptFields } from '../services/encryption';
+import { decryptFields, encrypt, encryptFields } from '../services/encryption';
 import { BCRYPT_SALT } from '../constants/env';
 import appAssert from '../errors/app-assert';
 import RoleModel from '../models/role.model';
@@ -202,7 +202,7 @@ export const updateUserName = asyncHandler(async (req, res) => {
 
 	const user = await UserModel.findByIdAndUpdate(
 		userID,
-		{ name },
+		{ name: encrypt(name) },
 		{ new: true }
 	);
 	appAssert(user, NOT_FOUND, 'User not found.');
@@ -283,9 +283,13 @@ export const updateUserByAdmin = asyncHandler(async (req, res) => {
 		updateData.adminRole = adminRole;
 	}
 
-	const updatedUser = await UserModel.findByIdAndUpdate(userID, updateData, {
-		new: true,
-	});
+	const updatedUser = await UserModel.findByIdAndUpdate(
+		userID,
+		encryptFields(updateData, userModelEncryptedFields),
+		{
+			new: true,
+		}
+	);
 	appAssert(updatedUser, NOT_FOUND, 'User not found after update');
 
 	res.json(
@@ -408,14 +412,19 @@ export const createUser = asyncHandler(async (req, res) => {
 		parseInt(BCRYPT_SALT)
 	);
 
+	const data = encryptFields(
+		{
+			name: body.name,
+			institutionalID: body.institutionalID,
+			email: body.email,
+			password: hashedPassword,
+			role: 'student',
+		},
+		userModelEncryptedFields
+	);
+
 	// create user
-	const user = await UserModel.create({
-		name: body.name,
-		institutionalID: body.institutionalID,
-		email: body.email,
-		password: hashedPassword,
-		role: 'student',
-	});
+	const user = await UserModel.create(data);
 
 	res.json(new CustomResponse(true, user, 'User created successfully'));
 });

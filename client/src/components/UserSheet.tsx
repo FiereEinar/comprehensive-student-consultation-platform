@@ -70,7 +70,10 @@ export default function UserSheet({
 
 	const { data: roles } = useQuery({
 		queryKey: [QUERY_KEYS.ROLES],
-		queryFn: () => fetchRoles(),
+		queryFn: async () => {
+			const res = user?.role === 'admin' ? await fetchRoles() : [];
+			return res;
+		},
 	});
 
 	const {

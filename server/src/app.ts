@@ -2,6 +2,7 @@ import cookieParser from 'cookie-parser';
 import express from 'express';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
+import path from 'path';
 import cors from 'cors';
 dotenv.config();
 
@@ -48,6 +49,16 @@ app.use('/api/v1/availability', availabilityRoutes);
 app.use('/api/v1/notification', notificationRoutes);
 app.use('/api/v1/backup', backupRoutes);
 app.use('/api/v1/role', roleRoutes);
+
+// Serve frontend (React build) after API routes
+app.use(express.static(path.join(__dirname, '../../../client/dist')));
+// Serve frontend (React build)
+app.use((req, res, next) => {
+	const indexPath = path.join(__dirname, '../../../client/dist/index.html');
+	res.sendFile(indexPath, (err) => {
+		if (err) next(err);
+	});
+});
 
 // Error handlers
 app.use(notFoundHandler);
