@@ -45,6 +45,8 @@ const generateReportSchema = z.object({
 		(val) => (val ? parseInt(String(val)) : undefined),
 		z.number().int().min(2000).max(2100)
 	),
+	sectionCode: z.string().optional(),
+	subjectCode: z.string().optional(),
 });
 
 export type GenerateReportFormValues = z.infer<typeof generateReportSchema>;
@@ -117,7 +119,14 @@ export default function GenerateReportFormAdmin() {
 
 	const onSubmit = async (formData: GenerateReportFormValues) => {
 		try {
-			const { instructor, semester, schoolYearStart, schoolYearEnd } = formData;
+			const {
+				instructor,
+				semester,
+				schoolYearStart,
+				schoolYearEnd,
+				subjectCode,
+				sectionCode,
+			} = formData;
 
 			// This is the old date range label (still used in Summary)
 			const periodLabel =
@@ -143,6 +152,8 @@ export default function GenerateReportFormAdmin() {
 				instructorId: instructor,
 				startDate: range.start,
 				endDate: range.end,
+				subjectCode,
+				sectionCode,
 			};
 
 			const res = await axiosInstance.get('/consultation/report', {
@@ -305,6 +316,42 @@ export default function GenerateReportFormAdmin() {
 							</div>
 						)}
 					/>
+
+					{/* SUBJECT AND SECTION CODE */}
+					<div>
+						<FieldLabel htmlFor='subjectCode'>
+							Subject & Section Code (Optional)
+						</FieldLabel>
+						<div className='flex gap-2'>
+							<Controller
+								name='subjectCode'
+								control={control}
+								render={({ field }) => (
+									<Input
+										{...field}
+										id='subjectCode'
+										name='subjectCode'
+										placeholder='IT101'
+										className='flex-1'
+									/>
+								)}
+							/>
+
+							<Controller
+								name='sectionCode'
+								control={control}
+								render={({ field }) => (
+									<Input
+										{...field}
+										id='sectionCode'
+										name='sectionCode'
+										placeholder='T108'
+										className='flex-1'
+									/>
+								)}
+							/>
+						</div>
+					</div>
 
 					{/* SCHOOL YEAR INPUTS */}
 					<div>
