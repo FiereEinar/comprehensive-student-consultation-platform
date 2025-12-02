@@ -26,6 +26,7 @@ import notificationRoutes from './routes/notification.routes';
 import backupRoutes from './routes/backup.route';
 import roleRoutes from './routes/role.route';
 import { decryptBodyData } from './middlewares/decrypt';
+import { helmetConfig } from './utils/helmet';
 connectToMongoDB();
 
 const app = express();
@@ -33,7 +34,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(helmet());
+app.use(helmet(helmetConfig));
 app.use(decryptBodyData);
 // app.use(requestLogger);
 app.get('/', healthcheck);

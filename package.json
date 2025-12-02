@@ -9,7 +9,9 @@
 		"build-server": "npm run build --prefix server",
 		"build-all": "npm run build-client && npm run build-server",
 		"start-server": "npm run start --prefix server",
-		"start-build": "npm run build-all && npm run start-server",
+		"preview-client": "npm run dev --prefix client",
+		"start-prod": "concurrently \"npm run start-server\" \"npm run preview-client\"",
+		"start-build": "npm run build-all && npm run start-prod",
 		"stop-all": "taskkill /F /IM node.exe /IM mongod.exe"
 	},
 	"repository": {
