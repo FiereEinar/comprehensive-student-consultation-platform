@@ -1,26 +1,23 @@
 import asyncHandler from 'express-async-handler';
-import UserModel, {
-	userModelEncryptedFields,
-	UserTypes,
-} from '../models/user.model';
+import bcrypt from 'bcryptjs';
 import CustomResponse, { CustomPaginatedResponse } from '../utils/response';
+import { DEFAULT_LIMIT, RESOURCE_TYPES } from '../constants';
+import { logActivity } from '../utils/activity-logger';
+import { decryptFields } from '../services/encryption';
+import { BCRYPT_SALT } from '../constants/env';
 import appAssert from '../errors/app-assert';
+import RoleModel from '../models/role.model';
+import UserModel, { userModelEncryptedFields } from '../models/user.model';
 import {
 	BAD_REQUEST,
 	CONFLICT,
 	NOT_FOUND,
 	UNAUTHORIZED,
 } from '../constants/http';
-import { DEFAULT_LIMIT, RESOURCE_TYPES } from '../constants';
 import {
 	createUserSchema,
 	updateUserPasswordSchema,
 } from '../schemas/user.schema';
-import bcrypt from 'bcryptjs';
-import { BCRYPT_SALT } from '../constants/env';
-import { logActivity } from '../utils/activity-logger';
-import { decryptFields } from '../utils/encryption';
-import RoleModel from '../models/role.model';
 
 /**
  * @route GET /api/v1/user
@@ -389,6 +386,9 @@ export const getUserStats = asyncHandler(async (req, res) => {
 	res.json(new CustomResponse(true, stats, 'User statistics fetched'));
 });
 
+/**
+ * @route POST /api/v1/user
+ */
 export const createUser = asyncHandler(async (req, res) => {
 	const body = createUserSchema.parse(req.body);
 
@@ -419,43 +419,3 @@ export const createUser = asyncHandler(async (req, res) => {
 
 	res.json(new CustomResponse(true, user, 'User created successfully'));
 });
-
-/**
- * @route PATCH /api/v1/user/:userID/roles
- * @body { roleIds: string[] }
- */
-// export const assignRolesToUser = asyncHandler(async (req, res) => {
-// 	const { userID } = req.params;
-// 	const { roleIds } = req.body;
-
-// 	appAssert(
-// 		roleIds && Array.isArray(roleIds),
-// 		BAD_REQUEST,
-// 		'Role IDs are required and must be an array'
-// 	);
-
-// 	// Check if user exists
-// 	const user = await UserModel.findById(userID);
-// 	appAssert(user, NOT_FOUND, 'User not found');
-
-// 	// Check if roles exist
-// 	const roles = await RoleModel.find({ _id: { $in: roleIds } });
-// 	appAssert(
-// 		roles.length === roleIds.length,
-// 		BAD_REQUEST,
-// 		'One or more roles not found'
-// 	);
-
-// 	await logActivity(req, {
-// 		action: 'ASSIGN_ROLES',
-// 		description: 'Assign roles to user',
-// 		resourceId: userID,
-// 		resourceType: RESOURCE_TYPES.USER,
-// 	});
-
-// 	// Assign roles to user
-// 	user.roles = roleIds;
-// 	await user.save();
-
-// 	res.json(new CustomResponse(true, null, 'Roles assigned successfully'));
-// });

@@ -3,6 +3,8 @@ import RoleModel from '../models/role.model';
 import CustomResponse, { CustomPaginatedResponse } from '../utils/response';
 import appAssert from '../errors/app-assert';
 import { BAD_REQUEST, NOT_FOUND } from '../constants/http';
+import { logActivity } from '../utils/activity-logger';
+import { decryptFields } from '../services/encryption';
 import {
 	DEFAULT_LIMIT,
 	RESOURCE_TYPES,
@@ -10,8 +12,6 @@ import {
 	Modules,
 	SUPER_ADMIN,
 } from '../constants';
-import { logActivity } from '../utils/activity-logger';
-import { decryptFields } from '../utils/encryption';
 
 const roleModelEncryptedFields = ['name', 'description'];
 

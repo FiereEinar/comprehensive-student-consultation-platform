@@ -1,4 +1,4 @@
-import { EMAIL_USER } from '../constants/env';
+import { EMAIL_USER, FRONTEND_URL } from '../constants/env';
 import { IConsultation } from '../models/consultation.models';
 import { IUser } from '../models/user.model';
 import { sendMail } from './email';
@@ -141,3 +141,30 @@ export async function sendPendingConsultationEmail({
 
 	await sendMail(mailOptions);
 }
+
+export const sendInstructorInvitationEmail = async (
+	token: string,
+	email: string,
+	name: string
+): Promise<void> => {
+	const inviteLink = `${FRONTEND_URL}/invite/instructor/accept?token=${token}`;
+	const message = {
+		from: `"Consultation Admin" <${EMAIL_USER}>`,
+		to: email,
+		subject: 'Instructor Invitation',
+		html: `
+				<div style="font-family:sans-serif;padding:1rem;border-radius:8px;background:#f9fafb;">
+					<h2 style="color:#111;">You’ve been invited to join as an Instructor!</h2>
+					<p>Hello ${name || ''},</p>
+					<p>You’ve been invited to join the Comprehensive Student Consultation Platform as an Instructor.</p>
+					<a href="${inviteLink}" 
+						 style="display:inline-block;margin-top:1rem;padding:.6rem 1rem;background:#111;color:#fff;border-radius:6px;text-decoration:none;">
+						 Accept Invitation
+					</a>
+					<p style="margin-top:1rem;font-size:12px;color:#555;">This link will expire in 24 hours.</p>
+				</div>
+			`,
+	};
+
+	await sendMail(message);
+};

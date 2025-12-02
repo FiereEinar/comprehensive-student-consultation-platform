@@ -27,8 +27,11 @@ router.post(
 );
 
 router.get('/history', hasRole([MODULES.READ_BACKUP]), backupHistory);
+
 router.get('/history/cloud', hasRole([MODULES.READ_BACKUP]), getDropboxBackups);
+
 router.get('/download', hasRole([MODULES.DOWNLOAD_BACKUP]), downloadBackup);
+
 router.post('/restore', hasRole([MODULES.RESTORE_BACKUP]), restoreBackup);
 
 router.post(

@@ -1,7 +1,4 @@
 import NotificationSettingsModel from '../models/notification-settings';
-import UserModel from '../models/user.model';
-import AppNotificationModel from '../models/app-notification';
-import { sendMail } from './email';
 
 /**
  * Types of notifications you support

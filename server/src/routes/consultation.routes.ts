@@ -1,12 +1,10 @@
 import express from 'express';
-
 import {
 	acquireLock,
 	createConsultation,
 	createConsultationMeeting,
 	deleteConsultation,
 	getAdminDashboardData,
-	// getConsultations,
 	getConsultationsV2,
 	getStatusBreakdown,
 	getTodayOverview,
@@ -15,7 +13,6 @@ import {
 	updateConsultationStatus,
 	getConsultationReport,
 } from '../controllers/consultation.controller';
-
 import { authorizeRoles } from '../middlewares/auth';
 import { hasRole } from '../middlewares/authorization.middleware';
 import { MODULES } from '../constants';
@@ -23,6 +20,7 @@ import { MODULES } from '../constants';
 const router = express.Router();
 
 router.get('/', hasRole([MODULES.READ_CONSULTATION]), getConsultationsV2);
+
 router.post('/', hasRole([MODULES.CREATE_CONSULTATION]), createConsultation);
 
 router.get(
@@ -32,6 +30,7 @@ router.get(
 );
 
 router.get('/today-overview', getTodayOverview);
+
 router.get('/status-breakdown', getStatusBreakdown);
 
 router.post(
@@ -42,6 +41,7 @@ router.post(
 );
 
 router.get('/:consultationID/lock', acquireLock);
+
 router.patch(
 	'/:consultationID',
 	hasRole([MODULES.UPDATE_CONSULTATION]),

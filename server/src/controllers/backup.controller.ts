@@ -1,33 +1,32 @@
+import asyncHandler from 'express-async-handler';
+import fs from 'fs/promises';
+import path from 'path';
+import fsSync from 'fs';
+import { Dropbox } from 'dropbox';
+import { exec } from 'child_process';
+import appAssert from '../errors/app-assert';
+import CustomResponse from '../utils/response';
+import { BAD_REQUEST } from '../constants/http';
+import { DROPBOX_ACCESS_TOKEN, MONGO_URI } from '../constants/env';
+import { logActivity } from '../utils/activity-logger';
+import { RESOURCE_TYPES } from '../constants';
 import {
 	BACKUPS_ROOT,
 	listBackups,
 	runBackup,
 	runRestore,
 	zipFolder,
-} from '../utils/backup';
-import asyncHandler from 'express-async-handler';
-import appAssert from '../errors/app-assert';
-import { BAD_REQUEST } from '../constants/http';
-import CustomResponse from '../utils/response';
-import path from 'path';
-import fs from 'fs/promises';
-import { DROPBOX_ACCESS_TOKEN, MONGO_URI } from '../constants/env';
-import { logActivity } from '../utils/activity-logger';
-import { RESOURCE_TYPES } from '../constants';
-import { Dropbox } from 'dropbox';
-import fsSync from 'fs';
-import { exec } from 'child_process';
+} from '../services/backup';
 
-// POST /backup/manual
-// uses GOOGLE DRIVE as cloud backup storage
-// not used, currently using Dropbox
+/**
+ * @route POST /backup/manual
+ */
 export const manualBackup = asyncHandler(async (req, res) => {
 	const backupPath = await runBackup(MONGO_URI);
 
-	// 4. LOG ACTIVITY
 	await logActivity(req, {
 		action: 'BACKUP_MANUAL',
-		description: 'User created a manual backup (ZIP + Drive)',
+		description: 'User created a manual backup (ZIP)',
 		resourceType: RESOURCE_TYPES.BACKUP,
 		resourceId: backupPath,
 	});
@@ -35,8 +34,10 @@ export const manualBackup = asyncHandler(async (req, res) => {
 	res.json(new CustomResponse(true, backupPath, 'Backup created'));
 });
 
-// POST /backup/manual
-// uses DROPBOX as cloud backup storage
+/**
+ * @route POST /backup/manual/cloud
+ * uses DROPBOX as cloud backup storage
+ */
 export const manualCloudBackup = asyncHandler(async (req, res) => {
 	// create local backup
 	const backupPath = await runBackup(MONGO_URI);
@@ -67,7 +68,7 @@ export const manualCloudBackup = asyncHandler(async (req, res) => {
 
 	await logActivity(req, {
 		action: 'BACKUP_MANUAL',
-		description: 'User created a manual backup (ZIP + Dropbox)',
+		description: 'User created a cloud backup (Dropbox)',
 		resourceType: RESOURCE_TYPES.BACKUP,
 		resourceId: backupFolderName,
 	});
@@ -86,7 +87,9 @@ export const manualCloudBackup = asyncHandler(async (req, res) => {
 	);
 });
 
-// GET /backup/history
+/**
+ * @route GET /backup/history
+ */
 export const backupHistory = asyncHandler(async (req, res) => {
 	const items = await listBackups();
 
@@ -105,7 +108,6 @@ export const getDropboxBackups = asyncHandler(async (req, res) => {
 		});
 		// List files in the root (or a specific folder)
 		const response = await dbx.filesListFolder({ path: '/CSCP_Backups' });
-		const localBackups = await listBackups();
 
 		// Filter only zip files
 		const backups = response.result.entries
@@ -133,7 +135,11 @@ export const getDropboxBackups = asyncHandler(async (req, res) => {
 	}
 });
 
-// GET /backup/download?name=2025-01-01-xxxxx
+/**
+ * @route GET /backup/download
+ * @desc Download a backup
+ * @query name - name of the backup folder
+ */
 export const downloadBackup = asyncHandler(async (req, res) => {
 	const { name } = req.query;
 	appAssert(name && typeof name === 'string', BAD_REQUEST, 'Name required');
@@ -166,7 +172,12 @@ export const downloadBackup = asyncHandler(async (req, res) => {
 	});
 });
 
-// POST /backup/restore  { name: '2025-01-01-xxxxx', targetUri?: '...' }
+/**
+ * @route POST /backup/restore
+ * @desc Restore a backup
+ * @body name - name of the backup folder
+ *       targetUri - optional MongoDB URI to restore to (defaults to MONGO_URI)
+ */
 export const restoreBackup = asyncHandler(async (req, res) => {
 	const { name, targetUri } = req.body;
 	appAssert(name && typeof name === 'string', BAD_REQUEST, 'Name required');
@@ -186,7 +197,11 @@ export const restoreBackup = asyncHandler(async (req, res) => {
 	res.json({ success: true, message: 'Restore successful' });
 });
 
-// POST /backup/delete
+/**
+ * @route DELETE /backup
+ * @desc Delete a backup
+ * @query name - name of the backup folder
+ */
 export const deleteBackup = asyncHandler(async (req, res) => {
 	const { name } = req.query;
 	appAssert(name && typeof name === 'string', BAD_REQUEST, 'Name required');

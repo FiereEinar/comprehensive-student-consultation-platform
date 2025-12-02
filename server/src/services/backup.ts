@@ -33,12 +33,6 @@ export const runRestore = (
 ): Promise<void> => {
 	return new Promise(async (resolve, reject) => {
 		try {
-			// Validate path exists
-			// await fspromise.access(backupPath);
-
-			// const uriPart = targetUri ? `--uri="${targetUri}"` : '';
-			// // restore all DBs found in backupPath
-			// const cmd = `mongorestore ${uriPart} --drop "${backupPath}"`;
 			const cmd = `mongorestore --uri="${mongoUri}" --drop "${backupFolder}"`;
 			exec(cmd, (err, stdout, stderr) => {
 				if (err) {

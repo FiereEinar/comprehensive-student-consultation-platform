@@ -1,7 +1,6 @@
 import express from 'express';
 import {
 	getSingleUser,
-	// getUsers,
 	getUsersV2,
 	updateUserName,
 	updateUserPassword,
@@ -10,7 +9,6 @@ import {
 	archiveUser,
 	getUserStats,
 	createUser,
-	// assignRolesToUser,
 } from '../controllers/user.controller';
 import { authorizeRoles } from '../middlewares/auth';
 import { hasRole } from '../middlewares/authorization.middleware';
@@ -28,8 +26,11 @@ router.post(
 );
 
 router.get('/stats', authorizeRoles('admin'), getUserStats);
+
 router.get('/:userID', getSingleUser);
+
 router.patch('/:userID/name', updateUserName);
+
 router.patch('/:userID/password', updateUserPassword);
 
 // Admin-only routes

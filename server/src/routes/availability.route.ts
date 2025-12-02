@@ -14,7 +14,9 @@ router.get('/', getInstructorAvailability);
 router.use(authorizeRoles('instructor'));
 
 router.post('/', createInstructorAvailability);
+
 router.put('/:availabilityID', updateSingleAvailability);
+
 router.delete('/:availabilityID', deleteSingleAvailability);
 
 export default router;

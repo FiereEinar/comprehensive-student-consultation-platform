@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { EncryptPlugin } from '../utils/mongoose-encryption-plugin';
+import { EncryptPlugin } from '../services/mongoose-encryption-plugin';
 
 const Schema = mongoose.Schema;
 

@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { IUser } from './user.model';
-import { decrypt, encrypt } from '../utils/encryption';
-import { EncryptPlugin } from '../utils/mongoose-encryption-plugin';
+import { decrypt, encrypt } from '../services/encryption';
+import { EncryptPlugin } from '../services/mongoose-encryption-plugin';
 
 const Schema = mongoose.Schema;
 

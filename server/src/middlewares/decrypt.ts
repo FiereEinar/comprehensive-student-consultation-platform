@@ -1,5 +1,5 @@
 import expressAsyncHandler from 'express-async-handler';
-import { decryptRequestData } from '../utils/encryption';
+import { decryptRequestData } from '../services/encryption';
 
 export const decryptBodyData = expressAsyncHandler(async (req, res, next) => {
 	// Skip decryption for multipart/form-data requests (file uploads)

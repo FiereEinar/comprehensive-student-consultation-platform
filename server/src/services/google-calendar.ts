@@ -1,9 +1,4 @@
 import { calendar_v3, google } from 'googleapis';
-import {
-	GOOGLE_CLIENT_ID,
-	GOOGLE_CLIENT_SECRET,
-	GOOGLE_REDIRECT_URI,
-} from '../constants/env';
 import { IConsultation } from '../models/consultation.models';
 import { IUser } from '../models/user.model';
 

@@ -1,7 +1,22 @@
 import asyncHandler from 'express-async-handler';
 import bcrypt from 'bcryptjs';
-import { createUserSchema, loginSchema } from '../schemas/user.schema';
+import axios from 'axios';
+
+import CustomResponse from '../utils/response';
 import appAssert from '../errors/app-assert';
+import { createUserSchema, loginSchema } from '../schemas/user.schema';
+import { verifyRecaptcha } from '../services/recaptcha';
+import { sendMail } from '../services/email';
+import { logActivity } from '../utils/activity-logger';
+import { oAuth2Client } from '../services/google-client';
+
+import InvitationModel from '../models/invitation.model';
+import SessionModel from '../models/session.model';
+import UserModel from '../models/user.model';
+import NotificationSettingsModel, {
+	defaultNotificationSettings,
+} from '../models/notification-settings';
+
 import {
 	BAD_REQUEST,
 	CONFLICT,
@@ -14,13 +29,9 @@ import {
 	REFRESH_TOKEN_COOKIE_NAME,
 	BCRYPT_SALT,
 	JWT_REFRESH_SECRET_KEY,
-	GOOGLE_CLIENT_ID,
 	FRONTEND_URL,
 	EMAIL_USER,
-	EMAIL_PASS,
 } from '../constants/env';
-import SessionModel from '../models/session.model';
-import UserModel, { IUser } from '../models/user.model';
 import {
 	generateCypto,
 	getPasswordResetEmailTemplate,
@@ -47,23 +58,12 @@ import {
 	REFRESH_PATH,
 	setAuthCookie,
 } from '../utils/cookie';
-import CustomResponse from '../utils/response';
 import {
 	AppErrorCodes,
 	RESOURCE_TYPES,
 	WHITELISTED_DOMAINS,
 } from '../constants';
-import { verifyRecaptcha } from '../utils/recaptcha';
-import { googleClient } from '../utils/google';
-import axios from 'axios';
-import InvitationModel from '../models/invitation.model';
-import { sendMail } from '../utils/email';
-import { logActivity } from '../utils/activity-logger';
-import { oAuth2Client } from '../utils/google-client';
-import NotificationSettingsModel, {
-	defaultNotificationSettings,
-} from '../models/notification-settings';
-import { encrypt } from '../utils/encryption';
+import { sendInstructorInvitationEmail } from '../services/consultation-email';
 
 /**
  * @route POST /api/v1/auth/login - Login
@@ -474,7 +474,7 @@ export const getInvitations = asyncHandler(async (req, res) => {
 export const inviteInstructor = asyncHandler(async (req, res) => {
 	const { email, name } = req.body;
 
-	// 1. Prevent duplicate invites
+	// prevent duplicate invites
 	const existingInvite = await InvitationModel.findOne({
 		email,
 		status: 'pending',
@@ -493,39 +493,20 @@ export const inviteInstructor = asyncHandler(async (req, res) => {
 		'An account already exists for this email.'
 	);
 
-	// 2. Generate a unique token
+	// generate a unique token
 	const token = generateCypto();
 	const expiresAt = ONE_DAY_FROM_NOW;
 
-	// 3. Create the invitation
-	const invitation = await InvitationModel.create({
+	// create the invitation
+	await InvitationModel.create({
 		email,
 		name: name.toLowerCase(),
 		token,
 		expiresAt,
 	});
 
-	// 4. Construct email
-	const inviteLink = `${FRONTEND_URL}/invite/instructor/accept?token=${token}`;
-	const message = {
-		from: `"Consultation Admin" <${EMAIL_USER}>`,
-		to: email,
-		subject: 'Instructor Invitation',
-		html: `
-      <div style="font-family:sans-serif;padding:1rem;border-radius:8px;background:#f9fafb;">
-        <h2 style="color:#111;">You’ve been invited to join as an Instructor!</h2>
-        <p>Hello ${name || ''},</p>
-        <p>You’ve been invited to join the Comprehensive Student Consultation Platform as an Instructor.</p>
-        <a href="${inviteLink}" 
-           style="display:inline-block;margin-top:1rem;padding:.6rem 1rem;background:#111;color:#fff;border-radius:6px;text-decoration:none;">
-           Accept Invitation
-        </a>
-        <p style="margin-top:1rem;font-size:12px;color:#555;">This link will expire in 24 hours.</p>
-      </div>
-    `,
-	};
-
-	await sendMail(message);
+	// send email
+	await sendInstructorInvitationEmail(token, email, name);
 
 	await logActivity(req, {
 		action: 'ADMIN_INVITE',
@@ -581,6 +562,9 @@ export const acceptInvitation = asyncHandler(async (req, res) => {
 	);
 });
 
+/**
+ * @route DELETE /api/v1/auth/google-calendar
+ */
 export const deleteGoogleCalendarTokensHandler = asyncHandler(
 	async (req, res) => {
 		const user = await UserModel.findById(req.user._id);
@@ -593,6 +577,9 @@ export const deleteGoogleCalendarTokensHandler = asyncHandler(
 	}
 );
 
+/**
+ * @route GET /api/v1/auth/google-calendar
+ */
 export const googleCalendarHandler = asyncHandler(async (req, res) => {
 	const scopes = ['https://www.googleapis.com/auth/calendar.events'];
 
@@ -605,6 +592,9 @@ export const googleCalendarHandler = asyncHandler(async (req, res) => {
 	res.redirect(url);
 });
 
+/**
+ * @route GET /api/v1/auth/google-calendar/status
+ */
 export const checkGoogleCalendarStatus = asyncHandler(async (req, res) => {
 	const user = await UserModel.findById(req.user._id);
 
@@ -626,6 +616,9 @@ export const checkGoogleCalendarStatus = asyncHandler(async (req, res) => {
 	);
 });
 
+/**
+ * @route GET /api/v1/auth/google-calendar/callback
+ */
 export const googleCalendarCallbackHandler = asyncHandler(async (req, res) => {
 	const code = req.query.code as string;
 	appAssert(code, BAD_REQUEST, 'No code provided');
@@ -641,7 +634,18 @@ export const googleCalendarCallbackHandler = asyncHandler(async (req, res) => {
 		googleCalendarTokens: tokens,
 	});
 
-	res.send(
-		`<div>Google Calendar connected! You can now create meetings.<br><a href="${FRONTEND_URL}">Go back to the app</a></div>`
-	);
+	// res.send(
+	// 	`<div>Google Calendar connected! You can now create meetings.<br><a href="${FRONTEND_URL}">Go back to the app</a></div>`
+	// );
+	res.send(`
+		<!DOCTYPE html>
+		<html>
+		<head>
+			<title>Google Calendar Connected</title>
+		</head>
+		<body style="font-family: Arial, sans-serif; text-align: center; margin-top: 50px;">
+			<div>Google Calendar connected! You can now create meetings.<br><a href="${FRONTEND_URL}">Go back to the app</a></div>
+		</body>
+		</html>
+	`);
 });

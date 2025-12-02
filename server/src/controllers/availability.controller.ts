@@ -1,10 +1,10 @@
 import asyncHandler from 'express-async-handler';
-import { createAvilabilitySchema } from '../schemas/availability.schema';
+import AvailabilityModel from '../models/availability.model';
 import UserModel from '../models/user.model';
 import appAssert from '../errors/app-assert';
-import { BAD_REQUEST, NOT_FOUND, OK } from '../constants/http';
-import AvailabilityModel from '../models/availability.model';
 import CustomResponse from '../utils/response';
+import { createAvilabilitySchema } from '../schemas/availability.schema';
+import { BAD_REQUEST, NOT_FOUND } from '../constants/http';
 import { logActivity } from '../utils/activity-logger';
 import { RESOURCE_TYPES } from '../constants';
 
@@ -28,53 +28,6 @@ export const getInstructorAvailability = asyncHandler(async (req, res) => {
 
 	res.json(new CustomResponse(true, availabilities, 'Availability fetched'));
 });
-
-// /**
-//  * @route PUT /api/v1/user/:userID/availability
-//  */
-// export const updateInstructorAvailability = asyncHandler(async (req, res) => {
-// 	const { userID } = req.params;
-// 	const { day, startTime, endTime, slots } = createAvilabilitySchema.parse(
-// 		req.body
-// 	);
-
-// 	const instructor = await UserModel.findById(userID);
-// 	appAssert(instructor, NOT_FOUND, 'Instructor not found');
-// 	appAssert(
-// 		instructor.role === 'instructor',
-// 		BAD_REQUEST,
-// 		'User is not an instructor'
-// 	);
-
-// 	const availability = await AvailabilityModel.findOne({
-// 		user: instructor._id,
-// 		day: day,
-// 	});
-
-// 	if (availability) {
-// 		availability.startTime = startTime;
-// 		availability.endTime = endTime;
-// 		availability.slots = parseInt(slots);
-// 		await availability.save();
-// 	} else {
-// 		await AvailabilityModel.create({
-// 			user: instructor._id,
-// 			day: day,
-// 			startTime: startTime,
-// 			endTime: endTime,
-// 			slots: slots,
-// 		});
-// 	}
-
-// 	await logActivity(req, {
-// 		action: 'UPDATE_AVAILABILITY',
-// 		description: 'Updated availability',
-// 		resourceId: instructor._id as unknown as string,
-// 		resourceType: RESOURCE_TYPES.USER,
-// 	});
-
-// 	res.json(new CustomResponse(true, availability, 'Availability updated'));
-// });
 
 /**
  * @route PUT /api/v1/availability/:availabilityID
@@ -117,6 +70,9 @@ export const updateSingleAvailability = asyncHandler(async (req, res) => {
 	res.json(new CustomResponse(true, availability, 'Availability updated'));
 });
 
+/**
+ * @route POST /api/v1/availability
+ */
 export const createInstructorAvailability = asyncHandler(async (req, res) => {
 	const { day, startTime, endTime, slots, userID } =
 		createAvilabilitySchema.parse(req.body);
@@ -150,6 +106,9 @@ export const createInstructorAvailability = asyncHandler(async (req, res) => {
 		.json(new CustomResponse(true, newAvailability, 'Availability created'));
 });
 
+/**
+ * @route DELETE /api/v1/availability/:availabilityID
+ */
 export const deleteSingleAvailability = asyncHandler(async (req, res) => {
 	const { availabilityID } = req.params;
 

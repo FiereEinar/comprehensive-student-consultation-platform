@@ -7,6 +7,7 @@ import {
 const router = Router();
 
 router.get('/notification', getNotificationSettings);
+
 router.post('/notification', updateNotificationSettings);
 
 export default router;

@@ -4,6 +4,9 @@ import CustomResponse from '../utils/response';
 import { NOT_FOUND } from '../constants/http';
 import appAssert from '../errors/app-assert';
 
+/**
+ * @route GET /api/v1/notifications
+ */
 export const getUserNotifications = asyncHandler(async (req, res) => {
 	const userID = req.user._id;
 
@@ -14,6 +17,9 @@ export const getUserNotifications = asyncHandler(async (req, res) => {
 	res.json(new CustomResponse(true, notifications, 'Notifications fetched'));
 });
 
+/**
+ * @route PATCH /api/v1/notifications/:id/read
+ */
 export const markNotificationRead = asyncHandler(async (req, res) => {
 	const id = req.params.id;
 	const userID = req.user._id;
@@ -29,6 +35,9 @@ export const markNotificationRead = asyncHandler(async (req, res) => {
 	res.json(new CustomResponse(true, notif, 'Notification marked as read'));
 });
 
+/**
+ * @route DELETE /api/v1/notifications/:id
+ */
 export const deleteNotification = asyncHandler(async (req, res) => {
 	const id = req.params.id;
 	const userID = req.user._id;
@@ -43,6 +52,9 @@ export const deleteNotification = asyncHandler(async (req, res) => {
 	res.json(new CustomResponse(true, deleted, 'Notification deleted'));
 });
 
+/**
+ * @route PATCH /api/v1/notifications/read
+ */
 export const markAllRead = asyncHandler(async (req, res) => {
 	const userID = req.user._id;
 
@@ -54,6 +66,9 @@ export const markAllRead = asyncHandler(async (req, res) => {
 	res.json(new CustomResponse(true, null, 'All notifications marked as read'));
 });
 
+/**
+ * @route DELETE /api/v1/notifications/read
+ */
 export const clearReadNotifications = asyncHandler(async (req, res) => {
 	const userID = req.user._id;
 

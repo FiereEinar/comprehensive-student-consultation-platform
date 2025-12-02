@@ -1,7 +1,21 @@
-// File: src/controllers/consultation.controller.ts
-
 import asynchandler from 'express-async-handler';
-import { Request, Response } from 'express';
+import { subDays } from 'date-fns';
+import { google } from 'googleapis';
+import { Types } from 'mongoose';
+import { startCase } from 'lodash';
+import CustomResponse, { CustomPaginatedResponse } from '../utils/response';
+import AvailabilityModel from '../models/availability.model';
+import AppNotificationModel from '../models/app-notification';
+import UserModel, { IUser } from '../models/user.model';
+import appAssert from '../errors/app-assert';
+import { getStartAndEndofDay, ONE_MINUTE_MS } from '../utils/date';
+import { RESOURCE_TYPES } from '../constants';
+import { logActivity } from '../utils/activity-logger';
+import { oAuth2Client } from '../services/google-client';
+import { createGoogleMeetLink } from '../services/google-meet';
+import { createGoogleCalendarOnStatusUpdate } from '../services/google-calendar';
+import { notifyUser } from '../services/notification';
+import { decryptFields } from '../services/encryption';
 import {
 	consutationStatusSchema,
 	createConsultationSchema,
@@ -11,9 +25,6 @@ import ConsultationModel, {
 	consultatioModelEncryptedFields,
 	IConsultation,
 } from '../models/consultation.models';
-import CustomResponse, { CustomPaginatedResponse } from '../utils/response';
-import UserModel, { IUser } from '../models/user.model';
-import appAssert from '../errors/app-assert';
 import {
 	BAD_REQUEST,
 	CONFLICT,
@@ -21,40 +32,11 @@ import {
 	NOT_FOUND,
 	UNAUTHORIZED,
 } from '../constants/http';
-import AvailabilityModel from '../models/availability.model';
-import { getStartAndEndofDay, ONE_MINUTE_MS } from '../utils/date';
-import { DEFAULT_LIMIT, RESOURCE_TYPES } from '../constants';
-import { subDays } from 'date-fns';
-import { logActivity } from '../utils/activity-logger';
-import { oAuth2Client } from '../utils/google-client';
-import { google } from 'googleapis';
-import {
-	EMAIL_USER,
-	GOOGLE_CLIENT_ID,
-	GOOGLE_CLIENT_SECRET,
-	GOOGLE_REDIRECT_URI,
-} from '../constants/env';
-import { sendMail } from '../utils/email';
-import { createGoogleMeetLink } from '../utils/google-meet';
-import {
-	createCalendarEvent,
-	createGoogleCalendarOnStatusUpdate,
-} from '../utils/google-calendar';
 import {
 	sendConsultationEmail,
 	sendConsultationStatusUpdateEmail,
 	sendPendingConsultationEmail,
-} from '../utils/consultation-email';
-import { custom, json } from 'zod';
-import { Types } from 'mongoose';
-import { notifyUser } from '../utils/notification';
-import AppNotificationModel from '../models/app-notification';
-import { startCase } from 'lodash';
-import {
-	decryptFields,
-	decryptRequestData,
-	encrypt,
-} from '../utils/encryption';
+} from '../services/consultation-email';
 
 /**
  * @route GET /api/v1/consultation - get all recent consultations
@@ -192,6 +174,13 @@ export const getConsultations = asynchandler(async (req, res) => {
 
 /**
  * handler made to work with that dumbass IAS requirement "encryption"
+ * @route GET /api/v1/consultation - get all recent consultations
+ * @query page=1
+ * @query pageSize=10
+ * @query search=keyword
+ * @query order=asc | desc
+ * @query userID=studentOrInstructorID
+ * @query status=pending,accepted,completed
  */
 export const getConsultationsV2 = asynchandler(async (req, res) => {
 	const {
@@ -483,11 +472,6 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 
 	// Manage Google Calendar event based on status
 	if (instructor?.googleCalendarTokens) {
-		const oAuth2Client = new google.auth.OAuth2(
-			GOOGLE_CLIENT_ID,
-			GOOGLE_CLIENT_SECRET,
-			GOOGLE_REDIRECT_URI
-		);
 		oAuth2Client.setCredentials(instructor.googleCalendarTokens);
 		const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
 		await createGoogleCalendarOnStatusUpdate(
@@ -579,6 +563,9 @@ export const getAdminDashboardData = asynchandler(async (req, res) => {
 	);
 });
 
+/**
+ * @route POST /api/v1/consultation/meeting - create consultation meeting (Google Meet link)
+ */
 export const createConsultationMeeting = asynchandler(async (req, res) => {
 	const userId = req.user._id;
 	const user = await UserModel.findById(userId);
@@ -776,11 +763,6 @@ export const deleteConsultation = asynchandler(async (req, res) => {
 	);
 
 	if (instructor.googleCalendarTokens) {
-		const oAuth2Client = new google.auth.OAuth2(
-			GOOGLE_CLIENT_ID,
-			GOOGLE_CLIENT_SECRET,
-			GOOGLE_REDIRECT_URI
-		);
 		oAuth2Client.setCredentials(instructor.googleCalendarTokens);
 		const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
 

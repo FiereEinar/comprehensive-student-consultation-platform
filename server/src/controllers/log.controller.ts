@@ -1,8 +1,19 @@
 import asyncHandler from 'express-async-handler';
 import ActivityLogModel from '../models/activity-log.model';
-import CustomResponse, { CustomPaginatedResponse } from '../utils/response';
-import { DEFAULT_LIMIT, RESOURCE_TYPES } from '../constants';
+import { CustomPaginatedResponse } from '../utils/response';
+import { RESOURCE_TYPES } from '../constants';
 
+/**
+ * @route GET /logs
+ * @desc Get paginated logs with filters
+ * @query search - search keyword
+ * @query resource - filter by resource type (comma separated for multiple)
+ * @query startDate - filter by start date (ISO string)
+ * @query endDate - filter by end date (ISO string)
+ * @query page - page number (default 1)
+ * @query limit - number of logs per page (default 20)
+ * @query sort - sort order (asc or desc, default desc)
+ */
 export const getLogsHandler = asyncHandler(async (req, res) => {
 	const {
 		search = '',

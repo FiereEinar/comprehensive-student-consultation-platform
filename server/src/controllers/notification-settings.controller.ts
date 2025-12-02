@@ -5,6 +5,9 @@ import { NOT_FOUND } from '../constants/http';
 import CustomResponse from '../utils/response';
 import { createNotificationSettingsSchema } from '../schemas/notification-settings.schema';
 
+/**
+ * @route GET /api/v1/settings/notification
+ */
 export const getNotificationSettings = asyncHandler(async (req, res) => {
 	const userID = req.query.userID;
 
@@ -18,6 +21,9 @@ export const getNotificationSettings = asyncHandler(async (req, res) => {
 	);
 });
 
+/**
+ * @route POST /api/v1/settings/notification
+ */
 export const updateNotificationSettings = asyncHandler(async (req, res) => {
 	const body = createNotificationSettingsSchema.parse(req.body);
 	const userID = body.user;

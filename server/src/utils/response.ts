@@ -1,4 +1,4 @@
-import { encryptResponseData } from './encryption';
+import { encryptResponseData } from '../services/encryption';
 
 export default class CustomResponse {
 	success: boolean;
