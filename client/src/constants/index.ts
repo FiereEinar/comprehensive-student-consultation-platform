@@ -30,6 +30,8 @@ export const QUERY_KEYS = {
 	GOOGLE_CALENDAR_CONNECTION: 'google-calendar-connection',
 	USERS_STATS: 'users-stats',
 	ROLES: 'roles',
+	LOCAL_BACKUPS: 'local-backups',
+	CLOUD_BACKUPS: 'cloud-backups',
 };
 
 export const MODULES = {

@@ -557,24 +557,11 @@ export default function AdminReportsPage() {
 				</div>
 
 				{/* Right Column: sticky header + scrollable content */}
-				<div
-					className='w-[30%]'
-					// style={{
-					// 	flex: '1 1 260px',
-					// 	display: 'flex',
-					// 	flexDirection: 'column',
-					// 	gap: '1rem',
-					// 	minWidth: 0,
-					// 	marginTop: '3rem',
-					// 	position: 'sticky',
-					// 	top: '2rem',
-					// 	height: 'fit-content',
-					// }}
-				>
+				<div className='w-[30%]'>
 					<Card>
 						<CardContent>
 							<h2 className='font-medium mb-2'>General Reports</h2>
-							<div className='text-sm mb-3'>
+							<div className='text-sm mb-3 space-y-2'>
 								<p>
 									Total Consultations: <strong>{totalConsultations}</strong>
 								</p>

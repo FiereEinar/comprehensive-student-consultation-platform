@@ -165,8 +165,8 @@ export default function GenerateReportFormAdmin() {
 				subjectCode: c.subjectCode ?? '',
 				sectonCode: c.sectonCode ?? '',
 				status: c.status ?? '',
-				scheduledAt: c.scheduledAt?.$date
-					? new Date(c.scheduledAt.$date).toLocaleString()
+				scheduledAt: c.scheduledAt
+					? new Date(c.scheduledAt).toLocaleString()
 					: '',
 			}));
 
@@ -350,7 +350,7 @@ export default function GenerateReportFormAdmin() {
 
 					{/* SEMESTER PERIOD DISPLAY */}
 					<div className='p-3 bg-muted/50 rounded-md text-sm text-muted-foreground'>
-						📅 Period: {semesterDateRange}
+						Period: {semesterDateRange}
 					</div>
 
 					<Button type='submit' className='w-full'>

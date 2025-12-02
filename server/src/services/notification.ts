@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import NotificationSettingsModel from '../models/notification-settings';
 
 /**

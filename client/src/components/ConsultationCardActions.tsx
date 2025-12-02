@@ -42,7 +42,14 @@ export default function ConsultationCardActions({
 				{ status: newStatus, withGMeet }
 			);
 
-			toast.success(data.message);
+			if (data.error) {
+				toast.error(
+					'Consultation updated, but Google Calendar event not created'
+				);
+			} else {
+				toast.success(data.message);
+			}
+
 			await queryClient.invalidateQueries({
 				queryKey: [QUERY_KEYS.CONSULTATIONS],
 			});

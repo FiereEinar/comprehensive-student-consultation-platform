@@ -89,7 +89,10 @@ export const createGoogleCalendarOnStatusUpdate = async (
 		await consultation.save();
 	}
 
-	if (status === 'completed' && consultation.googleCalendarEventId) {
+	if (
+		(status === 'completed' || status === 'declined') &&
+		consultation.googleCalendarEventId
+	) {
 		// Remove event if completed
 		try {
 			await calendar.events.delete({

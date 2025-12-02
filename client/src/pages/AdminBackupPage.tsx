@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
 	Dialog,
@@ -14,7 +14,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import Header from '@/components/ui/header';
 import { DialogDescription } from '@radix-ui/react-dialog';
 import HasPermission from '@/components/HasPermission';
-import { MODULES } from '@/constants';
+import { MODULES, QUERY_KEYS } from '@/constants';
+import { useQuery } from '@tanstack/react-query';
+import { queryClient } from '@/main';
 
 type BackupItem = {
 	name: string;
@@ -25,34 +27,49 @@ type BackupItem = {
 
 export default function AdminBackupPage() {
 	const [loading, setLoading] = useState(false);
-	const [history, setHistory] = useState<BackupItem[]>([]);
-	const [cloudHistory, setCloudHistory] = useState<BackupItem[]>([]);
 	const [confirm, setConfirm] = useState<{
 		open: boolean;
 		target?: BackupItem;
 	}>({ open: false });
 
-	const fetchHistory = async () => {
+	const { data: localBackups } = useQuery({
+		queryKey: [QUERY_KEYS.LOCAL_BACKUPS],
+		queryFn: () => fetchLocalBackup(),
+	});
+
+	const { data: cloudBackups } = useQuery({
+		queryKey: [QUERY_KEYS.CLOUD_BACKUPS],
+		queryFn: () => fetchCloudBackup(),
+	});
+
+	const fetchLocalBackup = async (): Promise<BackupItem[]> => {
 		try {
 			const { data } = await axiosInstance.get('/backup/history');
-			const { data: cloud } = await axiosInstance.get('/backup/history/cloud');
-			if (data?.success) setHistory(data.data || []);
-			if (cloud?.success) setCloudHistory(cloud.data || []);
+			return data.data || ([] as BackupItem[]);
 		} catch (err) {
 			console.error(err);
+			return [];
 		}
 	};
 
-	useEffect(() => {
-		fetchHistory();
-	}, []);
+	const fetchCloudBackup = async (): Promise<BackupItem[]> => {
+		try {
+			const { data } = await axiosInstance.get('/backup/history/cloud');
+			return data.data || ([] as BackupItem[]);
+		} catch (err) {
+			console.error(err);
+			return [];
+		}
+	};
 
 	const handleManual = async (cloud: boolean = false) => {
 		try {
 			setLoading(true);
 			await axiosInstance.post('/backup/manual' + (cloud ? '/cloud' : ''));
 			toast.success('Backup created');
-			fetchHistory();
+			await queryClient.invalidateQueries({
+				queryKey: [QUERY_KEYS.LOCAL_BACKUPS, QUERY_KEYS.CLOUD_BACKUPS],
+			});
 		} catch (err: any) {
 			console.error(err);
 			toast.error(err?.message || 'Backup failed');
@@ -95,10 +112,12 @@ export default function AdminBackupPage() {
 			const { data } = await axiosInstance.delete(`/backup/?name=${item.name}`);
 			if (data.success) {
 				toast.success('Backup removed');
-				fetchHistory();
 			} else {
 				toast.error('Failed to remove backup');
 			}
+			await queryClient.invalidateQueries({
+				queryKey: [QUERY_KEYS.LOCAL_BACKUPS, QUERY_KEYS.CLOUD_BACKUPS],
+			});
 		} catch (err: any) {
 			console.error(err);
 			toast.error(err?.message || 'Failed to remove backup');
@@ -154,7 +173,7 @@ export default function AdminBackupPage() {
 					<div className='mt-5'>
 						<h2 className='text-lg font-medium mb-4'>Cloud Backup History</h2>
 						<BackupList
-							backups={cloudHistory}
+							backups={cloudBackups || []}
 							onDownload={() => {}}
 							onRestore={() => {}}
 							onRemove={() => {}}
@@ -165,7 +184,7 @@ export default function AdminBackupPage() {
 					<div className='mt-5'>
 						<h2 className='text-lg font-medium mb-4'>Local Backup History</h2>
 						<BackupList
-							backups={history}
+							backups={localBackups || []}
 							onDownload={handleDownload}
 							onRestore={(item) => setConfirm({ open: true, target: item })}
 							onRemove={handleRemove}

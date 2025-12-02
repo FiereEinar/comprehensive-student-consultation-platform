@@ -77,7 +77,7 @@ export default function CreateUserForm({ title }: CreateUserFormProps) {
 			});
 		} catch (error: any) {
 			console.error(error);
-			toast.error(error.message ?? 'Failed to create user');
+			toast.error(error.error ?? 'Failed to create user');
 		}
 	};
 

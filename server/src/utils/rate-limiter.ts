@@ -3,7 +3,7 @@ import { RateLimiterMemory } from 'rate-limiter-flexible';
 import { TOO_MANY_REQUESTS } from '../constants/http';
 
 const rateLimiter = new RateLimiterMemory({
-	points: 60, // number of requests allowed
+	points: 120, // number of requests allowed
 	duration: 60, // per seconds
 	blockDuration: 120, // block duration
 });

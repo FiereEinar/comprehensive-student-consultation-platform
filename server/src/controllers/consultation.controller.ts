@@ -9,7 +9,7 @@ import AppNotificationModel from '../models/app-notification';
 import UserModel, { IUser } from '../models/user.model';
 import appAssert from '../errors/app-assert';
 import { getStartAndEndofDay, ONE_MINUTE_MS } from '../utils/date';
-import { RESOURCE_TYPES } from '../constants';
+import { AppErrorCodes, RESOURCE_TYPES } from '../constants';
 import { logActivity } from '../utils/activity-logger';
 import { oAuth2Client } from '../services/google-client';
 import { createGoogleMeetLink } from '../services/google-meet';
@@ -354,38 +354,44 @@ export const createConsultation = asynchandler(async (req, res) => {
 
 	// create consultation
 	const consultation = await ConsultationModel.create(body);
+	const currentUserRole = req.user.role;
 
 	// send email to the instructor
-	const instructorId = String(instructor._id);
-	notifyUser(instructorId, 'newConsultation', {
-		emailNotification: async () => {
-			if (req.user.role === 'student' || req.user.role === 'admin') {
+	if (currentUserRole === 'admin' || currentUserRole === 'student') {
+		const instructorId = String(instructor._id);
+		notifyUser(instructorId, 'newConsultation', {
+			emailNotification: async () => {
 				await sendPendingConsultationEmail({
 					instructorEmail: instructor.email,
 					instructorName: instructor.name,
 					studentName: student.name,
 					scheduledAt: consultationDate,
 				});
-			}
-			if (req.user.role === 'instructor' || req.user.role === 'admin') {
-				await sendPendingConsultationEmail({
-					instructorEmail: student.email,
-					instructorName: student.name,
-					studentName: instructor.name,
-					scheduledAt: consultationDate,
-				});
-			}
-		},
-		inAppNotification: async () => {
-			if (req.user.role === 'student' || req.user.role === 'admin') {
+			},
+			inAppNotification: async () => {
 				await AppNotificationModel.create({
 					user: instructorId,
 					title: `A new consultation request from ${startCase(student.name)}.`,
 					message: 'Check your dashboard for more details.',
 					isRead: false,
 				});
-			}
-			if (req.user.role === 'instructor' || req.user.role === 'admin') {
+			},
+		});
+	}
+
+	// send email to the student
+	if (currentUserRole === 'admin' || currentUserRole === 'instructor') {
+		const studentId = String(student._id);
+		notifyUser(studentId, 'newConsultation', {
+			emailNotification: async () => {
+				await sendPendingConsultationEmail({
+					instructorEmail: student.email,
+					instructorName: student.name,
+					studentName: instructor.name,
+					scheduledAt: consultationDate,
+				});
+			},
+			inAppNotification: async () => {
 				await AppNotificationModel.create({
 					user: student._id,
 					title: `A new consultation request from ${startCase(
@@ -394,9 +400,9 @@ export const createConsultation = asynchandler(async (req, res) => {
 					message: 'Check your dashboard for more details.',
 					isRead: false,
 				});
-			}
-		},
-	});
+			},
+		});
+	}
 
 	await logActivity(req, {
 		action: 'CREATE_CONSULTATION',
@@ -428,28 +434,51 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 	appAssert(consultation, NOT_FOUND, 'Consultation not found');
 
 	appAssert(
-		currentUser.role === 'instructor',
+		currentUser.role !== 'student',
 		BAD_REQUEST,
 		'Only instructors can update consultation status'
 	);
 
-	appAssert(
-		currentUser && currentUser.googleCalendarTokens,
-		UNAUTHORIZED,
-		'Google Calendar not connected'
-	);
+	// appAssert(
+	// 	currentUser && instructor.googleCalendarTokens,
+	// 	UNAUTHORIZED,
+	// 	'Google Calendar not connected'
+	// );
 
 	consultation.status = status;
+	if (status === 'completed') consultation.completedAt = new Date();
 	await consultation.save();
-
-	if (status === 'completed') {
-		consultation.completedAt = new Date();
-		await consultation.save();
-	}
 
 	const { student, instructor } = consultation;
 
-	notifyUser(String(student._id), 'statusUpdates', {
+	// if an admin edited the consultation, send email to the instructor
+	if (req.user.role === 'admin') {
+		const instructorId = String(instructor._id);
+		notifyUser(instructorId, 'newConsultation', {
+			emailNotification: async () => {
+				await sendConsultationStatusUpdateEmail(
+					consultation,
+					instructor,
+					student,
+					status
+				);
+			},
+			inAppNotification: async () => {
+				await AppNotificationModel.create({
+					user: instructorId,
+					title: `Your consultation with ${startCase(
+						student.name
+					)} is ${startCase(status)} by ${startCase(currentUser.name)}.`,
+					message: 'Check your dashboard for more details.',
+					isRead: false,
+				});
+			},
+		});
+	}
+
+	// send email to the student
+	const studentId = String(student._id);
+	notifyUser(studentId, 'newConsultation', {
 		emailNotification: async () => {
 			await sendConsultationStatusUpdateEmail(
 				consultation,
@@ -470,6 +499,8 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 		},
 	});
 
+	let withGoogleCalendar = false;
+
 	// Manage Google Calendar event based on status
 	if (instructor?.googleCalendarTokens) {
 		oAuth2Client.setCredentials(instructor.googleCalendarTokens);
@@ -482,6 +513,8 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 			status,
 			withGMeet
 		);
+
+		withGoogleCalendar = true;
 	}
 
 	await logActivity(req, {
@@ -495,7 +528,8 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 		new CustomResponse(
 			true,
 			consultation,
-			`Consultation status updated ${status}`
+			`Consultation status updated ${status}`,
+			withGoogleCalendar ? undefined : AppErrorCodes.InvalidGoogleCalendarTokens
 		)
 	);
 });
@@ -572,7 +606,8 @@ export const createConsultationMeeting = asynchandler(async (req, res) => {
 	appAssert(
 		user && user.googleCalendarTokens,
 		UNAUTHORIZED,
-		'Google Calendar not connected'
+		'Google Calendar not connected',
+		AppErrorCodes.InvalidGoogleCalendarTokens
 	);
 
 	const consultation = await ConsultationModel.findById<IConsultation>(
@@ -752,15 +787,14 @@ export const deleteConsultation = asynchandler(async (req, res) => {
 	const instructor = decryptFields(consultation.instructor, [
 		'googleCalendarTokens',
 	]);
-	// const consultation = decryptRequestData(
-	// 	consultationDoc
-	// ) as unknown as IConsultation;
 
-	appAssert(
-		consultation.instructor._id?.toString() === currentUser._id.toString(),
-		UNAUTHORIZED,
-		'You are not authorized to delete this consultation'
-	);
+	if (currentUser.role !== 'admin') {
+		appAssert(
+			consultation.instructor._id?.toString() === currentUser._id.toString(),
+			UNAUTHORIZED,
+			'You are not authorized to delete this consultation'
+		);
+	}
 
 	if (instructor.googleCalendarTokens) {
 		oAuth2Client.setCredentials(instructor.googleCalendarTokens);

@@ -15,7 +15,7 @@ function App() {
 				<div className='sticky top-0 z-50'>
 					<TopBar />
 				</div>
-				<div className='flex flex-col p-8'>
+				<div className='flex flex-col p-5'>
 					<Outlet />
 				</div>
 			</div>

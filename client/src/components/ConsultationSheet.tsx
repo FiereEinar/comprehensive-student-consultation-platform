@@ -22,6 +22,7 @@ import { QUERY_KEYS } from '@/constants';
 import { Badge } from './ui/badge';
 import InstructorNotesForm from './forms/InstructorNotesForm';
 import EditConsultationForm from './forms/EditConsultationForm';
+import { toast } from 'sonner';
 
 type ConsultationSheetProps = {
 	consultation: Consultation;
@@ -54,13 +55,15 @@ export default function ConsultationSheet({
 				queryKey: [QUERY_KEYS.CONSULTATIONS],
 			});
 		} catch (err: any) {
-			if (err.status === 401) {
+			if (err.errorCode === 'InvalidGoogleCalendarTokens') {
+				toast.error(
+					'Google Calendar not connected, go to settings to connect.'
+				);
 				// User does not have Google Calendar token → redirect to consent screen
-				window.location.href =
-					import.meta.env.VITE_API_URL + '/auth/google-calendar';
-				// await axiosInstance.get('/auth/google-calendar');
+				// window.location.href =
+				// 	import.meta.env.VITE_API_URL + '/auth/google-calendar';
 			} else {
-				alert('Failed to generate meeting link');
+				toast.error('Failed to generate meeting link');
 				console.error(err);
 			}
 		} finally {
