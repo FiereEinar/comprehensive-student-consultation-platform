@@ -130,13 +130,13 @@ export const signupHandler = asyncHandler(async (req, res) => {
 	appAssert(
 		body.password === body.confirmPassword,
 		BAD_REQUEST,
-		'Passwords do not match'
+		'Passwords do not match',
 	);
 
 	// Hash password
 	const hashedPassword = await bcrypt.hash(
 		body.password,
-		parseInt(BCRYPT_SALT)
+		parseInt(BCRYPT_SALT),
 	);
 	body.password = hashedPassword;
 
@@ -229,8 +229,8 @@ export const refreshTokenHandler = asyncHandler(async (req, res) => {
 	const newRefreshToken = sessionNeedsRefresh
 		? signToken(
 				{ sessionID: session._id as unknown as string },
-				refreshTokenSignOptions
-		  )
+				refreshTokenSignOptions,
+			)
 		: undefined;
 
 	const accessToken = signToken({
@@ -242,7 +242,7 @@ export const refreshTokenHandler = asyncHandler(async (req, res) => {
 		res.cookie(
 			REFRESH_TOKEN_COOKIE_NAME,
 			newRefreshToken,
-			getRefreshTokenOptions()
+			getRefreshTokenOptions(),
 		);
 	}
 
@@ -261,7 +261,7 @@ export const verifyAuthHandler = asyncHandler(async (req, res) => {
 		token,
 		UNAUTHORIZED,
 		'Token not found',
-		AppErrorCodes.InvalidAccessToken
+		AppErrorCodes.InvalidAccessToken,
 	);
 
 	// verify the token
@@ -270,11 +270,11 @@ export const verifyAuthHandler = asyncHandler(async (req, res) => {
 		!error && payload,
 		UNAUTHORIZED,
 		'Token not verified',
-		AppErrorCodes.InvalidAccessToken
+		AppErrorCodes.InvalidAccessToken,
 	);
 
 	const user = await UserModel.findById(payload.userID as string).populate(
-		'adminRole'
+		'adminRole',
 	);
 	const session = await SessionModel.findById(payload.sessionID);
 
@@ -282,7 +282,7 @@ export const verifyAuthHandler = asyncHandler(async (req, res) => {
 		session && user,
 		UNAUTHORIZED,
 		'User or session not found',
-		AppErrorCodes.InvalidAccessToken
+		AppErrorCodes.InvalidAccessToken,
 	);
 
 	const now = Date.now();
@@ -293,7 +293,7 @@ export const verifyAuthHandler = asyncHandler(async (req, res) => {
 			false,
 			UNAUTHORIZED,
 			'Session expired',
-			AppErrorCodes.InvalidAccessToken
+			AppErrorCodes.InvalidAccessToken,
 		);
 	}
 
@@ -325,7 +325,7 @@ export const googleLoginHandlerV2 = asyncHandler(async (req, res) => {
 			headers: {
 				Authorization: `Bearer ${token}`,
 			},
-		}
+		},
 	);
 
 	const { email, name, id: googleID, picture, hd } = googleUser;
@@ -336,7 +336,7 @@ export const googleLoginHandlerV2 = asyncHandler(async (req, res) => {
 		appAssert(
 			WHITELISTED_DOMAINS.includes(hd),
 			UNAUTHORIZED,
-			'User is not from a whitelisted domain'
+			'User is not from a whitelisted domain',
 		);
 
 		const randomPassword = await bcrypt.hash(crypto.randomUUID(), 10);
@@ -430,7 +430,7 @@ export const resetPasswordHandler = asyncHandler(async (req, res) => {
 	const { password } = req.body;
 
 	// Hash token to compare with DB
-	const hashedToken = hashCrypto(token ?? '');
+	const hashedToken = hashCrypto((token as string) ?? '');
 
 	const user = await UserModel.findOne({
 		resetPasswordToken: hashedToken,
@@ -454,7 +454,7 @@ export const resetPasswordHandler = asyncHandler(async (req, res) => {
 	});
 
 	res.json(
-		new CustomResponse(true, null, 'Password has been reset successfully')
+		new CustomResponse(true, null, 'Password has been reset successfully'),
 	);
 });
 
@@ -483,14 +483,14 @@ export const inviteInstructor = asyncHandler(async (req, res) => {
 	appAssert(
 		!existingInvite,
 		BAD_REQUEST,
-		'An invitation is already pending for this email.'
+		'An invitation is already pending for this email.',
 	);
 
 	const existingEmail = await UserModel.findOne({ email });
 	appAssert(
 		!existingEmail,
 		BAD_REQUEST,
-		'An account already exists for this email.'
+		'An account already exists for this email.',
 	);
 
 	// generate a unique token
@@ -531,7 +531,7 @@ export const acceptInvitation = asyncHandler(async (req, res) => {
 	appAssert(
 		invitation && invitation.expiresAt > new Date(),
 		BAD_REQUEST,
-		'Invalid or expired invitation link.'
+		'Invalid or expired invitation link.',
 	);
 
 	// Create the instructor user
@@ -557,8 +557,8 @@ export const acceptInvitation = asyncHandler(async (req, res) => {
 		new CustomResponse(
 			true,
 			user.omitPassword(),
-			'Invitation accepted. Account created.'
-		)
+			'Invitation accepted. Account created.',
+		),
 	);
 });
 
@@ -574,7 +574,7 @@ export const deleteGoogleCalendarTokensHandler = asyncHandler(
 		await user.save();
 
 		res.json(new CustomResponse(true, null, 'Google Calendar tokens deleted'));
-	}
+	},
 );
 
 /**
@@ -611,8 +611,8 @@ export const checkGoogleCalendarStatus = asyncHandler(async (req, res) => {
 				accessToken: user?.googleCalendarTokens?.access_token,
 				refreshToken: user?.googleCalendarTokens?.refresh_token,
 			},
-			'Google Calendar connection status'
-		)
+			'Google Calendar connection status',
+		),
 	);
 });
 

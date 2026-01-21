@@ -64,7 +64,7 @@ export const getRoles = asyncHandler(async (req, res) => {
 	const prev = numericPage > 1 ? numericPage - 1 : -1;
 
 	res.json(
-		new CustomPaginatedResponse(true, roles, 'Roles fetched', next, prev)
+		new CustomPaginatedResponse(true, roles, 'Roles fetched', next, prev),
 	);
 });
 
@@ -82,7 +82,7 @@ export const getSingleRole = asyncHandler(async (req, res) => {
 
 	const decryptedRole = decryptFields(
 		role.toObject(),
-		roleModelEncryptedFields
+		roleModelEncryptedFields,
 	);
 
 	res.json(new CustomResponse(true, decryptedRole, 'Role fetched'));
@@ -100,7 +100,7 @@ export const createRole = asyncHandler(async (req, res) => {
 	appAssert(
 		name !== SUPER_ADMIN,
 		BAD_REQUEST,
-		'Cannot create Super Admin role'
+		'Cannot create Super Admin role',
 	);
 
 	const role = await RoleModel.create({
@@ -125,8 +125,8 @@ export const createRole = asyncHandler(async (req, res) => {
 		new CustomResponse(
 			true,
 			decryptFields(populatedRole?.toObject(), roleModelEncryptedFields),
-			'Role created successfully'
-		)
+			'Role created successfully',
+		),
 	);
 });
 
@@ -144,26 +144,26 @@ export const updateRole = asyncHandler(async (req, res) => {
 	appAssert(
 		role.name !== SUPER_ADMIN,
 		BAD_REQUEST,
-		'Cannot update Super Admin role'
+		'Cannot update Super Admin role',
 	);
 
 	// Validate permissions
 	if (permissions && permissions.length > 0) {
 		const validPermissions = Object.values(MODULES);
 		const invalidPermissions = permissions.filter(
-			(perm: string) => !validPermissions.includes(perm as Modules)
+			(perm: string) => !validPermissions.includes(perm as Modules),
 		);
 		appAssert(
 			invalidPermissions.length === 0,
 			BAD_REQUEST,
-			`Invalid permissions: ${invalidPermissions.join(', ')}`
+			`Invalid permissions: ${invalidPermissions.join(', ')}`,
 		);
 	}
 
 	await logActivity(req, {
 		action: 'UPDATE_ROLE',
 		description: 'Update role',
-		resourceId: roleID,
+		resourceId: Array.isArray(roleID) ? roleID[0] : roleID,
 		resourceType: RESOURCE_TYPES.ROLE,
 	});
 
@@ -180,8 +180,8 @@ export const updateRole = asyncHandler(async (req, res) => {
 		new CustomResponse(
 			true,
 			decryptFields(updatedRole?.toObject(), roleModelEncryptedFields),
-			'Role updated successfully'
-		)
+			'Role updated successfully',
+		),
 	);
 });
 
@@ -196,13 +196,13 @@ export const deleteRole = asyncHandler(async (req, res) => {
 	appAssert(
 		role.name !== SUPER_ADMIN,
 		BAD_REQUEST,
-		'Cannot delete Super Admin role'
+		'Cannot delete Super Admin role',
 	);
 
 	await logActivity(req, {
 		action: 'DELETE_ROLE',
 		description: 'Delete role',
-		resourceId: roleID,
+		resourceId: Array.isArray(roleID) ? roleID[0] : roleID,
 		resourceType: RESOURCE_TYPES.ROLE,
 	});
 
