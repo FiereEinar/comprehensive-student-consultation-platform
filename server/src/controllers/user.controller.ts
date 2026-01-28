@@ -73,7 +73,7 @@ export const getUsers = asyncHandler(async (req, res) => {
 	const prev = numericPage > 1 ? numericPage - 1 : -1;
 
 	res.json(
-		new CustomPaginatedResponse(true, users, 'Users fetched', next, prev)
+		new CustomPaginatedResponse(true, users, 'Users fetched', next, prev),
 	);
 });
 
@@ -159,8 +159,8 @@ export const getUsersV2 = asyncHandler(async (req, res) => {
 			paginatedUsers,
 			'Users fetched',
 			next,
-			prev
-		)
+			prev,
+		),
 	);
 });
 
@@ -188,7 +188,7 @@ export const updateUserName = asyncHandler(async (req, res) => {
 	await logActivity(req, {
 		action: 'UPDATE_USER',
 		description: 'Update user name',
-		resourceId: userID,
+		resourceId: Array.isArray(userID) ? userID[0] : userID,
 		resourceType: RESOURCE_TYPES.USER,
 	});
 
@@ -197,13 +197,13 @@ export const updateUserName = asyncHandler(async (req, res) => {
 	appAssert(
 		req.user._id.toString() === userID,
 		UNAUTHORIZED,
-		'You are not authorized to update this account'
+		'You are not authorized to update this account',
 	);
 
 	const user = await UserModel.findByIdAndUpdate(
 		userID,
 		{ name: encrypt(name) },
-		{ new: true }
+		{ new: true },
 	);
 	appAssert(user, NOT_FOUND, 'User not found.');
 
@@ -211,8 +211,8 @@ export const updateUserName = asyncHandler(async (req, res) => {
 		new CustomResponse(
 			true,
 			user.omitPassword(),
-			'User name updated successfully!'
-		)
+			'User name updated successfully!',
+		),
 	);
 });
 
@@ -226,14 +226,14 @@ export const updateUserPassword = asyncHandler(async (req, res) => {
 	await logActivity(req, {
 		action: 'UPDATE_USER',
 		description: 'Update user password',
-		resourceId: userID,
+		resourceId: Array.isArray(userID) ? userID[0] : userID,
 		resourceType: RESOURCE_TYPES.USER,
 	});
 
 	appAssert(
 		req.user._id.toString() === userID,
 		UNAUTHORIZED,
-		'You are not authorized to update this account'
+		'You are not authorized to update this account',
 	);
 
 	const user = await UserModel.findById(userID);
@@ -259,7 +259,7 @@ export const updateUserByAdmin = asyncHandler(async (req, res) => {
 	await logActivity(req, {
 		action: 'UPDATE_USER_BY_ADMIN',
 		description: 'Update user by admin',
-		resourceId: userID,
+		resourceId: Array.isArray(userID) ? userID[0] : userID,
 		resourceType: RESOURCE_TYPES.USER,
 	});
 
@@ -278,7 +278,7 @@ export const updateUserByAdmin = asyncHandler(async (req, res) => {
 		appAssert(
 			roleDocs,
 			BAD_REQUEST,
-			'Admin roles must exist before they can be assigned to users'
+			'Admin roles must exist before they can be assigned to users',
 		);
 		updateData.adminRole = adminRole;
 	}
@@ -288,7 +288,7 @@ export const updateUserByAdmin = asyncHandler(async (req, res) => {
 		encryptFields(updateData, userModelEncryptedFields),
 		{
 			new: true,
-		}
+		},
 	);
 	appAssert(updatedUser, NOT_FOUND, 'User not found after update');
 
@@ -296,8 +296,8 @@ export const updateUserByAdmin = asyncHandler(async (req, res) => {
 		new CustomResponse(
 			true,
 			decryptFields(updatedUser.omitPassword(), userModelEncryptedFields),
-			'User updated successfully'
-		)
+			'User updated successfully',
+		),
 	);
 });
 
@@ -312,7 +312,7 @@ export const updateUserPasswordByAdmin = asyncHandler(async (req, res) => {
 	await logActivity(req, {
 		action: 'UPDATE_USER_PASSWORD_BY_ADMIN',
 		description: 'Update user password by admin',
-		resourceId: userID,
+		resourceId: Array.isArray(userID) ? userID[0] : userID,
 		resourceType: RESOURCE_TYPES.USER,
 	});
 
@@ -338,14 +338,14 @@ export const archiveUser = asyncHandler(async (req, res) => {
 	await logActivity(req, {
 		action: archived ? 'ARCHIVE_USER' : 'UNARCHIVE_USER',
 		description: archived ? 'Archive user' : 'Unarchive user',
-		resourceId: userID,
+		resourceId: Array.isArray(userID) ? userID[0] : userID,
 		resourceType: RESOURCE_TYPES.USER,
 	});
 
 	const user = await UserModel.findByIdAndUpdate(
 		userID,
 		{ archived },
-		{ new: true }
+		{ new: true },
 	);
 	appAssert(user, NOT_FOUND, 'User not found');
 
@@ -353,8 +353,8 @@ export const archiveUser = asyncHandler(async (req, res) => {
 		new CustomResponse(
 			true,
 			decryptFields(user.omitPassword(), userModelEncryptedFields),
-			`User ${archived ? 'archived' : 'unarchived'} successfully`
-		)
+			`User ${archived ? 'archived' : 'unarchived'} successfully`,
+		),
 	);
 });
 
@@ -409,7 +409,7 @@ export const createUser = asyncHandler(async (req, res) => {
 	// Hash password
 	const hashedPassword = await bcrypt.hash(
 		body.password,
-		parseInt(BCRYPT_SALT)
+		parseInt(BCRYPT_SALT),
 	);
 
 	const data = encryptFields(
@@ -418,9 +418,9 @@ export const createUser = asyncHandler(async (req, res) => {
 			institutionalID: body.institutionalID,
 			email: body.email,
 			password: hashedPassword,
-			role: 'student',
+			role: req.body.role ?? 'student',
 		},
-		userModelEncryptedFields
+		userModelEncryptedFields,
 	);
 
 	// create user

@@ -71,7 +71,7 @@ export default function UserSheet({
 	const { data: roles } = useQuery({
 		queryKey: [QUERY_KEYS.ROLES],
 		queryFn: async () => {
-			const res = user?.role === 'admin' ? await fetchRoles() : [];
+			const res = await fetchRoles();
 			return res;
 		},
 	});
@@ -100,7 +100,7 @@ export default function UserSheet({
 		mutationFn: async (data: UpdateUserFormValues) => {
 			const { data: response } = await axiosInstance.patch(
 				`/user/${user?._id}/admin`,
-				data
+				data,
 			);
 			return response;
 		},
@@ -119,13 +119,13 @@ export default function UserSheet({
 		mutationFn: async (archived: boolean) => {
 			const { data: response } = await axiosInstance.patch(
 				`/user/${user?._id}/archive`,
-				{ archived }
+				{ archived },
 			);
 			return response;
 		},
 		onSuccess: (_, archived) => {
 			toast.success(
-				`User ${archived ? 'archived' : 'unarchived'} successfully`
+				`User ${archived ? 'archived' : 'unarchived'} successfully`,
 			);
 			queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.USERS] });
 			onOpenChange(false);
@@ -140,7 +140,7 @@ export default function UserSheet({
 		mutationFn: async (newPassword: string) => {
 			const { data: response } = await axiosInstance.patch(
 				`/user/${user?._id}/admin/password`,
-				{ newPassword }
+				{ newPassword },
 			);
 			return response;
 		},
