@@ -26,7 +26,6 @@ import notificationRoutes from './routes/notification.routes';
 import backupRoutes from './routes/backup.route';
 import roleRoutes from './routes/role.route';
 import { decryptBodyData } from './middlewares/decrypt';
-import { helmetConfig } from './utils/helmet';
 connectToMongoDB();
 
 const app = express();
@@ -34,7 +33,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(helmet(helmetConfig));
+app.use(helmet());
 app.use(decryptBodyData);
 // app.use(requestLogger);
 app.get('/', healthcheck);
@@ -50,16 +49,6 @@ app.use('/api/v1/availability', availabilityRoutes);
 app.use('/api/v1/notification', notificationRoutes);
 app.use('/api/v1/backup', backupRoutes);
 app.use('/api/v1/role', roleRoutes);
-
-// Serve frontend (React build) after API routes
-app.use(express.static(path.join(__dirname, '../../../client/dist')));
-// Serve frontend (React build)
-app.use((req, res, next) => {
-	const indexPath = path.join(__dirname, '../../../client/dist/index.html');
-	res.sendFile(indexPath, (err) => {
-		if (err) next(err);
-	});
-});
 
 // Error handlers
 app.use(notFoundHandler);

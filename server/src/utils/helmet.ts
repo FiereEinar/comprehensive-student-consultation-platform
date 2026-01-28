@@ -7,13 +7,13 @@ export const helmetConfig: HelmetOptions = {
 			defaultSrc: ["'self'"],
 			scriptSrc: [
 				"'self'",
-				'https://accounts.google.com', // Allow GSI client
+				'https://accounts.google.com', 
 				'https://apis.google.com',
 			],
 			imgSrc: [
 				"'self'",
 				'data:',
-				'https://lh3.googleusercontent.com', // Allow Google profile pics
+				'https://lh3.googleusercontent.com', 
 			],
 			connectSrc: [
 				"'self'",
