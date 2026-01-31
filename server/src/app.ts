@@ -2,7 +2,6 @@ import cookieParser from 'cookie-parser';
 import express from 'express';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
-import path from 'path';
 import cors from 'cors';
 dotenv.config();
 
@@ -33,7 +32,7 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(helmet());
+// app.use(helmet());
 app.use(decryptBodyData);
 // app.use(requestLogger);
 app.get('/', healthcheck);

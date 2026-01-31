@@ -149,12 +149,12 @@ export const getConsultations = asynchandler(async (req, res) => {
 	// Get paginated data
 	let consultations = await ConsultationModel.aggregate(pipeline);
 	consultations = consultations.map((c) =>
-		decryptFields(c, consultatioModelEncryptedFields)
+		decryptFields(c, consultatioModelEncryptedFields),
 	);
 
 	// Get total count (run pipeline without skip/limit)
 	const totalPipeline = pipeline.filter(
-		(stage) => !('$skip' in stage) && !('$limit' in stage)
+		(stage) => !('$skip' in stage) && !('$limit' in stage),
 	);
 	const totalDocs = await ConsultationModel.aggregate([
 		...totalPipeline,
@@ -171,8 +171,8 @@ export const getConsultations = asynchandler(async (req, res) => {
 			consultations,
 			'Consultations fetched',
 			next,
-			prev
-		)
+			prev,
+		),
 	);
 });
 
@@ -227,7 +227,7 @@ export const getConsultationsV2 = asynchandler(async (req, res) => {
 	 * STEP 2 — DECRYPT ALL FIELDS
 	 * ---------------------------------------------*/
 	consultations = consultations.map((c) =>
-		decryptFields(c, consultatioModelEncryptedFields)
+		decryptFields(c, consultatioModelEncryptedFields),
 	);
 
 	/** --------------------------------------------
@@ -285,8 +285,8 @@ export const getConsultationsV2 = asynchandler(async (req, res) => {
 			paginated,
 			'Consultations fetched',
 			next,
-			prev
-		)
+			prev,
+		),
 	);
 });
 
@@ -324,7 +324,7 @@ export const createConsultation = asynchandler(async (req, res) => {
 	appAssert(
 		availability,
 		BAD_REQUEST,
-		'Instructor is not available for this day'
+		'Instructor is not available for this day',
 	);
 
 	// check how many consultations the instructor has for this day
@@ -338,7 +338,7 @@ export const createConsultation = asynchandler(async (req, res) => {
 	appAssert(
 		existingConsultations < availability.slots,
 		BAD_REQUEST,
-		'No remaining consultation slots for this day'
+		'No remaining consultation slots for this day',
 	);
 
 	if (req.user.role === 'student') {
@@ -352,7 +352,7 @@ export const createConsultation = asynchandler(async (req, res) => {
 		appAssert(
 			!existingConsultation,
 			BAD_REQUEST,
-			'Student already has a consultation for this day'
+			'Student already has a consultation for this day',
 		);
 	}
 
@@ -399,7 +399,7 @@ export const createConsultation = asynchandler(async (req, res) => {
 				await AppNotificationModel.create({
 					user: student._id,
 					title: `A new consultation request from ${startCase(
-						instructor.name
+						instructor.name,
 					)}.`,
 					message: 'Check your dashboard for more details.',
 					isRead: false,
@@ -415,7 +415,7 @@ export const createConsultation = asynchandler(async (req, res) => {
 	});
 
 	res.json(
-		new CustomResponse(true, consultation, 'Consultation request created')
+		new CustomResponse(true, consultation, 'Consultation request created'),
 	);
 });
 
@@ -429,7 +429,7 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 	const withGMeet = Boolean(req.body.withGMeet);
 
 	const consultation = await ConsultationModel.findById<IConsultation>(
-		consultationID
+		consultationID,
 	)
 		.populate('student')
 		.populate('instructor')
@@ -440,7 +440,7 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 	appAssert(
 		currentUser.role !== 'student',
 		BAD_REQUEST,
-		'Only instructors can update consultation status'
+		'Only instructors can update consultation status',
 	);
 
 	// appAssert(
@@ -464,14 +464,14 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 					consultation,
 					instructor,
 					student,
-					status
+					status,
 				);
 			},
 			inAppNotification: async () => {
 				await AppNotificationModel.create({
 					user: instructorId,
 					title: `Your consultation with ${startCase(
-						student.name
+						student.name,
 					)} is ${startCase(status)} by ${startCase(currentUser.name)}.`,
 					message: 'Check your dashboard for more details.',
 					isRead: false,
@@ -488,14 +488,14 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 				consultation,
 				student,
 				instructor,
-				status
+				status,
 			);
 		},
 		inAppNotification: async () => {
 			await AppNotificationModel.create({
 				user: student._id,
 				title: `Your consultation with ${startCase(
-					instructor.name
+					instructor.name,
 				)} is ${startCase(status)}.`,
 				message: 'Check your dashboard for more details.',
 				isRead: false,
@@ -515,7 +515,7 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 			student,
 			instructor,
 			status,
-			withGMeet
+			withGMeet,
 		);
 
 		withGoogleCalendar = true;
@@ -524,7 +524,9 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 	await logActivity(req, {
 		action: 'UPDATE_CONSULTATION',
 		description: 'Updated a consultation',
-		resourceId: consultationID,
+		resourceId: Array.isArray(consultationID)
+			? consultationID[0]
+			: consultationID,
 		resourceType: RESOURCE_TYPES.CONSULTATION,
 	});
 
@@ -533,8 +535,10 @@ export const updateConsultationStatus = asynchandler(async (req, res) => {
 			true,
 			consultation,
 			`Consultation status updated ${status}`,
-			withGoogleCalendar ? undefined : AppErrorCodes.InvalidGoogleCalendarTokens
-		)
+			withGoogleCalendar
+				? undefined
+				: AppErrorCodes.InvalidGoogleCalendarTokens,
+		),
 	);
 });
 
@@ -596,8 +600,8 @@ export const getAdminDashboardData = asynchandler(async (req, res) => {
 				activeInstructors,
 				recentStudents,
 			},
-			'Dashboard data fetched'
-		)
+			'Dashboard data fetched',
+		),
 	);
 });
 
@@ -611,11 +615,11 @@ export const createConsultationMeeting = asynchandler(async (req, res) => {
 		user && user.googleCalendarTokens,
 		UNAUTHORIZED,
 		'Google Calendar not connected',
-		AppErrorCodes.InvalidGoogleCalendarTokens
+		AppErrorCodes.InvalidGoogleCalendarTokens,
 	);
 
 	const consultation = await ConsultationModel.findById<IConsultation>(
-		req.body.consultationID
+		req.body.consultationID,
 	)
 		.populate('student')
 		.populate('instructor')
@@ -626,7 +630,7 @@ export const createConsultationMeeting = asynchandler(async (req, res) => {
 	appAssert(
 		student && instructor,
 		NOT_FOUND,
-		'Student or instructor not found'
+		'Student or instructor not found',
 	);
 
 	oAuth2Client.setCredentials(user.googleCalendarTokens);
@@ -636,7 +640,7 @@ export const createConsultationMeeting = asynchandler(async (req, res) => {
 	appAssert(
 		meetLink,
 		INTERNAL_SERVER_ERROR,
-		'Failed to generate Google Meet link'
+		'Failed to generate Google Meet link',
 	);
 
 	consultation.meetLink = meetLink;
@@ -657,7 +661,7 @@ export const createConsultationMeeting = asynchandler(async (req, res) => {
 			await AppNotificationModel.create({
 				user: student._id,
 				title: `${startCase(
-					instructor.name
+					instructor.name,
 				)} has scheduled an online consultation with you.`,
 				message: 'Check your dashboard for more details.',
 				isRead: false,
@@ -696,7 +700,7 @@ export const getTodayOverview = asynchandler(async (req, res) => {
 	}
 
 	const todaysConsultations = await ConsultationModel.find(
-		todayConsultationFilter
+		todayConsultationFilter,
 	)
 		.populate('student')
 		.populate('instructor')
@@ -709,7 +713,7 @@ export const getTodayOverview = asynchandler(async (req, res) => {
 		};
 	}
 	const pendingRequests = await ConsultationModel.countDocuments(
-		pendingRequestsFilter
+		pendingRequestsFilter,
 	);
 
 	const nextConsultation = todaysConsultations[0] || null;
@@ -724,8 +728,8 @@ export const getTodayOverview = asynchandler(async (req, res) => {
 				activeMeetLink: nextConsultation?.meetLink ?? null,
 				reminders: ['Check pending requests', 'Review completed logs'],
 			},
-			"Today's overview fetched"
-		)
+			"Today's overview fetched",
+		),
 	);
 });
 
@@ -753,8 +757,8 @@ export const getStatusBreakdown = asynchandler(async (req, res) => {
 	}
 	const counts = await Promise.all(
 		statuses.map((s) =>
-			ConsultationModel.countDocuments({ ...filter, status: s })
-		)
+			ConsultationModel.countDocuments({ ...filter, status: s }),
+		),
 	);
 
 	res.json(
@@ -766,8 +770,8 @@ export const getStatusBreakdown = asynchandler(async (req, res) => {
 				declined: counts[2],
 				completed: counts[3],
 			},
-			'Status breakdown fetched'
-		)
+			'Status breakdown fetched',
+		),
 	);
 });
 
@@ -779,7 +783,7 @@ export const deleteConsultation = asynchandler(async (req, res) => {
 	const { consultationID } = req.params;
 
 	const consultationDoc = await ConsultationModel.findById<IConsultation>(
-		consultationID
+		consultationID,
 	)
 		.populate('instructor')
 		.exec();
@@ -796,7 +800,7 @@ export const deleteConsultation = asynchandler(async (req, res) => {
 		appAssert(
 			consultation.instructor._id?.toString() === currentUser._id.toString(),
 			UNAUTHORIZED,
-			'You are not authorized to delete this consultation'
+			'You are not authorized to delete this consultation',
 		);
 	}
 
@@ -831,7 +835,7 @@ export const updateConsultationInstructorNotes = asynchandler(
 		const { instructorNotes } = req.body;
 
 		const consultation = await ConsultationModel.findById<IConsultation>(
-			consultationID
+			consultationID,
 		)
 			.populate('instructor')
 			.exec();
@@ -840,14 +844,14 @@ export const updateConsultationInstructorNotes = asynchandler(
 		appAssert(
 			consultation.instructor._id?.toString() === req.user._id.toString(),
 			UNAUTHORIZED,
-			'You are not authorized to update this consultation'
+			'You are not authorized to update this consultation',
 		);
 
 		consultation.instructorNotes = instructorNotes;
 		await consultation.save();
 
 		res.json(new CustomResponse(true, null, 'Instructor notes updated'));
-	}
+	},
 );
 
 /**
@@ -857,7 +861,7 @@ export const updateConsultation = asynchandler(async (req, res) => {
 	const { consultationID } = req.params;
 
 	const consultation = await ConsultationModel.findById<IConsultation>(
-		consultationID
+		consultationID,
 	)
 		.populate('instructor')
 		.populate('student')
@@ -874,7 +878,7 @@ export const updateConsultation = asynchandler(async (req, res) => {
 	appAssert(
 		isAdmin || userId === instructorId || userId === studentId,
 		UNAUTHORIZED,
-		'You are not authorized to update this consultation'
+		'You are not authorized to update this consultation',
 	);
 
 	// only lock owner can save
@@ -884,18 +888,18 @@ export const updateConsultation = asynchandler(async (req, res) => {
 	appAssert(
 		ownerOfLock || consultation.lock?.lockedBy === null,
 		CONFLICT,
-		'Another user is currently editing this consultation.'
+		'Another user is currently editing this consultation.',
 	);
 
 	const body = encryptFields(
 		updateConsultationSchema.parse(req.body),
-		consultatioModelEncryptedFields
+		consultatioModelEncryptedFields,
 	);
 
 	const updated = await ConsultationModel.findByIdAndUpdate<IConsultation>(
 		consultationID,
 		body,
-		{ new: true }
+		{ new: true },
 	);
 
 	appAssert(updated, NOT_FOUND, 'Failed to update consultation');
@@ -906,7 +910,9 @@ export const updateConsultation = asynchandler(async (req, res) => {
 	await logActivity(req, {
 		action: 'UPDATE_CONSULTATION',
 		description: 'Updated a consultation',
-		resourceId: consultationID,
+		resourceId: Array.isArray(consultationID)
+			? consultationID[0]
+			: consultationID,
 		resourceType: RESOURCE_TYPES.CONSULTATION,
 	});
 
@@ -970,7 +976,7 @@ export const getConsultationReport = asynchandler(async (req, res) => {
 		res
 			.status(BAD_REQUEST)
 			.json(
-				new CustomResponse(false, null, 'Missing instructorId or date range')
+				new CustomResponse(false, null, 'Missing instructorId or date range'),
 			);
 		return;
 	}
@@ -993,7 +999,7 @@ export const getConsultationReport = asynchandler(async (req, res) => {
 		.lean();
 
 	let decrypted = consultations.map((c) =>
-		decryptFields(c, consultatioModelEncryptedFields)
+		decryptFields(c, consultatioModelEncryptedFields),
 	);
 
 	// FIX: Proper filtering logic
@@ -1016,6 +1022,6 @@ export const getConsultationReport = asynchandler(async (req, res) => {
 	});
 
 	res.json(
-		new CustomResponse(true, decrypted, 'Consultation report data fetched')
+		new CustomResponse(true, decrypted, 'Consultation report data fetched'),
 	);
 });
