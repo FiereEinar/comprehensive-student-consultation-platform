@@ -10,7 +10,7 @@ import { notFoundHandler } from './middlewares/not-found';
 import { errorHandler } from './middlewares/error';
 import { healthcheck } from './middlewares/healthcheck';
 import { corsOptions } from './utils/cors';
-import { PORT } from './constants/env';
+import { NODE_ENV, PORT } from './constants/env';
 import { auth } from './middlewares/auth';
 // import { limiter } from './utils/rate-limiter';
 // import { requestLogger } from './middlewares/logger';
@@ -53,8 +53,10 @@ app.use('/api/v1/role', roleRoutes);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-	console.log(`Server is running on http://localhost:${PORT}`);
-});
+if (NODE_ENV === 'development') {
+	app.listen(PORT, () => {
+		console.log(`Server is running on http://localhost:${PORT}`);
+	});
+}
 
 export default app;
