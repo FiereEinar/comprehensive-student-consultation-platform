@@ -1,6 +1,7 @@
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import dotenv from 'dotenv';
+import helmet from 'helmet';
 import cors from 'cors';
 dotenv.config();
 
@@ -26,11 +27,11 @@ import roleRoutes from './routes/role.route';
 connectToMongoDB();
 
 const app = express();
+app.use(helmet());
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-// app.use(helmet());
 // app.use(decryptBodyData);
 // app.use(requestLogger);
 app.get('/', healthcheck);
@@ -51,10 +52,10 @@ app.use('/api/v1/role', roleRoutes);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
+export default app;
+
 if (NODE_ENV === 'development') {
 	app.listen(PORT, () => {
 		console.log(`Server is running on http://localhost:${PORT}`);
 	});
 }
-
-export default app;
