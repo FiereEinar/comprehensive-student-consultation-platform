@@ -1,7 +1,6 @@
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import dotenv from 'dotenv';
-import helmet from 'helmet';
 import cors from 'cors';
 dotenv.config();
 
@@ -24,7 +23,6 @@ import availabilityRoutes from './routes/availability.route';
 import notificationRoutes from './routes/notification.routes';
 import backupRoutes from './routes/backup.route';
 import roleRoutes from './routes/role.route';
-import { decryptBodyData } from './middlewares/decrypt';
 connectToMongoDB();
 
 const app = express();
