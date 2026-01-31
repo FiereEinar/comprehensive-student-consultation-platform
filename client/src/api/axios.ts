@@ -1,7 +1,7 @@
 import axios, { type CreateAxiosDefaults } from 'axios';
 import { queryClient } from '../main';
 import { navigate } from '@/lib/navigate';
-import { decryptResponseData, encryptRequestData } from '@/lib/encryption';
+import { decryptResponseData } from '@/lib/encryption';
 
 const UNAUTHORIZED = 401;
 
