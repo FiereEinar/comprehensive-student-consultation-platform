@@ -46,12 +46,12 @@ axiosInstance.interceptors.response.use(
 		}
 
 		return Promise.reject({ status, ...data });
-	}
+	},
 );
 
 axiosInstance.interceptors.request.use((config) => {
 	if (config.data) {
-		config.data = encryptRequestData(config.data);
+		// config.data = encryptRequestData(config.data);
 		// console.log('data to send: ', config.data);
 	}
 	return config;
