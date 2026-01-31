@@ -8,18 +8,14 @@ import AvailabilityModel from '../models/availability.model';
 import AppNotificationModel from '../models/app-notification';
 import UserModel, { IUser } from '../models/user.model';
 import appAssert from '../errors/app-assert';
-import { getStartAndEndofDay, ONE_MINUTE_MS } from '../utils/date';
+import { getStartAndEndofDay } from '../utils/date';
 import { AppErrorCodes, RESOURCE_TYPES } from '../constants';
 import { logActivity } from '../utils/activity-logger';
 import { oAuth2Client } from '../services/google-client';
 import { createGoogleMeetLink } from '../services/google-meet';
 import { createGoogleCalendarOnStatusUpdate } from '../services/google-calendar';
 import { notifyUser } from '../services/notification';
-import {
-	decryptFields,
-	encryptFields,
-	encryptResponseData,
-} from '../services/encryption';
+import { decryptFields, encryptFields } from '../services/encryption';
 import {
 	consutationStatusSchema,
 	createConsultationSchema,
@@ -41,6 +37,7 @@ import {
 	sendConsultationStatusUpdateEmail,
 	sendPendingConsultationEmail,
 } from '../services/consultation-email';
+import { CONCURRENCY_EXPIRED_IN_MS } from '../constants/env';
 
 /**
  * @route GET /api/v1/consultation - get all recent consultations
@@ -838,6 +835,7 @@ export const updateConsultationInstructorNotes = asynchandler(
 			consultationID,
 		)
 			.populate('instructor')
+			.populate('student')
 			.exec();
 		appAssert(consultation, NOT_FOUND, 'Consultation not found');
 
@@ -849,6 +847,19 @@ export const updateConsultationInstructorNotes = asynchandler(
 
 		consultation.instructorNotes = instructorNotes;
 		await consultation.save();
+
+		notifyUser(String(consultation.student._id), 'statusUpdates', {
+			inAppNotification: async () => {
+				await AppNotificationModel.create({
+					user: consultation.student._id,
+					title: `${startCase(
+						consultation.instructor.name,
+					)} left a note on your consultation.`,
+					message: 'Check your dashboard for more details.',
+					isRead: false,
+				});
+			},
+		});
 
 		res.json(new CustomResponse(true, null, 'Instructor notes updated'));
 	},
@@ -948,7 +959,8 @@ export const acquireLock = asynchandler(async (req, res) => {
 	// expired lock then grant lock
 	if (
 		consultation.lock?.lockedAt &&
-		new Date().getTime() - consultation.lock.lockedAt.getTime() > ONE_MINUTE_MS
+		new Date().getTime() - consultation.lock.lockedAt.getTime() >
+			CONCURRENCY_EXPIRED_IN_MS
 	) {
 		consultation.lock = { lockedBy: req.user._id, lockedAt: new Date() };
 		await consultation.save();

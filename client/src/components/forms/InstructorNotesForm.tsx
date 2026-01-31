@@ -9,7 +9,7 @@ import {
 	DialogClose,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axiosInstance from '@/api/axios';
 import { toast } from 'sonner';
 import { queryClient } from '@/main';
@@ -20,21 +20,34 @@ import HasPermission from '../HasPermission';
 type InstructorNotesFormProps = {
 	consultationID: string;
 	currentNotes?: string;
+	hidden?: boolean;
+	isOpen?: boolean;
+	title?: string;
+	description?: string;
 };
 
 export default function InstructorNotesForm({
 	consultationID,
 	currentNotes,
+	hidden,
+	isOpen,
+	title,
+	description,
 }: InstructorNotesFormProps) {
 	const [notes, setNotes] = useState(currentNotes || '');
 	const [loading, setLoading] = useState(false);
+	const [open, setOpen] = useState(isOpen || false);
+
+	useEffect(() => {
+		setOpen(isOpen || false);
+	}, [isOpen]);
 
 	const handleSave = async () => {
 		setLoading(true);
 		try {
 			await axiosInstance.patch(
 				`/consultation/${consultationID}/instructor-notes`,
-				{ instructorNotes: notes }
+				{ instructorNotes: notes },
 			);
 			await queryClient.invalidateQueries({
 				queryKey: [QUERY_KEYS.CONSULTATIONS],
@@ -50,22 +63,28 @@ export default function InstructorNotesForm({
 
 	return (
 		<HasPermission permissions={[MODULES.UPDATE_CONSULTATION_NOTES]}>
-			<Dialog>
+			<Dialog open={open} onOpenChange={setOpen}>
 				<DialogTrigger asChild>
-					<Button size='sm' variant='outline'>
+					<Button
+						className={hidden ? 'hidden' : ''}
+						size='sm'
+						variant='outline'
+						onClick={() => setOpen(true)}
+					>
 						Edit Notes
 					</Button>
 				</DialogTrigger>
-				<DialogContent className='sm:max-w-[500px]'>
+				<DialogContent className='sm:max-w-125'>
 					<DialogHeader>
-						<DialogTitle>Instructor Notes</DialogTitle>
+						<DialogTitle>{title || 'Instructor Notes'}</DialogTitle>
 						<DialogDescription>
-							Update notes for this consultation
+							{description || 'Update notes for this consultation'}
 						</DialogDescription>
 					</DialogHeader>
 
 					<div className='mt-4'>
 						<Textarea
+							autoFocus
 							value={notes}
 							onChange={(e) => setNotes(e.target.value)}
 							placeholder='Enter notes...'

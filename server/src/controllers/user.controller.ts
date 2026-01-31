@@ -272,7 +272,7 @@ export const updateUserByAdmin = asyncHandler(async (req, res) => {
 		updateData.institutionalID = institutionalID;
 	if (email !== undefined) updateData.email = email;
 	if (role !== undefined) updateData.role = role;
-	if (adminRole !== undefined && req.user.role === 'admin') {
+	if (adminRole !== undefined && updateData.role === 'admin') {
 		// Validate roles exist
 		const roleDocs = await RoleModel.findById(adminRole).exec();
 		appAssert(

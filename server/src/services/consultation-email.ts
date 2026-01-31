@@ -19,7 +19,7 @@ export interface ConsultationEmailData {
 
 export const sendConsultationEmail = async (
 	recipient: EmailRecipient,
-	meetingData: ConsultationEmailData
+	meetingData: ConsultationEmailData,
 ): Promise<void> => {
 	const { student, instructor, summary, startTime, endTime, meetLink } =
 		meetingData;
@@ -45,6 +45,7 @@ export const sendConsultationEmail = async (
         <p><b>End:</b> ${new Date(endTime).toLocaleString('en-PH', {
 					timeZone: 'Asia/Manila',
 				})}</p>
+				
         <a href="${meetLink}" style="display:inline-block;margin-top:1rem;padding:.6rem 1rem;background:#111;color:#fff;border-radius:6px;text-decoration:none;">
           Join Google Meet
         </a>
@@ -60,7 +61,7 @@ export const sendConsultationStatusUpdateEmail = async (
 	consultation: IConsultation,
 	student: IUser,
 	instructor: IUser,
-	status: string
+	status: string,
 ): Promise<void> => {
 	const message = {
 		from: `"Consultation Admin" <${EMAIL_USER}>`,
@@ -69,10 +70,10 @@ export const sendConsultationStatusUpdateEmail = async (
 			status === 'accepted'
 				? 'Accepted'
 				: status === 'declined'
-				? 'Declined'
-				: status === 'completed'
-				? 'Completed'
-				: 'Updated'
+					? 'Declined'
+					: status === 'completed'
+						? 'Completed'
+						: 'Updated'
 		}`,
 		html: `
         <div style="font-family:sans-serif;padding:1rem;border-radius:8px;background:#f9fafb;">
@@ -145,7 +146,7 @@ export async function sendPendingConsultationEmail({
 export const sendInstructorInvitationEmail = async (
 	token: string,
 	email: string,
-	name: string
+	name: string,
 ): Promise<void> => {
 	const inviteLink = `${FRONTEND_URL}/invite/instructor/accept?token=${token}`;
 	const message = {

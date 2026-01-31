@@ -20,7 +20,7 @@ export default function ManageUsersPage() {
 	const [sheetOpen, setSheetOpen] = useState(false);
 
 	const { getFilters, page, setPage, setSearch, setRole } = useUserFilterStore(
-		(state) => state
+		(state) => state,
 	);
 
 	const { data: users, isLoading } = useQuery({
@@ -148,6 +148,7 @@ export default function ManageUsersPage() {
 												email={user.email || ''}
 												profilePicture={user.profilePicture}
 												status={user.archived ? 'archived' : 'active'}
+												role={user.role}
 											/>
 										</div>
 									))}

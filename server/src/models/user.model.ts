@@ -52,7 +52,7 @@ const UserSchema = new Schema<IUser>(
 	},
 	{
 		timestamps: true,
-	}
+	},
 );
 
 UserSchema.methods.omitPassword = function () {

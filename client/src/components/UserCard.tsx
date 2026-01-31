@@ -10,6 +10,7 @@ type UserCardProps = {
 	profilePicture?: string;
 	status?: 'active' | 'pending' | 'expired' | 'accepted' | 'archived';
 	createdAt?: Date; // For invitations (sent time)
+	role?: string;
 };
 
 export default function UserCard({
@@ -18,6 +19,7 @@ export default function UserCard({
 	profilePicture,
 	status = 'active',
 	createdAt,
+	role,
 }: UserCardProps) {
 	return (
 		<Card className='py-3'>
@@ -34,7 +36,11 @@ export default function UserCard({
 					)}
 
 					<div className='flex flex-col'>
-						<p className=''>{startCase(name)}</p>
+						<div className='flex gap-3'>
+							<p className=''>{startCase(name)}</p>
+							{/* ROLE BADGE */}
+							{role && <Badge variant='outline'>{startCase(role)}</Badge>}
+						</div>
 						<p className='text-sm text-muted-foreground'>{email}</p>
 					</div>
 				</div>
@@ -47,8 +53,8 @@ export default function UserCard({
 							status === 'active'
 								? 'default'
 								: status === 'pending'
-								? 'outline'
-								: 'secondary'
+									? 'outline'
+									: 'secondary'
 						}
 					>
 						{startCase(status)}

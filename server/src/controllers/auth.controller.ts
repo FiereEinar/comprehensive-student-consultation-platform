@@ -543,6 +543,11 @@ export const acceptInvitation = asyncHandler(async (req, res) => {
 		role: 'instructor',
 	});
 
+	await NotificationSettingsModel.create({
+		user: user._id as unknown as string,
+		...defaultNotificationSettings,
+	});
+
 	await logActivity(req, {
 		action: 'USER_ACCEPT_INVITE',
 		description: 'User accepted an invite',

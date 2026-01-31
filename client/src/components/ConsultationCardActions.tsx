@@ -16,6 +16,7 @@ import ConfirmDeleteDialog from './ConfirmDeleteDialog';
 import { useState } from 'react';
 import { useUserStore } from '@/stores/user';
 import HasPermission from './HasPermission';
+import InstructorNotesForm from './forms/InstructorNotesForm';
 
 type ConsultationCardActionsProps = {
 	consultation: Consultation;
@@ -30,21 +31,22 @@ export default function ConsultationCardActions({
 	const [isLoading, setIsLoading] = useState(false);
 	const { user } = useUserStore((state) => state);
 	const isStudent = user?.role === 'student';
+	const [openNotes, setOpenNotes] = useState(false);
 
 	const handleAction = async (
 		newStatus: ConsultationStatus,
-		withGMeet: boolean = false
+		withGMeet: boolean = false,
 	) => {
 		try {
 			setIsLoading(true);
 			const { data } = await axiosInstance.patch(
 				`/consultation/${consultationID}/status`,
-				{ status: newStatus, withGMeet }
+				{ status: newStatus, withGMeet },
 			);
 
 			if (data.error) {
 				toast.error(
-					'Consultation updated, but Google Calendar event not created'
+					'Consultation updated, but Google Calendar event not created',
 				);
 			} else {
 				toast.success(data.message);
@@ -96,7 +98,9 @@ export default function ConsultationCardActions({
 							description='Would you like to generate google meet link'
 							onConfirm={() => handleAction('accepted', true)}
 							confirmText='Create'
-							onCancel={() => handleAction('accepted')}
+							onCancel={() => {
+								handleAction('accepted');
+							}}
 							cancelText='Skip'
 							trigger={
 								<Button
@@ -126,7 +130,10 @@ export default function ConsultationCardActions({
 									<Ban className='w-4 h-4' /> Decline
 								</Button>
 							}
-							onConfirm={() => handleAction('declined')}
+							onConfirm={() => {
+								handleAction('declined');
+								setOpenNotes(true);
+							}}
 							confirmText='Decline'
 							title='Decline request?'
 							description='Are you sure you want to decline this request? This action can not be undone.'
@@ -134,6 +141,14 @@ export default function ConsultationCardActions({
 					</HasPermission>
 				</>
 			)}
+
+			<InstructorNotesForm
+				consultationID={consultationID}
+				currentNotes={consultation.instructorNotes}
+				isOpen={openNotes}
+				hidden
+				description='Write a note for your student to know why you declined the consultation'
+			/>
 
 			{(status === 'declined' || status === 'completed') && !isStudent && (
 				<HasPermission
