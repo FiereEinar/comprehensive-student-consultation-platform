@@ -24,6 +24,7 @@ import availabilityRoutes from './routes/availability.route';
 import notificationRoutes from './routes/notification.routes';
 import backupRoutes from './routes/backup.route';
 import roleRoutes from './routes/role.route';
+import consultationPurposeRoutes from './routes/consultation-purpose.route';
 connectToMongoDB();
 
 const app = express();
@@ -47,6 +48,7 @@ app.use('/api/v1/availability', availabilityRoutes);
 app.use('/api/v1/notification', notificationRoutes);
 app.use('/api/v1/backup', backupRoutes);
 app.use('/api/v1/role', roleRoutes);
+app.use('/api/v1/consultation-purpose', consultationPurposeRoutes);
 
 // Error handlers
 app.use(notFoundHandler);

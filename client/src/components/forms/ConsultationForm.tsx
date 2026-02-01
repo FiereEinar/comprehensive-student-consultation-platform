@@ -43,10 +43,12 @@ import { Separator } from '@radix-ui/react-separator';
 import { queryClient } from '@/main';
 import SearchableSelect from '../SearchableSelect';
 import HasPermission from '../HasPermission';
+import { useQuery } from '@tanstack/react-query';
+import { fetchInstructorConsultationPurpose } from '@/api/consultation';
 
 export type ConsultationFormValues = z.infer<typeof createConsultationSchema>;
 
-const purposes = ['Grade Consultation', 'Capstone Consultation', 'Other'];
+// const purposes = ['Grade Consultation', 'Capstone Consultation', 'Other'];
 
 type ConsultationFormProps = {
 	title?: string;
@@ -83,6 +85,13 @@ export default function ConsultationForm({ title }: ConsultationFormProps) {
 	const selectedStudent = watch('student');
 	const selectedInstructor = watch('instructor');
 
+	const instructorID = isInstructor ? user._id : selectedInstructor;
+
+	const { data: purpose } = useQuery({
+		queryKey: [QUERY_KEYS.INSTRUCTOR_PURPOSES, instructorID],
+		queryFn: () => fetchInstructorConsultationPurpose(instructorID || ''),
+	});
+
 	const onSubmit = async (formData: ConsultationFormValues) => {
 		try {
 			const payload = {
@@ -111,7 +120,7 @@ export default function ConsultationForm({ title }: ConsultationFormProps) {
 						{title ?? 'Add Consultation'}
 					</Button>
 				</DialogTrigger>
-				<DialogContent className='sm:max-w-[550px]'>
+				<DialogContent className='sm:max-w-137.5'>
 					<DialogHeader>
 						<DialogTitle>Request Consultation</DialogTitle>
 						<DialogDescription></DialogDescription>
@@ -163,16 +172,21 @@ export default function ConsultationForm({ title }: ConsultationFormProps) {
 										</SelectTrigger>
 										<SelectContent>
 											<SelectGroup>
-												<SelectLabel>Available Purpose</SelectLabel>
-												{purposes.map((purpose) => (
-													<SelectItem
-														key={purpose}
-														value={purpose}
-														className='cursor-pointer'
-													>
-														{purpose}
-													</SelectItem>
-												))}
+												{!purpose ? (
+													<SelectLabel>Select an instructor first</SelectLabel>
+												) : (
+													<SelectLabel>Available Purpose</SelectLabel>
+												)}
+												{purpose &&
+													purpose.purposes.map((purpose) => (
+														<SelectItem
+															key={purpose}
+															value={purpose}
+															className='cursor-pointer'
+														>
+															{purpose}
+														</SelectItem>
+													))}
 											</SelectGroup>
 										</SelectContent>
 										{fieldState.invalid && (

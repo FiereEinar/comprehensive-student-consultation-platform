@@ -15,6 +15,7 @@ export const RESOURCE_TYPES = {
 	SECTION: 'Section',
 	ROLE: 'Role',
 	PERMISSION: 'Permission',
+	CONSULTATION_PURPOSE: 'ConsultationPurpose',
 };
 
 export const WHITELISTED_DOMAINS = ['student.buksu.edu.ph'];
@@ -59,3 +60,11 @@ export const MODULES = {
 };
 
 export type Modules = (typeof MODULES)[keyof typeof MODULES];
+
+export const DEFAULT_CONSULTATION_PURPOSES = [
+	'Academic Advising',
+	'Thesis Consultation',
+	'Grade Consultation',
+	'Capstone Consultation',
+	'Other Concerns',
+];

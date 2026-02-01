@@ -82,8 +82,8 @@ export const manualCloudBackup = asyncHandler(async (req, res) => {
 				dropboxPath: response.result.path_display,
 				dropboxId: response.result.id,
 			},
-			'Backup created'
-		)
+			'Backup created',
+		),
 	);
 });
 
@@ -129,8 +129,8 @@ export const getDropboxBackups = asyncHandler(async (req, res) => {
 					false,
 					null,
 					'Failed to fetch Dropbox backups',
-					err.message
-				)
+					err.message,
+				),
 			);
 	}
 });
@@ -219,7 +219,6 @@ export const deleteBackup = asyncHandler(async (req, res) => {
  * @desc Import a backup from a ZIP file
  */
 export const importBackup = asyncHandler(async (req, res) => {
-	console.log('Uploaded file:', req.file);
 	appAssert(req.file, BAD_REQUEST, 'Backup ZIP is required');
 
 	const zipPath = req.file.path;

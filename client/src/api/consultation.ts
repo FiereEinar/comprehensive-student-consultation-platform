@@ -1,9 +1,9 @@
-import type { Consultation } from '@/types/consultation';
+import type { Consultation, ConsultationPurpose } from '@/types/consultation';
 import axiosInstance from './axios';
 import type { ConsultationFilterValues } from '@/stores/consultation-filter';
 
 export const fetchConsultations = async (
-	filters: Partial<ConsultationFilterValues>
+	filters: Partial<ConsultationFilterValues>,
 ): Promise<Consultation[]> => {
 	try {
 		let url = `/consultation?`;
@@ -20,6 +20,24 @@ export const fetchConsultations = async (
 		return data.data;
 	} catch (error: any) {
 		console.error('Failed to fetch consultations', error);
+		throw error;
+	}
+};
+
+export const fetchInstructorConsultationPurpose = async (
+	instructorId: string,
+): Promise<ConsultationPurpose> => {
+	try {
+		if (!instructorId) {
+			return Promise.reject('Instructor ID is required');
+		}
+
+		const { data } = await axiosInstance.get(
+			`/consultation-purpose/instructor/${instructorId}`,
+		);
+		return data.data;
+	} catch (error) {
+		console.error('Error fetching consultation purposes:', error);
 		throw error;
 	}
 };

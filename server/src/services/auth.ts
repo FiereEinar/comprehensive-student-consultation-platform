@@ -10,6 +10,8 @@ import NotificationSettingsModel, {
 } from '../models/notification-settings';
 import { BCRYPT_SALT } from '../constants/env';
 import bcrypt from 'bcryptjs';
+import ConsultationPurposeModel from '../models/consultation-purpose';
+import { DEFAULT_CONSULTATION_PURPOSES } from '../constants';
 
 export const loginService = async (
 	req: Request,
@@ -66,6 +68,13 @@ export const signupService = async (signupData: SignupData) => {
 			user: user._id as unknown as string,
 			...defaultNotificationSettings,
 		});
+
+		if (signupData.role === 'instructor') {
+			await ConsultationPurposeModel.create({
+				purposes: DEFAULT_CONSULTATION_PURPOSES,
+				createdBy: user._id as unknown as string,
+			});
+		}
 
 		return user;
 	} catch (error: any) {

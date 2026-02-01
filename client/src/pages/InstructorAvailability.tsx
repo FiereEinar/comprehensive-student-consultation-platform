@@ -45,7 +45,7 @@ export default function InstructorAvailability() {
 				<Card className='md:col-span-2 shadow-sm rounded-2xl'>
 					<CardContent>
 						<h2 className='font-semibold text-lg mb-4'>Your Schedule</h2>
-						<div className='max-h-[420px] overflow-y-auto pr-2'>
+						<div className='max-h-105 overflow-y-auto pr-2'>
 							<InstructorAvailabilities
 								instructorID={user?._id ?? ''}
 								onEdit={handleEdit}

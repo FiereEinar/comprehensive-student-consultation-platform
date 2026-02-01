@@ -24,3 +24,11 @@ export type Consultation = {
 	completedAt?: Date;
 	instructorNotes?: string;
 };
+
+export type ConsultationPurpose = {
+	_id: string;
+	purposes: string[];
+	createdBy: User; // instructor who created the purpose
+	createdAt: Date;
+	updatedAt: Date;
+};

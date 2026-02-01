@@ -32,6 +32,7 @@ export const QUERY_KEYS = {
 	ROLES: 'roles',
 	LOCAL_BACKUPS: 'local-backups',
 	CLOUD_BACKUPS: 'cloud-backups',
+	INSTRUCTOR_PURPOSES: 'instructor-purposes',
 };
 
 export const MODULES = {

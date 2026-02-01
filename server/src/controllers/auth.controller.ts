@@ -621,8 +621,6 @@ export const googleCalendarCallbackHandler = asyncHandler(async (req, res) => {
 	});
 	appAssert(googleUser, BAD_REQUEST, 'Google user not found');
 
-	console.log('Google User Info:', googleUser);
-
 	let user = req.user;
 	if (!user) {
 		// no user in req means this is a login attempt via google

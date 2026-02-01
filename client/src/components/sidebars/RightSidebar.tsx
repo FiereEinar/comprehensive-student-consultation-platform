@@ -6,6 +6,7 @@ import type { Consultation } from '@/types/consultation';
 import type { ActivityLog } from '@/types/log';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
+import InstructorPurposesCard from '../InstructorPurposesCard';
 
 interface StatusBreakdown {
 	accepted: number;
@@ -36,7 +37,7 @@ export default function RightSidebar() {
 		queryKey: [QUERY_KEYS.STATUS_BREAKDOWN],
 		queryFn: async (): Promise<StatusBreakdown | undefined> => {
 			const { data } = await axiosInstance.get(
-				'/consultation/status-breakdown'
+				'/consultation/status-breakdown',
 			);
 			return data.data;
 		},
@@ -46,7 +47,7 @@ export default function RightSidebar() {
 		queryKey: [QUERY_KEYS.LOGS, 'consultation'],
 		queryFn: async (): Promise<ActivityLog[] | undefined> => {
 			const { data } = await axiosInstance.get(
-				'/log?resource=Consultation&limit=5'
+				'/log?resource=Consultation&limit=5',
 			);
 			return data.data;
 		},
@@ -78,7 +79,7 @@ export default function RightSidebar() {
 											<span>
 												{format(
 													new Date(todayOverview.nextConsultation.scheduledAt),
-													'h:mm a'
+													'h:mm a',
 												)}
 											</span>
 										</>
@@ -127,7 +128,10 @@ export default function RightSidebar() {
 				</CardContent>
 			</Card>
 
-			{/* B. STATUS BREAKDOWN */}
+			{/* B. INSTRUCTOR ACCEPTED PURPOSES */}
+			{user?.role === 'instructor' && <InstructorPurposesCard />}
+
+			{/* C. STATUS BREAKDOWN */}
 			<Card className='rounded-2xl shadow-sm'>
 				<CardHeader>
 					<CardTitle className='text-lg font-semibold'>
@@ -161,7 +165,7 @@ export default function RightSidebar() {
 				</CardContent>
 			</Card>
 
-			{/* C. RECENT CONSULTATION LOGS */}
+			{/* d. RECENT CONSULTATION LOGS */}
 			{user?.role === 'admin' && (
 				<Card className='rounded-2xl shadow-sm'>
 					<CardHeader>
