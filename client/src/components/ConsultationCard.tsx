@@ -7,6 +7,8 @@ import { startCase } from 'lodash';
 import { Badge } from './ui/badge';
 import StatusBadge from './StatusBadge';
 import ConsultationCardActions from './ConsultationCardActions';
+import { useUserStore } from '@/stores/user';
+import { redact } from '@/lib/utils';
 
 type ConsultationCardProps = {
 	consultation: Consultation;
@@ -17,6 +19,7 @@ export default function ConsultationCard({
 	consultation,
 	info = 'student',
 }: ConsultationCardProps) {
+	const currentUser = useUserStore((state) => state.user);
 	const userData =
 		info === 'student' ? consultation.student : consultation.instructor;
 
@@ -34,7 +37,11 @@ export default function ConsultationCard({
 							<UserRound />
 						)}
 						<ItemContent className='gap-0'>
-							<ItemTitle>{startCase(consultation.title)}</ItemTitle>
+							{currentUser?.role === 'admin' ? (
+								<ItemTitle>{redact(consultation.title)}</ItemTitle>
+							) : (
+								<ItemTitle>{startCase(consultation.title)}</ItemTitle>
+							)}
 							<ItemDescription className='text-left'>
 								{startCase(userData.name)}
 								{' • '}
@@ -47,7 +54,7 @@ export default function ConsultationCard({
 						<p>
 							{format(
 								new Date(consultation.scheduledAt),
-								'MMM dd, yyyy - hh:mm a'
+								'MMM dd, yyyy - hh:mm a',
 							)}
 						</p>
 					</div>
@@ -76,7 +83,7 @@ export default function ConsultationCard({
 						{consultation.purpose && (
 							<Badge
 								variant='outline'
-								className='text-muted-foreground bg-muted max-w-[300px] truncate'
+								className='text-muted-foreground bg-muted max-w-75 truncate'
 							>
 								{consultation.purpose}
 							</Badge>
@@ -84,10 +91,12 @@ export default function ConsultationCard({
 					</div>
 
 					<div className='flex items-center gap-3'>
-						<ConsultationCardActions
-							consultation={consultation}
-							status={consultation.status}
-						/>
+						{currentUser?.role !== 'admin' && (
+							<ConsultationCardActions
+								consultation={consultation}
+								status={consultation.status}
+							/>
+						)}
 					</div>
 				</div>
 			</CardContent>

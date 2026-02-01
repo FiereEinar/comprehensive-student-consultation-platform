@@ -10,3 +10,7 @@ export const formatTime = (time: string) => {
 	const parsed = parse(time, 'HH:mm', new Date());
 	return format(parsed, 'hh:mm a');
 };
+
+export const redact = (text: string) => {
+	return text.replace(/[a-zA-Z0-9]/g, '•');
+};

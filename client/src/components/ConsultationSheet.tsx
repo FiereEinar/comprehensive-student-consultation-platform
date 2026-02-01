@@ -23,6 +23,7 @@ import { Badge } from './ui/badge';
 import InstructorNotesForm from './forms/InstructorNotesForm';
 import EditConsultationForm from './forms/EditConsultationForm';
 import { toast } from 'sonner';
+import { redact } from '@/lib/utils';
 
 type ConsultationSheetProps = {
 	consultation: Consultation;
@@ -57,7 +58,7 @@ export default function ConsultationSheet({
 		} catch (err: any) {
 			if (err.errorCode === 'InvalidGoogleCalendarTokens') {
 				toast.error(
-					'Google Calendar not connected, go to settings to connect.'
+					'Google Calendar not connected, go to settings to connect.',
 				);
 				// User does not have Google Calendar token → redirect to consent screen
 				// window.location.href =
@@ -92,7 +93,13 @@ export default function ConsultationSheet({
 					{/* Title and Description */}
 					<div className='space-y-1 w-full'>
 						<div className='flex gap-2 justify-between w-full'>
-							<p className='text-xl font-semibold w-full'>{startCase(title)}</p>
+							{user?.role === 'admin' ? (
+								<p className='text-xl font-semibold w-full'>{redact(title)}</p>
+							) : (
+								<p className='text-xl font-semibold w-full'>
+									{startCase(title)}
+								</p>
+							)}
 							<EditConsultationForm
 								consultation={consultation}
 								trigger={
@@ -107,7 +114,13 @@ export default function ConsultationSheet({
 								}
 							/>
 						</div>
-						<p className='text-sm text-muted-foreground'>{description}</p>
+						{user?.role === 'admin' ? (
+							<p className='text-sm text-muted-foreground'>
+								{redact(description)}
+							</p>
+						) : (
+							<p className='text-sm text-muted-foreground'>{description}</p>
+						)}
 						<p className='text-sm text-muted-foreground'>
 							Requested at: {format(consultation.createdAt, 'MMM dd, yyyy')}
 						</p>
