@@ -146,7 +146,6 @@ export async function sendPendingConsultationEmail({
 export const sendInstructorInvitationEmail = async (
 	token: string,
 	email: string,
-	name: string,
 ): Promise<void> => {
 	const inviteLink = `${FRONTEND_URL}/invite/instructor/accept?token=${token}`;
 	const message = {
@@ -156,7 +155,7 @@ export const sendInstructorInvitationEmail = async (
 		html: `
 				<div style="font-family:sans-serif;padding:1rem;border-radius:8px;background:#f9fafb;">
 					<h2 style="color:#111;">You’ve been invited to join as an Instructor!</h2>
-					<p>Hello ${name || ''},</p>
+					<p>Hello there!</p>
 					<p>You’ve been invited to join the Comprehensive Student Consultation Platform as an Instructor.</p>
 					<a href="${inviteLink}" 
 						 style="display:inline-block;margin-top:1rem;padding:.6rem 1rem;background:#111;color:#fff;border-radius:6px;text-decoration:none;">

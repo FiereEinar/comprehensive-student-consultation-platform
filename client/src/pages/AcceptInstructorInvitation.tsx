@@ -72,6 +72,12 @@ export default function AcceptInstructorInvitation() {
 								<CardContent>
 									<form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
 										<Input
+											{...register('name')}
+											placeholder='Full Name'
+											type='text'
+											required
+										/>
+										<Input
 											{...register('password')}
 											placeholder='Set Password'
 											type='password'

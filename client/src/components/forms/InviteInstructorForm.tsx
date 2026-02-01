@@ -15,8 +15,8 @@ import { Input } from '@/components/ui/input';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { toast } from 'sonner';
 import axiosInstance from '@/api/axios';
-import { Plus } from 'lucide-react';
-import type z from 'zod';
+import { Plus, X } from 'lucide-react';
+import z from 'zod';
 import { inviteInstructorSchema } from '@/lib/schemas/auth.schema';
 import { useState } from 'react';
 import { queryClient } from '@/main';
@@ -26,24 +26,25 @@ import HasPermission from '../HasPermission';
 type InviteInstructorValues = z.infer<typeof inviteInstructorSchema>;
 
 export default function InviteInstructorForm() {
+	const [emails, setEmails] = useState<string[]>([]);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
-	const { control, handleSubmit, reset } = useForm<InviteInstructorValues>({
-		resolver: zodResolver(inviteInstructorSchema),
-		defaultValues: {
-			name: '',
-			email: '',
-		},
-	});
+	const { control, handleSubmit, reset, setError } =
+		useForm<InviteInstructorValues>({
+			resolver: zodResolver(inviteInstructorSchema),
+			defaultValues: {
+				email: '',
+			},
+		});
 
-	const onSubmit = async (formData: InviteInstructorValues) => {
+	const onSubmit = async () => {
 		try {
 			setIsLoading(true);
-			const { data } = await axiosInstance.post(
-				'/auth/invite/instructor',
-				formData
-			);
+			const { data } = await axiosInstance.post('/auth/invite/instructor', {
+				emails,
+			});
 			toast.success(data.message);
 			reset();
+			setEmails([]);
 			await queryClient.invalidateQueries({
 				queryKey: [QUERY_KEYS.INVITATIONS],
 			});
@@ -67,7 +68,7 @@ export default function InviteInstructorForm() {
 						Invite Instructor
 					</Button>
 				</DialogTrigger>
-				<DialogContent className='sm:max-w-[425px]'>
+				<DialogContent className='sm:max-w-106.25'>
 					<DialogHeader>
 						<DialogTitle>Invite Instructor</DialogTitle>
 						<DialogDescription>
@@ -82,7 +83,7 @@ export default function InviteInstructorForm() {
 						className='grid gap-4'
 					>
 						{/* NAME */}
-						<Controller
+						{/* <Controller
 							name='name'
 							control={control}
 							render={({ field, fieldState }) => (
@@ -98,7 +99,7 @@ export default function InviteInstructorForm() {
 									)}
 								</Field>
 							)}
-						/>
+						/> */}
 
 						{/* EMAIL */}
 						<Controller
@@ -106,13 +107,54 @@ export default function InviteInstructorForm() {
 							control={control}
 							render={({ field, fieldState }) => (
 								<Field data-invalid={fieldState.invalid}>
-									<FieldLabel htmlFor={field.name}>Email Address</FieldLabel>
+									<FieldLabel htmlFor={field.name}>
+										Email Address{' '}
+										<span className='text-xs text-muted-foreground'>
+											(Press enter to add more)
+										</span>
+									</FieldLabel>
 									<Input
 										{...field}
 										id={field.name}
 										placeholder='instructor@example.com'
 										type='email'
+										onKeyDown={(e) => {
+											if (e.key === 'Enter' || e.key === ',') {
+												e.preventDefault();
+												const email = field.value?.trim();
+												if (email && z.email().safeParse(email).success) {
+													setEmails((prev) => [...prev, email]);
+													reset({ email: '' });
+												} else {
+													setError('email', {
+														type: 'manual',
+														message: 'Invalid email address',
+													});
+												}
+											}
+										}}
 									/>
+									{emails.length > 0 && (
+										<div className='mt-2 flex flex-wrap gap-2'>
+											{emails.map((email, index) => (
+												<span
+													key={index}
+													className='inline-flex items-center rounded-md bg-custom-primary/20 px-2 py-1 text-xs font-medium text-custom-primary'
+												>
+													{email}
+													<X
+														className='ml-2 h-4 w-4 cursor-pointer'
+														onClick={() => {
+															if (isLoading) return;
+															setEmails((prev) =>
+																prev.filter((_, i) => i !== index),
+															);
+														}}
+													/>
+												</span>
+											))}
+										</div>
+									)}
 									{fieldState.invalid && (
 										<FieldError errors={[fieldState.error]} />
 									)}
@@ -123,7 +165,9 @@ export default function InviteInstructorForm() {
 
 					<DialogFooter>
 						<DialogClose asChild>
-							<Button variant='outline'>Cancel</Button>
+							<Button disabled={isLoading} variant='outline'>
+								Cancel
+							</Button>
 						</DialogClose>
 						<Button
 							type='submit'

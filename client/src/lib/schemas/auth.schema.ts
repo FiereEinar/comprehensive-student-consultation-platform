@@ -21,12 +21,13 @@ export const loginSchema = z.object({
 		.string()
 		.min(
 			MIN_PASSWORD_LEN,
-			`Passwords must be atleast ${MIN_PASSWORD_LEN} characters`
+			`Passwords must be atleast ${MIN_PASSWORD_LEN} characters`,
 		),
 });
 
 export const completeInstructorAccountSchema = z
 	.object({
+		name: z.string().min(1, 'Full name is required'),
 		password: z.string().min(6, 'Password must be atleast 6 characters'),
 		confirmPassword: z.string().min(6, 'Password must be atleast 6 characters'),
 	})
@@ -36,6 +37,6 @@ export const completeInstructorAccountSchema = z
 	});
 
 export const inviteInstructorSchema = z.object({
-	email: z.email('Invalid email'),
-	name: z.string().min(1, 'Name is required'),
+	email: z.string().optional(),
+	// name: z.string().min(1, 'Name is required'),
 });

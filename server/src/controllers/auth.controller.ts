@@ -61,6 +61,7 @@ import {
 import { sendInstructorInvitationEmail } from '../services/consultation-email';
 import { google } from 'googleapis';
 import { loginService, signupService } from '../services/auth';
+import z from 'zod';
 
 /**
  * @route POST /api/v1/auth/login - Login
@@ -422,57 +423,88 @@ export const getInvitations = asyncHandler(async (req, res) => {
  * @route POST /api/v1/auth/invite/instructor
  */
 export const inviteInstructor = asyncHandler(async (req, res) => {
-	const { email, name } = req.body;
+	const { emails } = req.body;
+	let skippedEmails = 0;
+
+	let filteredEmails: string[] = [];
+	for (const email of emails) {
+		if (z.email().safeParse(email).success) {
+			filteredEmails.push(email);
+		} else {
+			skippedEmails++;
+		}
+	}
+
+	appAssert(
+		filteredEmails.length > 0,
+		BAD_REQUEST,
+		'No valid email addresses provided.',
+	);
 
 	// prevent duplicate invites
-	const existingInvite = await InvitationModel.findOne({
-		email,
-		status: 'pending',
-	});
+	const checks = await Promise.all(
+		filteredEmails.map(async (email) => {
+			const existingInvite = await InvitationModel.findOne({
+				email,
+				status: 'pending',
+			});
 
-	appAssert(
-		!existingInvite,
-		BAD_REQUEST,
-		'An invitation is already pending for this email.',
+			if (existingInvite) {
+				skippedEmails++;
+				return null;
+			}
+
+			const existingUser = await UserModel.findOne({ email });
+			if (existingUser) {
+				skippedEmails++;
+				return null;
+			}
+
+			return email;
+		}),
 	);
 
-	const existingEmail = await UserModel.findOne({ email });
-	appAssert(
-		!existingEmail,
-		BAD_REQUEST,
-		'An account already exists for this email.',
-	);
+	filteredEmails = checks.filter(Boolean) as string[];
 
-	// generate a unique token
-	const token = generateCypto();
-	const expiresAt = ONE_DAY_FROM_NOW;
+	// create invitations and send emails
+	for (const email of filteredEmails) {
+		// generate a unique token
+		const token = generateCypto();
+		const expiresAt = ONE_DAY_FROM_NOW;
 
-	// create the invitation
-	await InvitationModel.create({
-		email,
-		name: name.toLowerCase(),
-		token,
-		expiresAt,
-	});
+		// create the invitation
+		await InvitationModel.create({
+			email,
+			token,
+			expiresAt,
+		});
 
-	// send email
-	await sendInstructorInvitationEmail(token, email, name);
+		// send email
+		await sendInstructorInvitationEmail(token, email);
+	}
 
 	await logActivity(req, {
 		action: 'ADMIN_INVITE',
-		description: 'Admin invited an instructor',
-		resourceId: email,
+		description: 'Admin invited instructor',
+		resourceId: filteredEmails.join(', '),
 		resourceType: RESOURCE_TYPES.USER,
 	});
 
-	res.json(new CustomResponse(true, null, 'Invitation sent successfully.'));
+	res.json(
+		new CustomResponse(
+			true,
+			{ skippedEmails },
+			`Invitations sent successfully. ${skippedEmails} email(s) were skipped.`,
+		),
+	);
+	return;
 });
 
 /**
  * @route POST /api/v1/auth/invite/instructor/accept
  */
 export const acceptInvitation = asyncHandler(async (req, res) => {
-	const { token, password } = req.body;
+	const { token, password, name } = req.body;
 
 	const invitation = await InvitationModel.findOne({
 		token,
@@ -485,17 +517,12 @@ export const acceptInvitation = asyncHandler(async (req, res) => {
 	);
 
 	// Create the instructor user
-	const user = await UserModel.create({
-		institutionalID: invitation.email?.split('@')[0],
-		email: invitation.email,
-		name: invitation.name,
-		password: await bcrypt.hash(password, parseInt(BCRYPT_SALT)),
+	const user = await signupService({
+		name: name.trim(),
+		email: invitation.email!,
+		institutionalID: invitation.email!.split('@')[0] as string,
 		role: 'instructor',
-	});
-
-	await NotificationSettingsModel.create({
-		user: user._id as unknown as string,
-		...defaultNotificationSettings,
+		password,
 	});
 
 	await logActivity(req, {

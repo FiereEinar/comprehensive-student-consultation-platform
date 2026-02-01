@@ -4,7 +4,7 @@ import SessionModel from '../models/session.model';
 import { thirtyDaysFromNow } from '../utils/date';
 import { refreshTokenSignOptions, signToken } from '../utils/jwts';
 import { setAuthCookie } from '../utils/cookie';
-import UserModel, { IUser } from '../models/user.model';
+import UserModel, { IUser, UserTypes } from '../models/user.model';
 import NotificationSettingsModel, {
 	defaultNotificationSettings,
 } from '../models/notification-settings';
@@ -46,6 +46,7 @@ type SignupData = {
 	email: string;
 	institutionalID: string;
 	password: string; // unhashed password
+	role?: UserTypes;
 	googleID?: string;
 	profilePicture?: string;
 	googleCalendarTokens?: any;
