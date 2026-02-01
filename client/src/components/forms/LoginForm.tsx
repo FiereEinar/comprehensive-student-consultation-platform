@@ -16,10 +16,10 @@ import {
 import { Button } from '../ui/button';
 import { Field, FieldError, FieldLabel } from '../ui/field';
 import { Input } from '../ui/input';
-import GoogleLoginButton from '../buttons/GoogleLoginButton';
 import { useUserStore } from '@/stores/user';
 import { useState } from 'react';
 import Recaptcha from '../Recaptcha';
+import GoogleLoginButtonV2 from '../buttons/GoogleLoginButtonV2';
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
 
@@ -59,10 +59,10 @@ export default function LoginForm() {
 			data.data.role === 'instructor'
 				? navigate('/instructor/dashboard')
 				: data.data.role === 'student'
-				? navigate('/student/dashboard')
-				: data.data.role === 'admin'
-				? navigate('/admin/dashboard')
-				: navigate('/');
+					? navigate('/student/dashboard')
+					: data.data.role === 'admin'
+						? navigate('/admin/dashboard')
+						: navigate('/');
 		} catch (error: any) {
 			setError('root', { message: error.message ?? 'Failed to login' });
 			console.error('Failed to login', error);
@@ -180,7 +180,7 @@ export default function LoginForm() {
 						>
 							Login
 						</Button>
-						<GoogleLoginButton />
+						<GoogleLoginButtonV2 />
 					</div>
 				</form>
 			</CardContent>

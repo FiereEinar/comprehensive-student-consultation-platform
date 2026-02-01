@@ -6,7 +6,7 @@ import {
 	forgotPasswordHandler,
 	getInvitations,
 	googleCalendarCallbackHandler,
-	googleCalendarHandler,
+	googleCalendarLoginHandler,
 	googleLoginHandlerV2,
 	inviteInstructor,
 	loginHandler,
@@ -37,13 +37,13 @@ router.post('/recaptcha/verify', recaptchaVerify);
 
 router.post('/google', googleLoginHandlerV2);
 
-router.get('/google-calendar', auth, googleCalendarHandler);
+router.get('/google-calendar', googleCalendarLoginHandler);
 
 router.delete('/google-calendar', auth, deleteGoogleCalendarTokensHandler);
 
 router.get('/google-calendar/status', auth, checkGoogleCalendarStatus);
 
-router.get('/google-calendar/callback', auth, googleCalendarCallbackHandler);
+router.get('/google-calendar/callback', googleCalendarCallbackHandler);
 
 router.post('/forgot-password', forgotPasswordHandler);
 
@@ -56,7 +56,7 @@ router.post(
 	'/invite/instructor',
 	auth,
 	hasRole([MODULES.INVITE_INSTRUCTOR_USER]),
-	inviteInstructor
+	inviteInstructor,
 );
 
 router.post('/invite/instructor/accept', acceptInvitation);

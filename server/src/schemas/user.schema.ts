@@ -25,7 +25,7 @@ export const createUserSchema = z
 						ctx.addIssue({
 							code: z.ZodIssueCode.custom,
 							message: err,
-						})
+						}),
 					);
 				}
 			}),
@@ -64,7 +64,7 @@ export const updateUserPasswordSchema = z
 						ctx.addIssue({
 							code: z.ZodIssueCode.custom,
 							message: err,
-						})
+						}),
 					);
 				}
 			}),

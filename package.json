@@ -5,15 +5,15 @@
 	"main": "index.js",
 	"scripts": {
 		"dev-all": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\" \"mongod --dbpath ./data/db\"",
+		"install-all": "npm install --prefix server && npm install --prefix client",
+		"build-all": "npm run build-client && npm run build-server",
+		"start-prod": "concurrently \"npm run start-server\" \"npm run preview-client\"",
 		"build-client": "npm run build --prefix client",
 		"build-server": "npm run build --prefix server",
-		"build-all": "npm run build-client && npm run build-server",
 		"start-server": "npm run start --prefix server",
 		"preview-client": "npm run dev --prefix client",
-		"start-prod": "concurrently \"npm run start-server\" \"npm run preview-client\"",
 		"start-build": "npm run build-all && npm run start-prod",
-		"stop-all": "taskkill /F /IM node.exe /IM mongod.exe",
-		"install-all": "npm install --prefix server && npm install --prefix client"
+		"stop-all": "taskkill /F /IM node.exe /IM mongod.exe"
 	},
 	"repository": {
 		"type": "git",

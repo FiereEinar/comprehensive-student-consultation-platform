@@ -1,7 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import bcrypt from 'bcryptjs';
 import axios from 'axios';
-
 import CustomResponse from '../utils/response';
 import appAssert from '../errors/app-assert';
 import { createUserSchema, loginSchema } from '../schemas/user.schema';
@@ -9,14 +8,12 @@ import { verifyRecaptcha } from '../services/recaptcha';
 import { sendMail } from '../services/email';
 import { logActivity } from '../utils/activity-logger';
 import { oAuth2Client } from '../services/google-client';
-
 import InvitationModel from '../models/invitation.model';
 import SessionModel from '../models/session.model';
 import UserModel from '../models/user.model';
 import NotificationSettingsModel, {
 	defaultNotificationSettings,
 } from '../models/notification-settings';
-
 import {
 	BAD_REQUEST,
 	CONFLICT,
@@ -35,7 +32,6 @@ import {
 import {
 	generateCypto,
 	getPasswordResetEmailTemplate,
-	getUserRequestInfo,
 	hashCrypto,
 } from '../utils/utils';
 import {
@@ -56,7 +52,6 @@ import {
 	getAccessTokenOptions,
 	getRefreshTokenOptions,
 	REFRESH_PATH,
-	setAuthCookie,
 } from '../utils/cookie';
 import {
 	AppErrorCodes,
@@ -64,6 +59,8 @@ import {
 	WHITELISTED_DOMAINS,
 } from '../constants';
 import { sendInstructorInvitationEmail } from '../services/consultation-email';
+import { google } from 'googleapis';
+import { loginService, signupService } from '../services/auth';
 
 /**
  * @route POST /api/v1/auth/login - Login
@@ -81,30 +78,12 @@ export const loginHandler = asyncHandler(async (req, res) => {
 	const match = await bcrypt.compare(body.password, user.password);
 	appAssert(match, UNAUTHORIZED, 'Incorrect email or password');
 
-	const { ip, userAgent } = getUserRequestInfo(req);
-
-	// Create session
-	const session = await SessionModel.create({
-		userID: user._id,
-		expiresAt: thirtyDaysFromNow(),
-		ip,
-		userAgent,
-	});
-
-	const userID = user._id as unknown as string;
-	const sessionID = session._id as unknown as string;
-
-	// sign tokens
-	const accessToken = signToken({ sessionID, userID });
-	const refreshToken = signToken({ sessionID }, refreshTokenSignOptions);
-	setAuthCookie({ res, accessToken, refreshToken });
-
-	req.user = user;
+	await loginService(req, res, user);
 
 	await logActivity(req, {
 		action: 'USER_LOGIN',
 		description: 'User logged in',
-		resourceId: userID,
+		resourceId: user._id as unknown as string,
 		resourceType: RESOURCE_TYPES.USER,
 	});
 
@@ -133,16 +112,8 @@ export const signupHandler = asyncHandler(async (req, res) => {
 		'Passwords do not match',
 	);
 
-	// Hash password
-	const hashedPassword = await bcrypt.hash(
-		body.password,
-		parseInt(BCRYPT_SALT),
-	);
-	body.password = hashedPassword;
-
 	// create user
-	const user = await UserModel.create(body);
-
+	const user = await signupService(body);
 	req.user = user;
 
 	await logActivity(req, {
@@ -150,11 +121,6 @@ export const signupHandler = asyncHandler(async (req, res) => {
 		description: 'User sign up',
 		resourceId: user._id as unknown as string,
 		resourceType: RESOURCE_TYPES.USER,
-	});
-
-	await NotificationSettingsModel.create({
-		user: user._id as unknown as string,
-		...defaultNotificationSettings,
 	});
 
 	res.json(new CustomResponse(true, user.omitPassword(), 'Signup successful'));
@@ -339,48 +305,32 @@ export const googleLoginHandlerV2 = asyncHandler(async (req, res) => {
 			'User is not from a whitelisted domain',
 		);
 
-		const randomPassword = await bcrypt.hash(crypto.randomUUID(), 10);
-		user = await UserModel.create({
+		user = await signupService({
 			name,
 			email,
 			googleID,
 			institutionalID: email?.split('@')[0],
-			password: randomPassword,
+			password: crypto.randomUUID(),
 			profilePicture: picture,
-		});
-
-		await NotificationSettingsModel.create({
-			user: user._id as unknown as string,
-			...defaultNotificationSettings,
 		});
 	}
 
-	// Create session
-	const { ip, userAgent } = getUserRequestInfo(req);
-	const userID = user._id as unknown as string;
-
-	const session = await SessionModel.create({
-		userID,
-		ip,
-		userAgent,
-		expiresAt: thirtyDaysFromNow(),
-	});
-
-	// Create JWT tokens
-	const sessionID = session._id as unknown as string;
-	const accessToken = signToken({ sessionID, userID });
-	const refreshToken = signToken({ sessionID }, refreshTokenSignOptions);
-	setAuthCookie({ res, accessToken, refreshToken });
+	const accessToken = await loginService(req, res, user);
 
 	await logActivity(req, {
 		action: 'USER_LOGIN',
 		description: 'User logged in via Google',
-		resourceId: userID,
+		resourceId: user._id as unknown as string,
 		resourceType: RESOURCE_TYPES.USER,
 	});
 
 	res.json({ accessToken, user, message: 'Login successful' });
 });
+
+/**
+ * @route POST /api/v1/auth/google
+ */
+export const googleLoginHandlerV3 = asyncHandler(async (req, res) => {});
 
 /**
  * @route POST /api/v1/auth/forgot-password
@@ -583,21 +533,6 @@ export const deleteGoogleCalendarTokensHandler = asyncHandler(
 );
 
 /**
- * @route GET /api/v1/auth/google-calendar
- */
-export const googleCalendarHandler = asyncHandler(async (req, res) => {
-	const scopes = ['https://www.googleapis.com/auth/calendar.events'];
-
-	const url = oAuth2Client.generateAuthUrl({
-		access_type: 'offline', // get refresh token
-		scope: scopes,
-		prompt: 'consent', // always ask for consent to get refresh token
-	});
-
-	res.redirect(url);
-});
-
-/**
  * @route GET /api/v1/auth/google-calendar/status
  */
 export const checkGoogleCalendarStatus = asyncHandler(async (req, res) => {
@@ -622,35 +557,80 @@ export const checkGoogleCalendarStatus = asyncHandler(async (req, res) => {
 });
 
 /**
+ * @route GET /api/v1/auth/google-calendar
+ */
+export const googleCalendarLoginHandler = asyncHandler(async (req, res) => {
+	const scopes = [
+		'https://www.googleapis.com/auth/calendar.events',
+		'https://www.googleapis.com/auth/userinfo.profile',
+		'https://www.googleapis.com/auth/userinfo.email',
+		'openid',
+	];
+
+	const url = oAuth2Client.generateAuthUrl({
+		access_type: 'offline', // get refresh token
+		scope: scopes,
+		prompt: 'consent', // always ask for consent to get refresh token
+	});
+
+	res.redirect(url);
+});
+
+/**
  * @route GET /api/v1/auth/google-calendar/callback
  */
 export const googleCalendarCallbackHandler = asyncHandler(async (req, res) => {
 	const code = req.query.code as string;
 	appAssert(code, BAD_REQUEST, 'No code provided');
 
+	// Exchange code for tokens
 	const { tokens } = await oAuth2Client.getToken(code);
 	oAuth2Client.setCredentials(tokens);
 
-	// Save tokens in user document
-	const userId = req.user._id;
-	appAssert(userId, BAD_REQUEST, 'User session not found');
-
-	await UserModel.findByIdAndUpdate(userId, {
-		googleCalendarTokens: tokens,
+	// Get google user info
+	const oauth2 = google.oauth2('v2');
+	const { data: googleUser } = await oauth2.userinfo.get({
+		auth: oAuth2Client,
 	});
+	appAssert(googleUser, BAD_REQUEST, 'Google user not found');
 
-	// res.send(
-	// 	`<div>Google Calendar connected! You can now create meetings.<br><a href="${FRONTEND_URL}">Go back to the app</a></div>`
-	// );
-	res.send(`
-		<!DOCTYPE html>
-		<html>
-		<head>
-			<title>Google Calendar Connected</title>
-		</head>
-		<body style="font-family: Arial, sans-serif; text-align: center; margin-top: 50px;">
-			<div>Google Calendar connected! You can now create meetings.<br><a href="${FRONTEND_URL}">Go back to the app</a></div>
-		</body>
-		</html>
-	`);
+	console.log('Google User Info:', googleUser);
+
+	let user = req.user;
+	if (!user) {
+		// no user in req means this is a login attempt via google
+		user = await UserModel.findOne({ email: googleUser.email });
+
+		// if no user still, this is a new user signing up via google
+		if (!user) {
+			// create user if not exists, only if from whitelisted domain
+			appAssert(
+				WHITELISTED_DOMAINS.includes(googleUser.hd || ''),
+				UNAUTHORIZED,
+				'User is not from a whitelisted domain',
+			);
+
+			const randomPassword = crypto.randomUUID() + 'A1!';
+			const userInfo = createUserSchema.parse({
+				name: googleUser.name,
+				institutionalID: googleUser.email?.split('@')[0],
+				email: googleUser.email,
+				password: randomPassword,
+				confirmPassword: randomPassword,
+			});
+
+			user = await signupService({
+				...userInfo,
+				profilePicture: googleUser.picture ?? '',
+			});
+		}
+	}
+
+	// Save tokens to user
+	user.googleCalendarTokens = tokens;
+	await user.save();
+
+	await loginService(req, res, user);
+
+	res.redirect(FRONTEND_URL);
 });

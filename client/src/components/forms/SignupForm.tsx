@@ -16,7 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axiosInstance from '@/api/axios';
 import { toast } from 'sonner';
-import GoogleLoginButton from '../buttons/GoogleLoginButton';
+import GoogleLoginButtonV2 from '../buttons/GoogleLoginButtonV2';
 // import { useState } from 'react';
 // import Recaptcha from '../Recaptcha';
 
@@ -197,7 +197,7 @@ export default function SignupForm() {
 						>
 							Signup
 						</Button>
-						<GoogleLoginButton />
+						<GoogleLoginButtonV2 />
 					</div>
 				</form>
 			</CardContent>
