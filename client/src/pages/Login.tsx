@@ -22,7 +22,8 @@ export default function Login() {
 					</Card>
 					<FieldDescription className='px-6 text-center'>
 						By clicking continue, you agree to our{' '}
-						<a href='#'>Terms of Service</a> and <a href='#'>Privacy Policy</a>.
+						<a href='/terms-of-service' target='_blank'>Terms of Service</a> and{" "}
+						<a href='#'>Privacy Policy</a>.
 					</FieldDescription>
 				</div>
 			</div>

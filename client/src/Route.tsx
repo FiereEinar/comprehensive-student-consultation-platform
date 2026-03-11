@@ -3,6 +3,7 @@ import {
 	Navigate,
 	RouterProvider,
 } from 'react-router-dom';
+import TermsOfService from './pages/TermsOfService'; 
 import App from './App';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -216,6 +217,10 @@ export default function Route() {
 			path: '/signup',
 			element: <Signup />,
 		},
+		{
+            path: '/terms-of-service',
+            element: <TermsOfService />,
+        },
 		{
 			path: '/forgot-password',
 			element: <ForgotPassword />,
