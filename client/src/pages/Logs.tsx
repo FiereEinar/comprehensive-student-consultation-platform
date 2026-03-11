@@ -100,7 +100,7 @@ export default function Logs() {
 
 					{data?.length === 0 && (
 						<div className='text-center mt-10 text-muted-foreground italic'>
-							No logs found.
+							No data found.
 						</div>
 					)}
 

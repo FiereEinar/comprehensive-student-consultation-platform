@@ -32,14 +32,14 @@ export default function ResetPasswordForm() {
 
 			const { data } = await axiosInstance.patch(
 				`/user/${user._id}/password`,
-				formData
+				formData,
 			);
 
 			toast.success(data.message || 'Password updated successfully');
 		} catch (error: any) {
 			console.error('Failed to update password:', error);
 			const message =
-				error.response?.data?.message ||
+				error.error ||
 				'Failed to update password. Please check your current password.';
 			toast.error(message);
 		}

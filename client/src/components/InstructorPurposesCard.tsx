@@ -9,6 +9,8 @@ import { Input } from './ui/input';
 import { useState } from 'react';
 import axiosInstance from '@/api/axios';
 import { queryClient } from '@/main';
+import { toast } from 'sonner';
+import _ from 'lodash';
 
 export default function InstructorPurposesCard() {
 	const [showInput, setShowInput] = useState(false);
@@ -21,12 +23,15 @@ export default function InstructorPurposesCard() {
 
 	const handleAddPurpose = async () => {
 		try {
-			if (purpose?.purposes.includes(newPurpose.trim().toLowerCase())) {
+			const loweredPurposes =
+				purpose?.purposes.map((p) => p.toLowerCase()) || [];
+			if (loweredPurposes.includes(newPurpose.trim().toLowerCase())) {
+				toast.error('Purpose already exists');
 				return;
 			}
 
 			await axiosInstance.patch(`/consultation-purpose/${purpose?._id}`, {
-				purposes: [...(purpose?.purposes || []), newPurpose],
+				purposes: [...(purpose?.purposes || []), _.startCase(newPurpose)],
 			});
 
 			setNewPurpose('');
