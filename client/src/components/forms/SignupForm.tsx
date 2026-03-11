@@ -17,6 +17,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import axiosInstance from '@/api/axios';
 import { toast } from 'sonner';
 import GoogleLoginButtonV2 from '../buttons/GoogleLoginButtonV2';
+import { useUserStore } from '@/stores/user';
 // import { useState } from 'react';
 // import Recaptcha from '../Recaptcha';
 
@@ -25,6 +26,7 @@ export type SignupFormValues = z.infer<typeof signupSchema>;
 export default function SignupForm() {
 	// const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 	const navigate = useNavigate();
+	const { setUser } = useUserStore((state) => state);
 	const {
 		control,
 		handleSubmit,
@@ -51,7 +53,16 @@ export default function SignupForm() {
 			const { data } = await axiosInstance.post('/auth/signup', formData);
 
 			toast.success(data.message);
-			navigate('/login');
+			
+			// Set user in store and redirect to dashboard
+			setUser(data.data);
+			data.data.role === 'instructor'
+				? navigate('/instructor/dashboard')
+				: data.data.role === 'student'
+					? navigate('/student/dashboard')
+					: data.data.role === 'admin'
+						? navigate('/admin/dashboard')
+						: navigate('/');
 		} catch (error: any) {
 			console.error('Failed to sign up', error);
 			// toast.error(error.message ?? 'Failed to sign up');

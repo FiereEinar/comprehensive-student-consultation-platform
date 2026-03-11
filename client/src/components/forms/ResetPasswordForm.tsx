@@ -2,6 +2,8 @@ import axiosInstance from '@/api/axios';
 import { useUserStore } from '@/stores/user';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
@@ -14,6 +16,9 @@ type PasswordFormValues = {
 
 export default function ResetPasswordForm() {
 	const { user } = useUserStore((state) => state);
+	const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+	const [showNewPassword, setShowNewPassword] = useState(false);
+	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
 	const {
 		register: registerPassword,
@@ -52,27 +57,69 @@ export default function ResetPasswordForm() {
 		>
 			<div className='space-y-2'>
 				<Label>Current Password</Label>
-				<Input
-					type='password'
-					placeholder='Enter current password'
-					{...registerPassword('currentPassword', { required: true })}
-				/>
+				<div className='relative'>
+					<Input
+						type={showCurrentPassword ? 'text' : 'password'}
+						placeholder='Enter current password'
+						{...registerPassword('currentPassword', { required: true })}
+						className='pr-10'
+					/>
+					<button
+						type='button'
+						onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+						className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700'
+					>
+						{showCurrentPassword ? (
+							<EyeOff size={18} />
+						) : (
+							<Eye size={18} />
+						)}
+					</button>
+				</div>
 			</div>
 			<div className='space-y-2'>
 				<Label>New Password</Label>
-				<Input
-					type='password'
-					placeholder='Enter new password'
-					{...registerPassword('newPassword', { required: true })}
-				/>
+				<div className='relative'>
+					<Input
+						type={showNewPassword ? 'text' : 'password'}
+						placeholder='Enter new password'
+						{...registerPassword('newPassword', { required: true })}
+						className='pr-10'
+					/>
+					<button
+						type='button'
+						onClick={() => setShowNewPassword(!showNewPassword)}
+						className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700'
+					>
+						{showNewPassword ? (
+							<EyeOff size={18} />
+						) : (
+							<Eye size={18} />
+						)}
+					</button>
+				</div>
 			</div>
 			<div className='space-y-2'>
 				<Label>Confirm New Password</Label>
-				<Input
-					type='password'
-					placeholder='Re-enter new password'
-					{...registerPassword('confirmPassword', { required: true })}
-				/>
+				<div className='relative'>
+					<Input
+						type={showConfirmPassword ? 'text' : 'password'}
+						placeholder='Re-enter new password'
+						{...registerPassword('confirmPassword', { required: true })}
+						className='pr-10'
+					/>
+					<button
+						type='button'
+						onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+						className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700'
+					>
+						{showConfirmPassword ? (
+							<EyeOff size={18} />
+						) : (
+							<Eye size={18} />
+						)}
+					</button>
+				</div>
 			</div>
 			<Button size='sm' type='submit' disabled={updatingPassword}>
 				{updatingPassword ? 'Updating...' : 'Update Password'}
