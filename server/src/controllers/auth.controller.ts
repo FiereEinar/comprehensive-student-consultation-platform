@@ -121,6 +121,9 @@ export const signupHandler = asyncHandler(async (req, res) => {
 	const user = await signupService(body);
 	req.user = user;
 
+	// Create session and set auth cookies (same as login)
+	await loginService(req, res, user);
+
 	await logActivity(req, {
 		action: 'USER_SIGNUP',
 		description: 'User sign up',
