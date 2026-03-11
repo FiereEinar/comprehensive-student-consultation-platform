@@ -6,12 +6,10 @@ export default function PrivacyPolicy() {
     <main className='bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10 w-full'>
       <div className='w-full max-w-sm md:max-w-3xl'>
         {" "}
-        {/* Adjusted max-width slightly for text readability */}
         <div className='flex flex-col gap-6'>
           <Card className='overflow-hidden'>
             <CardContent className='p-8 md:p-12'>
               {" "}
-              {/* Single column padding */}
               <div className='flex flex-col gap-6'>
                 <h1 className='text-3xl font-bold tracking-tight'>
                   Privacy Policy
