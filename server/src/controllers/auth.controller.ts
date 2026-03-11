@@ -106,6 +106,10 @@ export const signupHandler = asyncHandler(async (req, res) => {
 	});
 	appAssert(!sameInstitutionalID, CONFLICT, 'Institutional ID already used');
 
+	const hd = body.email.split('@')[1];
+
+	appAssert(WHITELISTED_DOMAINS.includes(hd ?? ''), UNAUTHORIZED, 'User is not from a whitelisted domain');
+
 	// Check if passwords match
 	appAssert(
 		body.password === body.confirmPassword,
