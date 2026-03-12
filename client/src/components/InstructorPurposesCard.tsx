@@ -22,6 +22,8 @@ export default function InstructorPurposesCard() {
 		queryFn: () => fetchInstructorConsultationPurpose(user?._id || ''),
 	});
 
+	console.log(purpose)
+
 	const handleAddPurpose = async () => {
 		try {
 			const loweredPurposes =

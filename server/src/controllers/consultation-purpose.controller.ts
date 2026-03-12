@@ -1,6 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import CustomResponse from '../utils/response';
-import { RESOURCE_TYPES } from '../constants';
+import { DEFAULT_CONSULTATION_PURPOSES, RESOURCE_TYPES } from '../constants';
 import { logActivity } from '../utils/activity-logger';
 import appAssert from '../errors/app-assert';
 import { BAD_REQUEST, FORBIDDEN, NOT_FOUND } from '../constants/http';
@@ -55,9 +55,21 @@ export const getInstructorConsultationPurposes = asyncHandler(
 
 		appAssert(id, BAD_REQUEST, 'Instructor ID is required');
 
-		const purposes = await ConsultationPurposeModel.findOne({
+		let purposes = await ConsultationPurposeModel.findOne({
 			createdBy: id,
 		}).populate('createdBy', 'name institutionalID');
+
+		if (!purposes) {
+			purposes = await ConsultationPurposeModel.create({
+				purposes: DEFAULT_CONSULTATION_PURPOSES,
+				createdBy: id,
+			});
+		}
+
+		purposes = await ConsultationPurposeModel.findById(purposes._id).populate(
+			'createdBy',
+			'name institutionalID',
+		);
 
 		res.json(
 			new CustomResponse(true, purposes, 'Consultation purposes fetched'),

@@ -51,7 +51,7 @@ export default function SignupForm() {
 			const { data } = await axiosInstance.post('/auth/signup', formData);
 
 			toast.success(data.message);
-			navigate('/login');
+			navigate('/');
 		} catch (error: any) {
 			console.error('Failed to sign up', error);
 			// toast.error(error.message ?? 'Failed to sign up');

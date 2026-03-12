@@ -59,30 +59,58 @@ export default function StudentConsultations() {
 							</TabsTrigger>
 							<TabsTrigger
 								onClick={() => {
-									setStatus(['accepted', 'completed']);
+									setStatus(['accepted']);
 									setPage(1);
 								}}
 								className='cursor-pointer data-[state=active]:text-custom-primary 
 							data-[state=active]:border-b-custom-primary border-2 
 							data-[state=active]:bg-white rounded-none 
 							data-[state=active]:shadow-none'
-								value='Upcoming'
+								value='Accepted'
 							>
-								Upcoming
+								Accepted
 							</TabsTrigger>
 
 							<TabsTrigger
 								onClick={() => {
-									setStatus(['declined', 'pending']);
+									setStatus(['completed']);
 									setPage(1);
 								}}
 								className='cursor-pointer data-[state=active]:text-custom-primary 
 							data-[state=active]:border-b-custom-primary border-2 
 							data-[state=active]:bg-white rounded-none 
 							data-[state=active]:shadow-none'
-								value='Requests'
+								value='Completed'
 							>
-								Requests
+								Completed
+							</TabsTrigger>
+
+							<TabsTrigger
+								onClick={() => {
+									setStatus(['declined']);
+									setPage(1);
+								}}
+								className='cursor-pointer data-[state=active]:text-custom-primary 
+							data-[state=active]:border-b-custom-primary border-2 
+							data-[state=active]:bg-white rounded-none 
+							data-[state=active]:shadow-none'
+								value='Declined'
+							>
+								Declined
+							</TabsTrigger>
+
+							<TabsTrigger
+								onClick={() => {
+									setStatus(['pending']);
+									setPage(1);
+								}}
+								className='cursor-pointer data-[state=active]:text-custom-primary 
+							data-[state=active]:border-b-custom-primary border-2 
+							data-[state=active]:bg-white rounded-none 
+							data-[state=active]:shadow-none'
+								value='Pending'
+							>
+								Pending
 							</TabsTrigger>
 						</TabsList>
 						<div className='flex gap-2 items-center'>

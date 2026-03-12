@@ -3,7 +3,6 @@ import {
 	Navigate,
 	RouterProvider,
 } from 'react-router-dom';
-import TermsOfService from './pages/TermsOfService';
 import App from './App';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -30,6 +29,7 @@ import NotFound from './pages/NotFound';
 import HasPermission from './components/HasPermission';
 import NoPermission from './pages/NoPermission';
 import { MODULES } from './constants';
+import TermsOfService from './pages/TermsOfService';
 
 export default function Route() {
 	const { user } = useUserStore((state) => state);
