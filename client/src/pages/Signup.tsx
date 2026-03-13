@@ -23,7 +23,7 @@ export default function Signup() {
 					<FieldDescription className='px-6 text-center'>
 						By clicking continue, you agree to our{" "}
 						<a href='/terms-of-service' target='_blank'>Terms of Service</a> and{" "}
-						<a href='#' target='_blank'>Privacy Policy</a>
+						<a href='/privacy-policy' target='_blank'>Privacy Policy</a>
 						.
 					</FieldDescription>
 				</div>

@@ -25,7 +25,9 @@ export default function Login() {
 						<a href='/terms-of-service' target='_blank'>
 							Terms of Service
 						</a>{' '}
-						and <a href='#'>Privacy Policy</a>.
+						and <a href='/privacy-policy' target='_blank'>
+							Privacy Policy
+						</a>.
 					</FieldDescription>
 				</div>
 			</div>

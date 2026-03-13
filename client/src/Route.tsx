@@ -30,6 +30,7 @@ import HasPermission from './components/HasPermission';
 import NoPermission from './pages/NoPermission';
 import { MODULES } from './constants';
 import TermsOfService from './pages/TermsOfService';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 
 export default function Route() {
 	const { user } = useUserStore((state) => state);
@@ -220,6 +221,10 @@ export default function Route() {
 		{
 			path: '/terms-of-service',
 			element: <TermsOfService />,
+		},
+		{
+			path: '/privacy-policy',
+			element: <PrivacyPolicy />,
 		},
 		{
 			path: '/forgot-password',
