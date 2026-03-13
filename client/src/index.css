@@ -2,7 +2,7 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
-@custom-variant dark (&: is(.dark *));
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
 	--radius-sm: calc(var(--radius) - 4px);
@@ -136,17 +136,15 @@
 	font-family: 'Poppins', sans-serif;
 }
 
-
 /*CHECKBOX COLORING FOR INSTRUCTOR AVAILABILITY SETTINGS*/
-input[type="checkbox"].custom-purple:checked {
-  accent-color: #B276D2; /* Use your exact hex here */
-  transition: accent-color 2s;
+input[type='checkbox'].custom-purple:checked {
+	accent-color: #b276d2; /* Use your exact hex here */
+	transition: accent-color 2s;
 }
-
 
 .pdf-safe,
 .pdf-safe * {
-  color: #000 !important;
-  background-color: #fff !important;
-  border-color: #000 !important;
+	color: #000 !important;
+	background-color: #fff !important;
+	border-color: #000 !important;
 }

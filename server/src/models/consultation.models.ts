@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import { IUser } from './user.model';
-import { decrypt, encrypt } from '../services/encryption';
 import { EncryptPlugin } from '../services/mongoose-encryption-plugin';
 
 const Schema = mongoose.Schema;
@@ -31,7 +30,6 @@ export interface IConsultation extends mongoose.Document {
 	};
 	createdAt: Date;
 	updatedAt: Date;
-	toJSON(): IConsultation;
 }
 
 const ConsultationSchema = new Schema(
@@ -61,7 +59,7 @@ const ConsultationSchema = new Schema(
 	},
 	{
 		timestamps: true,
-	}
+	},
 );
 
 export const consultatioModelEncryptedFields = [
