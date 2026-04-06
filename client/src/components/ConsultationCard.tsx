@@ -42,10 +42,17 @@ export default function ConsultationCard({
 							) : (
 								<ItemTitle>{startCase(consultation.title)}</ItemTitle>
 							)}
-							<ItemDescription className='text-left'>
-								{startCase(userData.name)}
-								{' • '}
-								<span className='text-xs'>{userData.role}</span>
+							<ItemDescription className='text-left text-xs flex'>
+								<p>
+									{startCase(consultation.student.name)}
+									{' • '}
+									<span>{consultation.student.role}</span>
+								</p>
+								{/* <p>
+									{startCase(consultation.instructor.name)}
+									{' • '}
+									<span>{consultation.instructor.role}</span>
+								</p> */}
 							</ItemDescription>
 						</ItemContent>
 					</div>

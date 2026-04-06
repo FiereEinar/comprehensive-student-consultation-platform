@@ -7,7 +7,7 @@ import { exec } from 'child_process';
 import appAssert from '../errors/app-assert';
 import CustomResponse from '../utils/response';
 import { BAD_REQUEST } from '../constants/http';
-import { DROPBOX_ACCESS_TOKEN, MONGO_URI } from '../constants/env';
+import { MONGO_URI } from '../constants/env';
 import { logActivity } from '../utils/activity-logger';
 import { RESOURCE_TYPES } from '../constants';
 import {
@@ -39,6 +39,9 @@ export const manualBackup = asyncHandler(async (req, res) => {
  * uses DROPBOX as cloud backup storage
  */
 export const manualCloudBackup = asyncHandler(async (req, res) => {
+	const { dropboxAccessToken } = req.body;
+	appAssert(dropboxAccessToken, BAD_REQUEST, 'Dropbox Access Token is required');
+
 	// create local backup
 	const backupPath = await runBackup(MONGO_URI);
 	const backupFolderName = path.basename(backupPath);
@@ -49,7 +52,7 @@ export const manualCloudBackup = asyncHandler(async (req, res) => {
 	await zipFolder(backupPath, zipPath);
 
 	// upload to Dropbox
-	const dbx = new Dropbox({ accessToken: DROPBOX_ACCESS_TOKEN });
+	const dbx = new Dropbox({ accessToken: dropboxAccessToken });
 
 	const fileContent = fsSync.readFileSync(zipPath);
 	const dropboxPath = `/CSCP_Backups/${backupFolderName}.zip`;
@@ -101,9 +104,12 @@ export const backupHistory = asyncHandler(async (req, res) => {
  * @desc Get list of backups stored in Dropbox
  */
 export const getDropboxBackups = asyncHandler(async (req, res) => {
+	const { dropboxAccessToken } = req.query;
+	appAssert(dropboxAccessToken && typeof dropboxAccessToken === 'string', BAD_REQUEST, 'Dropbox Access Token is required');
+
 	try {
 		const dbx = new Dropbox({
-			accessToken: DROPBOX_ACCESS_TOKEN,
+			accessToken: dropboxAccessToken as string,
 			fetch: fetch,
 		});
 		// List files in the root (or a specific folder)

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
 	Dialog,
 	DialogContent,
@@ -27,6 +28,7 @@ type BackupItem = {
 
 export default function AdminBackupPage() {
 	const [loading, setLoading] = useState(false);
+	const [dropboxToken, setDropboxToken] = useState('');
 	const [confirm, setConfirm] = useState<{
 		open: boolean;
 		target?: BackupItem;
@@ -37,9 +39,10 @@ export default function AdminBackupPage() {
 		queryFn: () => fetchLocalBackup(),
 	});
 
-	const { data: cloudBackups } = useQuery({
-		queryKey: [QUERY_KEYS.CLOUD_BACKUPS],
-		queryFn: () => fetchCloudBackup(),
+	const { data: cloudBackups, refetch: refetchCloudBackup, isFetching: isFetchingCloud } = useQuery({
+		queryKey: [QUERY_KEYS.CLOUD_BACKUPS, dropboxToken],
+		queryFn: () => fetchCloudBackup(dropboxToken),
+		enabled: false,
 	});
 
 	const fetchLocalBackup = async (): Promise<BackupItem[]> => {
@@ -52,20 +55,30 @@ export default function AdminBackupPage() {
 		}
 	};
 
-	const fetchCloudBackup = async (): Promise<BackupItem[]> => {
+	const fetchCloudBackup = async (token: string): Promise<BackupItem[]> => {
+		if (!token) return [];
 		try {
-			const { data } = await axiosInstance.get('/backup/history/cloud');
+			const { data } = await axiosInstance.get('/backup/history/cloud?dropboxAccessToken=' + encodeURIComponent(token));
 			return data.data || ([] as BackupItem[]);
 		} catch (err) {
 			console.error(err);
+			toast.error('Failed to fetch from Dropbox');
 			return [];
 		}
 	};
 
 	const handleManual = async (cloud: boolean = false) => {
+		if (cloud && !dropboxToken) {
+			toast.error('Dropbox Access Token is required for cloud backup');
+			return;
+		}
+
 		try {
 			setLoading(true);
-			await axiosInstance.post('/backup/manual' + (cloud ? '/cloud' : ''));
+			await axiosInstance.post(
+				'/backup/manual' + (cloud ? '/cloud' : ''),
+				cloud ? { dropboxAccessToken: dropboxToken } : undefined
+			);
 			toast.success('Backup created');
 			await queryClient.invalidateQueries({
 				queryKey: [QUERY_KEYS.LOCAL_BACKUPS, QUERY_KEYS.CLOUD_BACKUPS],
@@ -142,19 +155,30 @@ export default function AdminBackupPage() {
 									Manually create a backup of the database.
 								</p>
 
+								<div className='flex gap-2 mb-4'>
+									<Input
+										type='password'
+										placeholder='Dropbox Access Token'
+										value={dropboxToken}
+										onChange={(e) => setDropboxToken(e.target.value)}
+										className='max-w-md'
+									/>
+									<Button
+										variant='secondary'
+										onClick={() => refetchCloudBackup()}
+										disabled={isFetchingCloud || !dropboxToken}
+									>
+										{isFetchingCloud ? 'Loading...' : 'Load Dropbox Backups'}
+									</Button>
+								</div>
 								<div className='flex gap-2'>
-									{/* <Input
-									placeholder='mongodb+srv://...'
-									value={mongoUri}
-									onChange={(e) => setMongoUri(e.target.value)}
-								/> */}
 									<Button onClick={() => handleManual()} disabled={loading}>
 										{loading ? 'Creating...' : 'Create Backup'}
 									</Button>
 									<Button
 										variant='outline'
 										onClick={() => handleManual(true)}
-										disabled={loading}
+										disabled={loading || !dropboxToken}
 									>
 										{loading ? 'Creating...' : 'Create Cloud Backup'}
 									</Button>
