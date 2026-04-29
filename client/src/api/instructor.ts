@@ -8,6 +8,8 @@ export type AvailabilityType = {
 	endTime: string;
 	slots: string;
 	user: string;
+	schoolYear?: string;
+	semester?: number;
 };
 
 export const fetchInstructors = async (): Promise<User[]> => {
@@ -22,9 +24,14 @@ export const fetchInstructors = async (): Promise<User[]> => {
 };
 
 export const fetchAvailabilities = async (
-	instructorID: string
+	instructorID: string,
+	schoolYear?: string,
+	semester?: string | number
 ): Promise<AvailabilityType[]> => {
-	const res = await axiosInstance.get(`/availability?userID=${instructorID}`);
+	let url = `/availability?userID=${instructorID}`;
+	if (schoolYear) url += `&schoolYear=${schoolYear}`;
+	if (semester) url += `&semester=${semester}`;
+	const res = await axiosInstance.get(url);
 	// If your API may return InstructorAvailability shaped objects, fix here:
 	return (res.data?.data || []).map((a: any) => ({
 		_id: a._id,
@@ -33,6 +40,8 @@ export const fetchAvailabilities = async (
 		endTime: a.endTime,
 		slots: String(a.slots), // ensure string
 		user: a.user,
+		schoolYear: a.schoolYear,
+		semester: a.semester,
 	}));
 };
 

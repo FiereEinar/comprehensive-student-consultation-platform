@@ -428,6 +428,8 @@ export default function ConsultationForm({ title }: ConsultationFormProps) {
 								render={({ field, fieldState }) => (
 									<AvailabilitySlotPicker
 										instructorID={instructorID}
+										schoolYear={selectedSchoolYear}
+										semester={selectedSemester}
 										field={field}
 										fieldState={fieldState}
 									/>

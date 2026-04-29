@@ -12,7 +12,7 @@ import { RESOURCE_TYPES } from '../constants';
  * @route GET /api/v1/user/:userID/availability
  */
 export const getInstructorAvailability = asyncHandler(async (req, res) => {
-	const { userID } = req.query;
+	const { userID, schoolYear, semester } = req.query;
 
 	const instructor = await UserModel.findById(userID);
 	appAssert(instructor, NOT_FOUND, 'Instructor not found');
@@ -22,9 +22,11 @@ export const getInstructorAvailability = asyncHandler(async (req, res) => {
 		'User is not an instructor'
 	);
 
-	const availabilities = await AvailabilityModel.find({
-		user: instructor._id,
-	});
+	const filter: any = { user: instructor._id };
+	if (schoolYear) filter.schoolYear = schoolYear;
+	if (semester) filter.semester = Number(semester);
+
+	const availabilities = await AvailabilityModel.find(filter);
 
 	res.json(new CustomResponse(true, availabilities, 'Availability fetched'));
 });
@@ -74,7 +76,7 @@ export const updateSingleAvailability = asyncHandler(async (req, res) => {
  * @route POST /api/v1/availability
  */
 export const createInstructorAvailability = asyncHandler(async (req, res) => {
-	const { day, startTime, endTime, slots, userID } =
+	const { day, startTime, endTime, slots, userID, schoolYear, semester } =
 		createAvilabilitySchema.parse(req.body);
 
 	const instructor = await UserModel.findById(req.user._id);
@@ -92,6 +94,8 @@ export const createInstructorAvailability = asyncHandler(async (req, res) => {
 		startTime,
 		endTime,
 		slots,
+		schoolYear,
+		semester: Number(semester),
 	});
 
 	await logActivity(req, {

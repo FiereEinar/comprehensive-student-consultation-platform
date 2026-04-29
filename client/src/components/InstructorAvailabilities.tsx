@@ -14,6 +14,8 @@ import { Badge } from './ui/badge';
 // Props for instructor ID
 type InstructorAvailabilitiesProps = {
 	instructorID: string;
+	schoolYear?: string;
+	semester?: string;
 	onEdit?: (availability: AvailabilityType) => void;
 	viewOnly?: boolean;
 };
@@ -29,19 +31,21 @@ type AvailabilityType = {
 
 export default function InstructorAvailabilities({
 	instructorID,
+	schoolYear,
+	semester,
 	onEdit,
 	viewOnly = false,
 }: InstructorAvailabilitiesProps) {
 	const { data: availabilities = [] } = useQuery<AvailabilityType[]>({
-		queryKey: [QUERY_KEYS.INSTRUCTORS_AVAILABILITIES, instructorID],
-		queryFn: () => fetchAvailabilities(instructorID),
+		queryKey: [QUERY_KEYS.INSTRUCTORS_AVAILABILITIES, instructorID, schoolYear, semester],
+		queryFn: () => fetchAvailabilities(instructorID, schoolYear, semester),
 	});
 
 	const handleDelete = async (availabilityId: string) => {
 		try {
 			await axiosInstance.delete(`/availability/${availabilityId}`);
 			await queryClient.invalidateQueries({
-				queryKey: [QUERY_KEYS.INSTRUCTORS_AVAILABILITIES, instructorID],
+				queryKey: [QUERY_KEYS.INSTRUCTORS_AVAILABILITIES, instructorID, schoolYear, semester],
 			});
 		} catch (err) {
 			console.error('Failed to delete availability', err);

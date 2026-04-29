@@ -13,6 +13,8 @@ export const createAvilabilitySchema = z.object({
     startTime: z.string().min(1, 'Start time is required'),
     endTime: z.string().min(1, 'End time is required'),
     slots: z.string().min(1, 'Slots is required'),
+    schoolYear: z.string().min(1, 'School year is required'),
+    semester: z.string().min(1, 'Semester is required'),
 })
 .refine(
     (data) => {

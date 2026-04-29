@@ -86,20 +86,24 @@ function formatSlotTime(time: string): string {
 
 type AvailabilitySlotPickerProps<T> = {
 	instructorID: string | undefined;
+	schoolYear?: string;
+	semester?: string;
 	field: ControllerRenderProps<FieldValues & T>;
 	fieldState: ControllerFieldState;
 };
 
 export default function AvailabilitySlotPicker<T>({
 	instructorID,
+	schoolYear,
+	semester,
 	field,
 	fieldState,
 }: AvailabilitySlotPickerProps<T>) {
 	const [weeksAhead, setWeeksAhead] = useState(2);
 
 	const { data: availabilities = [] } = useQuery<AvailabilityType[]>({
-		queryKey: [QUERY_KEYS.INSTRUCTORS_AVAILABILITIES, instructorID],
-		queryFn: () => fetchAvailabilities(instructorID || ''),
+		queryKey: [QUERY_KEYS.INSTRUCTORS_AVAILABILITIES, instructorID, schoolYear, semester],
+		queryFn: () => fetchAvailabilities(instructorID || '', schoolYear, semester),
 		enabled: !!instructorID,
 	});
 

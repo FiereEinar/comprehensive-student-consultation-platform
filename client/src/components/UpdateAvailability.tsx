@@ -13,15 +13,18 @@ import { toast } from 'sonner';
 import axiosInstance from '@/api/axios';
 import type { User } from '@/types/user';
 import { queryClient } from '@/main';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from './ui/select';
 import { QUERY_KEYS } from '@/constants';
 
 type UpdateAvailabilityValues = z.infer<typeof createAvilabilitySchema>;
 
 type UpdateAvailabilityProps = {
 	user: User;
+	schoolYear?: string;
+	semester?: string;
 };
 
-export default function UpdateAvailability({ user }: UpdateAvailabilityProps) {
+export default function UpdateAvailability({ user, schoolYear: defaultSchoolYear, semester: defaultSemester }: UpdateAvailabilityProps) {
 	const { control, handleSubmit } = useForm({
 		resolver: zodResolver(createAvilabilitySchema),
 		defaultValues: {
@@ -29,6 +32,8 @@ export default function UpdateAvailability({ user }: UpdateAvailabilityProps) {
 			startTime: '10:30',
 			endTime: '12:00',
 			slots: '1',
+			schoolYear: defaultSchoolYear || `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`,
+			semester: defaultSemester || '1',
 		},
 	});
 	const onSubmit = async (formData: UpdateAvailabilityValues) => {
@@ -48,6 +53,8 @@ export default function UpdateAvailability({ user }: UpdateAvailabilityProps) {
 					startTime: formData.startTime,
 					endTime: formData.endTime,
 					slots: formData.slots, // string!
+					schoolYear: formData.schoolYear,
+					semester: formData.semester,
 					userID: user._id,
 				};
 
@@ -107,6 +114,69 @@ export default function UpdateAvailability({ user }: UpdateAvailabilityProps) {
 				)}
 			/>
 			{/* END day selection */}
+
+			{/* SCHOOL YEAR */}
+			<Controller
+				name='schoolYear'
+				control={control}
+				render={({ field, fieldState }) => (
+					<Field data-invalid={fieldState.invalid}>
+						<div className='flex flex-col gap-3'>
+							<Label htmlFor={field.name} className='px-1'>School Year</Label>
+							<Select onValueChange={field.onChange} value={field.value}>
+								<SelectTrigger className='w-full'>
+									<SelectValue placeholder='Select School Year' />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectGroup>
+										<SelectLabel>School Year</SelectLabel>
+										{[...Array(5)].map((_, i) => {
+											const year = new Date().getFullYear() - i;
+											const value = `${year}-${year + 1}`;
+											return (
+												<SelectItem key={value} value={value}>
+													{value}
+												</SelectItem>
+											);
+										})}
+									</SelectGroup>
+								</SelectContent>
+							</Select>
+							{fieldState.invalid && (
+								<FieldError errors={[fieldState.error]} />
+							)}
+						</div>
+					</Field>
+				)}
+			/>
+
+			{/* SEMESTER */}
+			<Controller
+				name='semester'
+				control={control}
+				render={({ field, fieldState }) => (
+					<Field data-invalid={fieldState.invalid}>
+						<div className='flex flex-col gap-3'>
+							<Label htmlFor={field.name} className='px-1'>Semester</Label>
+							<Select onValueChange={field.onChange} value={field.value}>
+								<SelectTrigger className='w-full'>
+									<SelectValue placeholder='Select Semester' />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectGroup>
+										<SelectLabel>Semester</SelectLabel>
+										<SelectItem value='1'>1st Semester</SelectItem>
+										<SelectItem value='2'>2nd Semester</SelectItem>
+									</SelectGroup>
+								</SelectContent>
+							</Select>
+							{fieldState.invalid && (
+								<FieldError errors={[fieldState.error]} />
+							)}
+						</div>
+					</Field>
+				)}
+			/>
 
 			{/* START TIME */}
 			<Controller

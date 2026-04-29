@@ -10,6 +10,8 @@ export interface IAvailability extends mongoose.Document {
 	startTime: string; // in 24 hour format
 	endTime: string; // in 24 hour format
 	slots: number; // number of slots
+	schoolYear: string;
+	semester: number;
 	mainMeetLink?: string | undefined | null;
 }
 
@@ -31,6 +33,8 @@ const AvailabilitySchema = new Schema<IAvailability>({
 	startTime: { type: String, required: true },
 	endTime: { type: String, required: true },
 	slots: { type: Number, required: true },
+	schoolYear: { type: String, required: true },
+	semester: { type: Number, enum: [1, 2], required: true },
 	mainMeetLink: { type: String, default: null },
 });
 
