@@ -45,10 +45,10 @@ export default function LoginForm() {
 
 	const onSubmit = async (formData: LoginFormValues) => {
 		try {
-			if (!recaptchaToken) {
-				setError('root', { message: 'Please complete the reCAPTCHA' });
-				return;
-			}
+			// if (!recaptchaToken) {
+			// 	setError('root', { message: 'Please complete the reCAPTCHA' });
+			// 	return;
+			// }
 
 			setIsLoading(true);
 			const { data } = await axiosInstance.post('/auth/login', formData);

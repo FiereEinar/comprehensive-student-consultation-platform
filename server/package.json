@@ -9,7 +9,9 @@
 		"start": "node dist/src/app.js",
 		"check:ts": "tsc --noEmit",
 		"prod": "node ./dist/app.js",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"db:seed": "ts-node src/database/seed.ts",
+		"db:clear": "ts-node src/database/clear.ts"
 	},
 	"keywords": [],
 	"author": "",
