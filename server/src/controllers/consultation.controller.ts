@@ -56,6 +56,9 @@ export const getConsultations = asynchandler(async (req, res) => {
 		sort = 'desc',
 		status = '',
 		userID = '',
+		schoolYear = '',
+		semester = '',
+		instructorFilter = '',
 		fetchAll = false,
 	} = req.query;
 
@@ -71,10 +74,21 @@ export const getConsultations = asynchandler(async (req, res) => {
 		match.status = { $in: statuses };
 	}
 
-	// filter by specific student/instructor
+	// filter by specific student/instructor (dashboard logic)
 	if (userID) {
 		const objectID = new Types.ObjectId(userID as string);
 		match.$or = [{ student: objectID }, { instructor: objectID }];
+	}
+
+	// global filters
+	if (schoolYear) {
+		match.schoolYear = schoolYear;
+	}
+	if (semester) {
+		match.semester = Number(semester);
+	}
+	if (instructorFilter) {
+		match.instructor = new Types.ObjectId(instructorFilter as string);
 	}
 
 	// AGGREGATION PIPELINE
@@ -190,6 +204,9 @@ export const getConsultationsV2 = asynchandler(async (req, res) => {
 		sort = 'desc',
 		status = '',
 		userID = '',
+		schoolYear = '',
+		semester = '',
+		instructorFilter = '',
 		fetchAll = false,
 	} = req.query;
 
@@ -212,6 +229,17 @@ export const getConsultationsV2 = asynchandler(async (req, res) => {
 	if (userID) {
 		const objectID = new Types.ObjectId(userID as string);
 		match.$or = [{ student: objectID }, { instructor: objectID }];
+	}
+
+	// global filters
+	if (schoolYear) {
+		match.schoolYear = schoolYear;
+	}
+	if (semester) {
+		match.semester = Number(semester);
+	}
+	if (instructorFilter) {
+		match.instructor = new Types.ObjectId(instructorFilter as string);
 	}
 
 	let consultations = await ConsultationModel.find(match)

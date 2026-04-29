@@ -14,6 +14,9 @@ export const fetchConsultations = async (
 		if (filters.page) url += `page=${filters.page}&`;
 		if (filters.pageSize) url += `pageSize=${filters.pageSize}&`;
 		if (filters.userID) url += `userID=${filters.userID}&`;
+		if (filters.schoolYear) url += `schoolYear=${filters.schoolYear}&`;
+		if (filters.semester) url += `semester=${filters.semester}&`;
+		if (filters.instructorFilter) url += `instructorFilter=${filters.instructorFilter}&`;
 
 		const { data } = await axiosInstance.get(url);
 

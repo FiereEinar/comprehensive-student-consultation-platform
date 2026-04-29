@@ -8,6 +8,9 @@ export interface ConsultationFilterValues {
 	pageSize: number;
 	order: 'asc' | 'desc';
 	userID: string;
+	schoolYear?: string;
+	semester?: string;
+	instructorFilter?: string;
 }
 
 export interface ConsultationFilterState extends ConsultationFilterValues {
@@ -17,6 +20,10 @@ export interface ConsultationFilterState extends ConsultationFilterValues {
 	setPageSize: (pageSize: number) => void;
 	setOrder: (order: 'asc' | 'desc') => void;
 	setUserID: (userID: string) => void;
+	setSchoolYear: (schoolYear: string) => void;
+	setSemester: (semester: string) => void;
+	setInstructorFilter: (instructorFilter: string) => void;
+	resetFilters: () => void;
 	getFilters: () => ConsultationFilterValues;
 }
 
@@ -40,13 +47,38 @@ export const useConsultationStateStore = create<ConsultationFilterState>(
 		userID: '',
 		setUserID: (userID) => set({ userID }),
 
-		getFilters: (): ConsultationFilterValues => ({
-			status: get().status,
-			search: get().search,
-			page: get().page,
-			pageSize: get().pageSize,
-			order: get().order,
-			userID: get().userID,
-		}),
+		schoolYear: '',
+		setSchoolYear: (schoolYear) => set({ schoolYear, page: 1 }),
+
+		semester: '',
+		setSemester: (semester) => set({ semester, page: 1 }),
+
+		instructorFilter: '',
+		setInstructorFilter: (instructorFilter) => set({ instructorFilter, page: 1 }),
+
+		resetFilters: () =>
+			set({
+				status: [],
+				search: '',
+				page: 1,
+				schoolYear: '',
+				semester: '',
+				instructorFilter: '',
+			}),
+
+		getFilters: (): ConsultationFilterValues => {
+			const values: ConsultationFilterValues = {
+				status: get().status,
+				search: get().search,
+				page: get().page,
+				pageSize: get().pageSize,
+				order: get().order,
+				userID: get().userID,
+			};
+			if (get().schoolYear) values.schoolYear = get().schoolYear;
+			if (get().semester) values.semester = get().semester;
+			if (get().instructorFilter) values.instructorFilter = get().instructorFilter;
+			return values;
+		},
 	})
 );

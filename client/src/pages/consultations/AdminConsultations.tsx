@@ -1,18 +1,17 @@
 import ConsultationTabs from '@/components/tabs/ConsultationTabs';
 import Header from '@/components/ui/header';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ConsultationFiltersBar from '@/components/ConsultationFiltersBar';
 import { QUERY_KEYS } from '@/constants';
 import { useQuery } from '@tanstack/react-query';
 import { fetchConsultations } from '@/api/consultation';
 import RightSidebar from '@/components/sidebars/RightSidebar';
 import PaginationController from '@/components/PaginationController';
 import { useConsultationStateStore } from '@/stores/consultation-filter';
-import { Input } from '@/components/ui/input';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import ConsultationForm from '@/components/forms/ConsultationForm';
 
 export default function AdminConsultations() {
-	const { getFilters, page, setPage, setSearch, setStatus } =
+	const { getFilters, page, setPage } =
 		useConsultationStateStore((state) => state);
 
 	const {
@@ -31,126 +30,46 @@ export default function AdminConsultations() {
 				<ConsultationForm />
 			</div>
 
-			<div className='flex gap-3'>
-				<Tabs
-					defaultValue='All'
-					className='border-2 p-3 bg-white rounded-2xl w-[70%]'
-				>
-					<div className='flex justify-between w-full'>
-						<TabsList className='self-start bg-white'>
-							<TabsTrigger
-								onClick={() => {
-									setStatus([]);
-									setPage(1);
-								}}
-								className='cursor-pointer data-[state=active]:text-custom-primary 
-							data-[state=active]:border-b-custom-primary border-2 
-							data-[state=active]:bg-white rounded-none 
-							data-[state=active]:shadow-none'
-								value='All'
-							>
-								All
-							</TabsTrigger>
-							<TabsTrigger
-								onClick={() => {
-									setStatus(['accepted']);
-									setPage(1);
-								}}
-								className='cursor-pointer data-[state=active]:text-custom-primary 
-							data-[state=active]:border-b-custom-primary border-2 
-							data-[state=active]:bg-white rounded-none 
-							data-[state=active]:shadow-none'
-								value='Accepted'
-							>
-								Accepted
-							</TabsTrigger>
-
-							<TabsTrigger
-								onClick={() => {
-									setStatus(['completed']);
-									setPage(1);
-								}}
-								className='cursor-pointer data-[state=active]:text-custom-primary 
-							data-[state=active]:border-b-custom-primary border-2 
-							data-[state=active]:bg-white rounded-none 
-							data-[state=active]:shadow-none'
-								value='Completed'
-							>
-								Completed
-							</TabsTrigger>
-
-							<TabsTrigger
-								onClick={() => {
-									setStatus(['declined']);
-									setPage(1);
-								}}
-								className='cursor-pointer data-[state=active]:text-custom-primary 
-							data-[state=active]:border-b-custom-primary border-2 
-							data-[state=active]:bg-white rounded-none 
-							data-[state=active]:shadow-none'
-								value='Declined'
-							>
-								Declined
-							</TabsTrigger>
-
-							<TabsTrigger
-								onClick={() => {
-									setStatus(['pending']);
-									setPage(1);
-								}}
-								className='cursor-pointer data-[state=active]:text-custom-primary 
-							data-[state=active]:border-b-custom-primary border-2 
-							data-[state=active]:bg-white rounded-none 
-							data-[state=active]:shadow-none'
-								value='Pending'
-							>
-								Pending
-							</TabsTrigger>
-						</TabsList>
-
-						<div className='flex gap-2 items-center'>
-							<Input
-								placeholder='Search'
-								onChange={(e) => {
-									setSearch(e.target.value);
-									setPage(1);
-								}}
-							/>
-							<PaginationController
-								currentPage={page}
-								nextPage={page + 1}
-								prevPage={page - 1}
-								setPage={setPage}
-								size='sm'
-							/>
-						</div>
-					</div>
-
+			<div className='flex gap-4 w-full h-full'>
+				<div className='flex-1 flex flex-col gap-4'>
 					{consultations && (
-						<ConsultationTabs
-							consultations={consultations}
-							isLoading={isLoading}
-							error={error}
-						/>
-					)}
+						<div className='bg-white p-4 rounded-2xl border-2 shadow-sm'>
+							<div className='flex justify-between items-center mb-4 gap-4'>
+								<ConsultationFiltersBar />
 
-					{isLoading && <LoadingSpinner />}
-
-					{consultations?.length !== 0 && (
-						<div className='flex justify-between w-full'>
-							<div></div>
-							<div>
-								<PaginationController
-									currentPage={page}
-									nextPage={page + 1}
-									prevPage={page - 1}
-									setPage={setPage}
-									size='sm'
-								/>
+								<div className='flex justify-end ml-auto w-fit'>
+									<PaginationController
+										currentPage={page}
+										nextPage={page + 1}
+										prevPage={page - 1}
+										setPage={setPage}
+										size='sm'
+									/>
+								</div>
 							</div>
+
+							<ConsultationTabs
+								consultations={consultations}
+								isLoading={isLoading}
+								error={error}
+							/>
+
+							{isLoading && <LoadingSpinner />}
+
+							{consultations?.length !== 0 && (
+								<div className='ml-auto mt-4 w-fit'>
+									<PaginationController
+										currentPage={page}
+										nextPage={page + 1}
+										prevPage={page - 1}
+										setPage={setPage}
+										size='sm'
+									/>
+								</div>
+							)}
 						</div>
 					)}
-				</Tabs>
+				</div>
 
 				<RightSidebar />
 			</div>
