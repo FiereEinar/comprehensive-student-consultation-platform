@@ -7,10 +7,6 @@ export const createSubjectSchema = z.object({
 		.min(1, 'Subject code is required')
 		.max(10, 'Max 10 characters'),
 	description: z.string().optional(),
-});
-
-export const createSectionSchema = z.object({
-	name: z.string().min(1, 'Section name is required'),
-	schedule: z.string().optional(),
-	students: z.string().optional(),
+	schoolYear: z.string().min(1, 'School year is required'),
+	semester: z.string().min(1, 'Semester is required'),
 });

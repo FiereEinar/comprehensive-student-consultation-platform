@@ -8,17 +8,17 @@ import {
 	SheetTrigger,
 } from './ui/sheet';
 import { Separator } from './ui/separator';
-import { Card, CardContent } from './ui/card';
+import { User } from 'lucide-react';
+import type { Subject } from '@/types/subject';
+import { useUserStore } from '@/stores/user';
 import { Button } from './ui/button';
-import { BookOpen, Layers3, Trash2 } from 'lucide-react';
-import type { Section, Subject } from '@/types/subject';
-import { useQuery } from '@tanstack/react-query';
-import { QUERY_KEYS } from '@/constants';
-import axiosInstance from '@/api/axios';
-import AddSectionForm from './forms/CreateSectionForm';
-import ConfirmDeleteDialog from './ConfirmDeleteDialog';
-import { queryClient } from '@/main';
+import { X, Plus } from 'lucide-react';
+import SearchableSelect from './SearchableSelect';
+import { useState } from 'react';
 import { toast } from 'sonner';
+import { queryClient } from '@/main';
+import { QUERY_KEYS } from '@/constants';
+import { updateSubject } from '@/api/subject';
 
 type SubjectSheetProps = {
 	subject: Subject;
@@ -27,26 +27,50 @@ type SubjectSheetProps = {
 
 export default function SubjectSheet({ subject, trigger }: SubjectSheetProps) {
 	const { name, code, description } = subject;
-	const { data: sections, isLoading } = useQuery({
-		queryKey: [QUERY_KEYS.SECTIONS, subject._id],
-		queryFn: async () => {
-			const { data } = await axiosInstance.get(
-				`/instructor/section/${subject._id}`
-			);
-			return data.data as Section[];
-		},
-	});
+	const { user } = useUserStore((state) => state);
+	const isAdmin = user?.role === 'admin';
+	const [selectedInstructorId, setSelectedInstructorId] = useState('');
+	const [isUpdating, setIsUpdating] = useState(false);
 
-	const onDelete = async (sectionID: string) => {
+	const handleAddInstructor = async () => {
+		if (!selectedInstructorId) return;
+		if (subject.instructors?.some((inst) => inst._id === selectedInstructorId)) {
+			toast.error('Instructor is already assigned to this subject');
+			return;
+		}
+
+		setIsUpdating(true);
 		try {
-			await axiosInstance.delete(`/instructor/section/${sectionID}`);
-			toast.success('Section deleted successfully!');
-			await queryClient.invalidateQueries({
-				queryKey: [QUERY_KEYS.SECTIONS, subject._id],
-			});
+			const newInstructors = [
+				...(subject.instructors?.map((i) => i._id) || []),
+				selectedInstructorId,
+			];
+			await updateSubject(subject._id, { instructors: newInstructors as any });
+			toast.success('Instructor assigned successfully');
+			setSelectedInstructorId('');
+			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.SUBJECTS] });
 		} catch (error) {
-			console.error('Failed to delete section', error);
-			toast.error('Failed to delete section');
+			console.error(error);
+			toast.error('Failed to assign instructor');
+		} finally {
+			setIsUpdating(false);
+		}
+	};
+
+	const handleRemoveInstructor = async (instructorId: string) => {
+		setIsUpdating(true);
+		try {
+			const newInstructors = subject.instructors
+				?.filter((i) => i._id !== instructorId)
+				.map((i) => i._id);
+			await updateSubject(subject._id, { instructors: newInstructors as any });
+			toast.success('Instructor removed successfully');
+			await queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.SUBJECTS] });
+		} catch (error) {
+			console.error(error);
+			toast.error('Failed to remove instructor');
+		} finally {
+			setIsUpdating(false);
 		}
 	};
 
@@ -59,7 +83,7 @@ export default function SubjectSheet({ subject, trigger }: SubjectSheetProps) {
 						Subject Details
 					</SheetTitle>
 					<SheetDescription>
-						View and manage sections for this subject.
+						View details and assigned instructors for this subject.
 					</SheetDescription>
 				</SheetHeader>
 
@@ -70,66 +94,79 @@ export default function SubjectSheet({ subject, trigger }: SubjectSheetProps) {
 					<div className='space-y-1'>
 						<p className='text-xl font-semibold'>{startCase(name)}</p>
 						<p className='text-sm text-muted-foreground'>Code: {code}</p>
-						<p className='text-sm text-muted-foreground'>{description}</p>
+						{description && (
+							<p className='text-sm text-muted-foreground'>{description}</p>
+						)}
+					</div>
+
+					<div className='flex flex-wrap gap-2 text-xs'>
+						<span className='bg-purple-100 text-purple-800 px-2 py-1 rounded-md font-medium'>
+							SY {subject.schoolYear}
+						</span>
+						<span className='bg-blue-100 text-blue-800 px-2 py-1 rounded-md font-medium'>
+							Sem {subject.semester}
+						</span>
 					</div>
 
 					<Separator />
 
-					{/* Section Management */}
-					<div className='flex items-center justify-between'>
+					{/* Instructors */}
+					<div className='space-y-2'>
 						<p className='font-medium text-sm text-muted-foreground'>
-							Sections
+							Assigned Instructors
 						</p>
-						<AddSectionForm subjectId={subject._id} />
-					</div>
-
-					{/* List of Sections */}
-					<div className='flex flex-col gap-3'>
-						{isLoading && (
-							<p className='italic text-sm text-muted-foreground text-center'>
-								Loading sections...
+						{subject.instructors?.length > 0 ? (
+							<div className='flex flex-col gap-2'>
+								{subject.instructors.map((inst) => (
+									<div
+										key={inst._id}
+										className='flex items-center gap-3 p-2 border rounded-md'
+									>
+										<User className='w-4 h-4 text-muted-foreground' />
+										<div className='flex-1'>
+											<p className='text-sm font-medium'>{inst.name}</p>
+											<p className='text-xs text-muted-foreground'>
+												{inst.email}
+											</p>
+										</div>
+										{isAdmin && (
+											<Button
+												variant='ghost'
+												size='icon'
+												className='h-8 w-8 text-destructive'
+												disabled={isUpdating}
+												onClick={() => handleRemoveInstructor(inst._id)}
+											>
+												<X className='w-4 h-4' />
+											</Button>
+										)}
+									</div>
+								))}
+							</div>
+						) : (
+							<p className='text-sm text-muted-foreground text-center'>
+								No instructors assigned yet.
 							</p>
 						)}
-						{sections?.length === 0 ? (
-							<p className='text-sm text-muted-foreground text-center'>
-								No sections available for this subject.
-							</p>
-						) : (
-							sections &&
-							sections.map((section) => (
-								<Card key={section._id} className='py-2'>
-									<CardContent className='px-3 flex items-center justify-between'>
-										<div className='flex items-center gap-3'>
-											<Layers3 className='w-5 h-5 text-muted-foreground' />
-											<div>
-												<p className='font-medium'>{section.name}</p>
-												{/* <p className='text-sm text-muted-foreground'>
-													{section.yearLevel} • {section.semester}
-												</p> */}
-											</div>
-										</div>
-
-										<div className='flex items-center gap-2'>
-											<Button size='icon' variant='outline' className='w-8 h-8'>
-												<BookOpen className='w-4 h-4' />
-											</Button>
-
-											<ConfirmDeleteDialog
-												trigger={
-													<Button
-														size='icon'
-														variant='outline'
-														className='text-red-500 hover:text-red-500 w-8 h-8'
-													>
-														<Trash2 className='w-4 h-4' />
-													</Button>
-												}
-												onConfirm={() => onDelete(section._id)}
-											/>
-										</div>
-									</CardContent>
-								</Card>
-							))
+						
+						{isAdmin && (
+							<div className='mt-4 flex gap-2'>
+								<div className='flex-1'>
+									<SearchableSelect
+										placeholder='Select instructor to add...'
+										role='instructor'
+										value={selectedInstructorId}
+										onChange={(val) => setSelectedInstructorId(val)}
+									/>
+								</div>
+								<Button
+									size='icon'
+									onClick={handleAddInstructor}
+									disabled={!selectedInstructorId || isUpdating}
+								>
+									<Plus className='w-4 h-4' />
+								</Button>
+							</div>
 						)}
 					</div>
 				</div>

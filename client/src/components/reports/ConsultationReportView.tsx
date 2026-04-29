@@ -8,7 +8,6 @@ export type ConsultationRow = {
 	title: string;
 	purpose: string;
 	subjectCode: string;
-	sectonCode: string; // matches your DB field name
 	status: string;
 	scheduledAt: string; // formatted date string
 };
@@ -79,7 +78,6 @@ export const ConsultationReportView = React.forwardRef<HTMLDivElement, Props>(
 							'Title',
 							'Purpose',
 							'Subject',
-							'Section',
 							'Status',
 							'Date',
 						].map((header) => (
@@ -107,7 +105,7 @@ export const ConsultationReportView = React.forwardRef<HTMLDivElement, Props>(
 					{!consultations || consultations.length === 0 ? (
 						<tr>
 							<td
-								colSpan={7}
+								colSpan={6}
 								style={{
 									textAlign: 'center',
 									padding: 12,
@@ -166,16 +164,6 @@ export const ConsultationReportView = React.forwardRef<HTMLDivElement, Props>(
 									}}
 								>
 									{c.subjectCode}
-								</td>
-								<td
-									style={{
-										border: '1px solid rgb(6, 28, 51)',
-										padding: '6px',
-										textAlign: 'center',
-										fontSize: 10,
-									}}
-								>
-									{c.sectonCode}
 								</td>
 								<td
 									style={{

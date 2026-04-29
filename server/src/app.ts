@@ -25,6 +25,7 @@ import notificationRoutes from './routes/notification.routes';
 import backupRoutes from './routes/backup.route';
 import roleRoutes from './routes/role.route';
 import consultationPurposeRoutes from './routes/consultation-purpose.route';
+import subjectRoutes from './routes/subject.route';
 connectToMongoDB();
 
 const app = express();
@@ -49,6 +50,7 @@ app.use('/api/v1/notification', notificationRoutes);
 app.use('/api/v1/backup', backupRoutes);
 app.use('/api/v1/role', roleRoutes);
 app.use('/api/v1/consultation-purpose', consultationPurposeRoutes);
+app.use('/api/v1/subject', subjectRoutes);
 
 // Error handlers
 app.use(notFoundHandler);

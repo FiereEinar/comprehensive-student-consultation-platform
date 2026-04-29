@@ -73,11 +73,10 @@ export function generateConsultationPdf(opts: {
 				c.title || '',
 				c.purpose || '',
 				c.subjectCode || '',
-				c.sectonCode || '',
 				c.status || '',
 				c.scheduledAt || '',
 		  ])
-		: [['—', 'No records', '', '', '', '', '']];
+		: [['—', 'No records', '', '', '', '']];
 
 	doc.setFont(...FONT_BOLD);
 	doc.setFontSize(10);
@@ -86,7 +85,7 @@ export function generateConsultationPdf(opts: {
 
 	autoTable(doc, {
 		startY: 36,
-		head: [['#', 'Title', 'Purpose', 'Subject', 'Section', 'Status', 'Date']],
+		head: [['#', 'Title', 'Purpose', 'Subject', 'Status', 'Date']],
 		body,
 		theme: 'grid',
 		styles: {

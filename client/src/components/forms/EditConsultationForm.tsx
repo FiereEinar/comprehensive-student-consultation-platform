@@ -78,7 +78,6 @@ export default function EditConsultationForm({
 			scheduledAt: consultation.scheduledAt.toString(),
 			instructor: consultation.instructor._id,
 			purpose: consultation.purpose,
-			sectonCode: consultation.sectonCode,
 			subjectCode: consultation.subjectCode,
 			status: consultation.status,
 		},
@@ -206,20 +205,6 @@ export default function EditConsultationForm({
 											<Field>
 												<FieldLabel>Subject Code</FieldLabel>
 												<Input {...field} placeholder='IT101' />
-												{fieldState.invalid && (
-													<FieldError errors={[fieldState.error]} />
-												)}
-											</Field>
-										)}
-									/>
-
-									<Controller
-										name='sectonCode'
-										control={control}
-										render={({ field, fieldState }) => (
-											<Field>
-												<FieldLabel>Section Code</FieldLabel>
-												<Input {...field} placeholder='T108' />
 												{fieldState.invalid && (
 													<FieldError errors={[fieldState.error]} />
 												)}

@@ -13,14 +13,15 @@ export type Consultation = {
 	scheduledAt: Date;
 	status: ConsultationStatus;
 	title: string;
-	description: string;
+	description?: string;
 	createdAt: Date;
 	updatedAt: Date;
 	meetLink?: string;
 	googleCalendarEventId?: string | null;
 	purpose: string;
-	sectonCode: string;
-	subjectCode: string;
+	subjectCode?: string;
+	schoolYear?: string;
+	semester?: number;
 	completedAt?: Date;
 	instructorNotes?: string;
 };

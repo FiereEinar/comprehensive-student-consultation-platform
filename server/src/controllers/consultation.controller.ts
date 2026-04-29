@@ -116,7 +116,6 @@ export const getConsultations = asynchandler(async (req, res) => {
 					{ title: regex },
 					{ description: regex },
 					{ purpose: regex },
-					{ sectionCode: regex },
 					{ subjectCode: regex },
 					{ 'student.name': regex },
 					{ 'student.email': regex },
@@ -241,7 +240,6 @@ export const getConsultationsV2 = asynchandler(async (req, res) => {
 				c.title,
 				c.description,
 				c.purpose,
-				c.sectonCode,
 				c.subjectCode,
 				student?.name,
 				student?.email,
@@ -981,7 +979,7 @@ export const acquireLock = asynchandler(async (req, res) => {
  * @query status (optional)
  */
 export const getConsultationReport = asynchandler(async (req, res) => {
-	const { instructorId, status, startDate, endDate, sectionCode, subjectCode } =
+	const { instructorId, status, startDate, endDate, subjectCode } =
 		req.query;
 
 	if (!instructorId || !startDate || !endDate) {
@@ -1005,16 +1003,15 @@ export const getConsultationReport = asynchandler(async (req, res) => {
 		match.status = status;
 	}
 
-	// FIX: Correct field name "sectionCode"
 	const consultations = await ConsultationModel.find(match)
-		.select('title purpose subjectCode sectonCode status scheduledAt')
+		.select('title purpose subjectCode status scheduledAt')
 		.lean();
 
 	let decrypted = consultations.map((c) =>
 		decryptFields(c, consultatioModelEncryptedFields),
 	);
 
-	// FIX: Proper filtering logic
+	// Proper filtering logic
 	decrypted = decrypted.filter((c) => {
 		let ok = true;
 
@@ -1022,12 +1019,6 @@ export const getConsultationReport = asynchandler(async (req, res) => {
 		if (subjectCode && typeof subjectCode === 'string') {
 			ok =
 				ok && c.subjectCode?.toLowerCase().includes(subjectCode.toLowerCase());
-		}
-
-		// filter by sectionCode
-		if (sectionCode && typeof sectionCode === 'string') {
-			ok =
-				ok && c.sectonCode?.toLowerCase().includes(sectionCode.toLowerCase());
 		}
 
 		return ok;

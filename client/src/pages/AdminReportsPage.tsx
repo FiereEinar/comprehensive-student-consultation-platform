@@ -69,7 +69,6 @@ interface ConsultationRaw {
 	meetLink: null;
 	purpose: string;
 	scheduledAt: DateShape;
-	sectonCode: string;
 	status: string;
 	student: ObjectIdShape;
 	subjectCode: string;
@@ -90,7 +89,6 @@ interface Consultation {
 	updatedAt: DateShape;
 	purpose: string;
 	subjectCode: string;
-	sectonCode: string;
 	googleCalendarEventId: string | null;
 	meetLink: null;
 }
@@ -174,7 +172,6 @@ export default function AdminReportsPage() {
 					updatedAt: c.updatedAt,
 					purpose: c.purpose,
 					subjectCode: c.subjectCode,
-					sectonCode: c.sectonCode,
 					googleCalendarEventId: c.googleCalendarEventId,
 					meetLink: c.meetLink,
 				}));

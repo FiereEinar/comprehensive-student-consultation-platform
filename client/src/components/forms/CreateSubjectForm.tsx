@@ -14,6 +14,15 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import {
+	Select,
+	SelectContent,
+	SelectGroup,
+	SelectItem,
+	SelectLabel,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select';
+import {
 	InputGroup,
 	InputGroupAddon,
 	InputGroupText,
@@ -44,15 +53,15 @@ export default function CreateSubjectForm({
 			name: '',
 			code: '',
 			description: '',
+			schoolYear: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`,
+			semester: '1',
 		},
 	});
 
 	const onSubmit = async (formData: CreateSubjectSchema) => {
 		try {
-			const { data } = await axiosInstance.post(
-				'/instructor/subject',
-				formData
-			);
+			const payload = { ...formData, semester: Number(formData.semester) };
+			const { data } = await axiosInstance.post('/subject', payload);
 			toast.success(data.message);
 			reset();
 			onSuccess?.();
@@ -115,6 +124,65 @@ export default function CreateSubjectForm({
 									placeholder='e.g. CS101'
 									className='uppercase'
 								/>
+								{fieldState.invalid && (
+									<FieldError errors={[fieldState.error]} />
+								)}
+							</Field>
+						)}
+					/>
+
+					{/* SCHOOL YEAR */}
+					<Controller
+						name='schoolYear'
+						control={control}
+						render={({ field, fieldState }) => (
+							<Field data-invalid={fieldState.invalid}>
+								<FieldLabel htmlFor={field.name}>School Year</FieldLabel>
+								<Select onValueChange={field.onChange} value={field.value}>
+									<SelectTrigger className='w-full'>
+										<SelectValue placeholder='Select School Year' />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectGroup>
+											<SelectLabel>School Year</SelectLabel>
+											{[...Array(5)].map((_, i) => {
+												const year = new Date().getFullYear() - i;
+												const value = `${year}-${year + 1}`;
+												return (
+													<SelectItem key={value} value={value}>
+														{value}
+													</SelectItem>
+												);
+											})}
+										</SelectGroup>
+									</SelectContent>
+								</Select>
+								{fieldState.invalid && (
+									<FieldError errors={[fieldState.error]} />
+								)}
+							</Field>
+						)}
+					/>
+
+					{/* SEMESTER */}
+					<Controller
+						name='semester'
+						control={control}
+						render={({ field, fieldState }) => (
+							<Field data-invalid={fieldState.invalid}>
+								<FieldLabel htmlFor={field.name}>Semester</FieldLabel>
+								<Select onValueChange={field.onChange} value={field.value}>
+									<SelectTrigger className='w-full'>
+										<SelectValue placeholder='Select Semester' />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectGroup>
+											<SelectLabel>Semester</SelectLabel>
+											<SelectItem value='1'>1st Semester</SelectItem>
+											<SelectItem value='2'>2nd Semester</SelectItem>
+										</SelectGroup>
+									</SelectContent>
+								</Select>
 								{fieldState.invalid && (
 									<FieldError errors={[fieldState.error]} />
 								)}

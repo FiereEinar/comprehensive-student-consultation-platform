@@ -116,7 +116,7 @@ export default function ConsultationSheet({
 						</div>
 						{user?.role === 'admin' ? (
 							<p className='text-sm text-muted-foreground'>
-								{redact(description)}
+								{redact(description || '')}
 							</p>
 						) : (
 							<p className='text-sm text-muted-foreground'>{description}</p>
@@ -127,14 +127,6 @@ export default function ConsultationSheet({
 					</div>
 
 					<div className='flex gap-2'>
-						{consultation.sectonCode && (
-							<Badge
-								variant='outline'
-								className='text-muted-foreground bg-muted'
-							>
-								{consultation.sectonCode}
-							</Badge>
-						)}
 						{consultation.subjectCode && (
 							<Badge
 								variant='outline'

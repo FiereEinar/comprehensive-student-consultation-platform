@@ -103,6 +103,12 @@ export const instructorSidebarLinks: SidebarNavLinkType[] = [
 		icon: Clock4,
 		roles: ['instructor'],
 	},
+	{
+		title: 'Subjects',
+		url: '/instructor/subjects',
+		icon: LayoutDashboard,
+		roles: ['instructor'],
+	},
 ];
 
 export const studentSidebarLinks: SidebarNavLinkType[] = [
@@ -147,6 +153,12 @@ export const adminSidebarLinks: SidebarNavLinkType[] = [
 		icon: Users,
 		roles: ['admin'],
 		permissions: [MODULES.READ_USER],
+	},
+	{
+		title: 'Subjects',
+		url: '/admin/subjects',
+		icon: LayoutDashboard,
+		roles: ['admin'],
 	},
 	{
 		title: 'Roles',

@@ -31,6 +31,7 @@ import NoPermission from './pages/NoPermission';
 import { MODULES } from './constants';
 import TermsOfService from './pages/TermsOfService';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import Subjects from './pages/Subjects';
 
 export default function Route() {
 	const { user } = useUserStore((state) => state);
@@ -132,6 +133,14 @@ export default function Route() {
 					),
 				},
 				{
+					path: '/admin/subjects',
+					element: (
+						<HasPermission userRole={['admin']} fallback={<NoPermission />}>
+							<Subjects />
+						</HasPermission>
+					),
+				},
+				{
 					path: '/admin/users',
 					element: (
 						<HasPermission
@@ -201,6 +210,17 @@ export default function Route() {
 							fallback={<NoPermission />}
 						>
 							<InstructorAvailability />
+						</HasPermission>
+					),
+				},
+				{
+					path: '/instructor/subjects',
+					element: (
+						<HasPermission
+							userRole={['instructor', 'admin']}
+							fallback={<NoPermission />}
+						>
+							<Subjects />
 						</HasPermission>
 					),
 				},

@@ -22,6 +22,11 @@ const instructorSidebarLinks: SidebarNavLink[] = [
 		href: '/instructor/consultation',
 		icon: <Clock />,
 	},
+	{
+		name: 'Subjects',
+		href: '/instructor/subjects',
+		icon: <LayoutDashboard />, // You can change the icon if you want
+	},
 ];
 
 const studentSidebarLinks: SidebarNavLink[] = [

@@ -4,15 +4,10 @@ export const createSubjectSchema = z.object({
 	name: z.string().min(1, 'Subject name is required'),
 	code: z.string().min(1, 'Subject code is required'),
 	description: z.string().optional(),
+	schoolYear: z.string().min(1, 'School year is required'),
+	semester: z.number().int().min(1).max(2),
 });
 
-export const updateSubjectSchema = createSubjectSchema.partial();
-
-export const createSectionSchema = z.object({
-	name: z.string().min(1, 'Section name is required'),
-	schedule: z.string().optional(),
-	subject: z.string().min(1, 'Subject ID is required'),
-	students: z.array(z.string()).optional(),
+export const updateSubjectSchema = createSubjectSchema.partial().extend({
+	instructors: z.array(z.string()).optional(),
 });
-
-export const updateSectionSchema = createSectionSchema.partial();

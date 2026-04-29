@@ -16,12 +16,13 @@ export interface IConsultation extends mongoose.Document {
 	scheduledAt: Date;
 	status: ConsultationStatus;
 	title: string;
-	description: string;
+	description?: string;
 	meetLink?: string;
 	googleCalendarEventId?: string | null;
 	purpose: string;
-	sectonCode?: string;
 	subjectCode?: string;
+	schoolYear?: string;
+	semester?: number;
 	completedAt?: Date;
 	instructorNotes?: string;
 	lock: {
@@ -46,10 +47,11 @@ const ConsultationSchema = new Schema(
 		title: { type: String, required: true },
 		meetLink: { type: String, default: null },
 		googleCalendarEventId: { type: String, default: null },
-		description: { type: String, required: true },
+		description: { type: String, required: false },
 		purpose: { type: String, required: false },
-		sectonCode: { type: String, required: false },
 		subjectCode: { type: String, required: false },
+		schoolYear: { type: String, required: false },
+		semester: { type: Number, enum: [1, 2], required: false },
 		completedAt: { type: Date, required: false },
 		instructorNotes: { type: String, required: false },
 		lock: {
@@ -66,7 +68,6 @@ export const consultatioModelEncryptedFields = [
 	'title',
 	'description',
 	'purpose',
-	'sectonCode',
 	'subjectCode',
 	// 'googleCalendarEventId',
 ];
