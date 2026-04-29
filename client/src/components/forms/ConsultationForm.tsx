@@ -31,10 +31,9 @@ import {
 	InputGroupText,
 	InputGroupTextarea,
 } from '../ui/input-group';
-import { DatePicker } from '../DatePicker';
+import AvailabilitySlotPicker from '../AvailabilitySlotPicker';
 import axiosInstance from '@/api/axios';
 import { toast } from 'sonner';
-import InstructorAvailabilities from '../InstructorAvailabilities';
 import { useUserStore } from '@/stores/user';
 import _ from 'lodash';
 import { Plus } from 'lucide-react';
@@ -360,7 +359,7 @@ export default function ConsultationForm({ title }: ConsultationFormProps) {
 														</SelectLabel>
 														{subjectInstructors.map((inst: any) => (
 															<SelectItem key={inst._id} value={inst._id}>
-																{inst.name} ({inst.email})
+																{_.startCase(inst.name)} ({inst.email})
 															</SelectItem>
 														))}
 													</SelectGroup>
@@ -422,24 +421,19 @@ export default function ConsultationForm({ title }: ConsultationFormProps) {
 							/>
 							{/* END */}
 
-							{selectedInstructor && selectedInstructor !== '' && (
-								<div className='text-xs text-muted-foreground px-2'>
-									<InstructorAvailabilities
-										viewOnly
-										instructorID={selectedInstructor}
-									/>
-								</div>
-							)}
-
-							{/* DATE */}
+							{/* SCHEDULE SLOT PICKER */}
 							<Controller
 								name='scheduledAt'
 								control={control}
 								render={({ field, fieldState }) => (
-									<DatePicker field={field} fieldState={fieldState} />
+									<AvailabilitySlotPicker
+										instructorID={instructorID}
+										field={field}
+										fieldState={fieldState}
+									/>
 								)}
 							/>
-							{/* END DATE */}
+							{/* END SCHEDULE */}
 						</div>
 					</form>
 					<DialogFooter>
